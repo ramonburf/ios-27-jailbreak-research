@@ -202,10 +202,10 @@ final class ReachViewModel: ObservableObject {
 
         // ---- sel10 with surface ID as scalar input too ----
         log("\n--- sel10 with scalar input ---")
-        var inScalar = [UInt64](repeating: 0, count: 4)
-        inScalar[0] = UInt64(sid)
-        var outScalar = [UInt64](repeating: 0, count: 8)
-        var outScalarCount: UInt32 = 0
+        var inScalarS = [UInt64](repeating: 0, count: 4)
+        inScalarS[0] = UInt64(sid)
+        var outScalarS = [UInt64](repeating: 0, count: 8)
+        var outScalarCountS: UInt32 = 0
         var outBuff2 = [UInt8](repeating: 0, count: 64)
         var outSz2: Int = 64
         let p10 = sel10Payload(key: "IOSurfaceName")
@@ -215,17 +215,17 @@ final class ReachViewModel: ObservableObject {
         let kr10s: Int32 = p10p.withUnsafeBytes { raw in
             outBuff2.withUnsafeMutableBytes { ob in
                 IOConnectCallMethod(conn, 10,
-                                    &inScalar, 1,
+                                    &inScalarS, 1,
                                     raw.baseAddress, p10p.count,
-                                    &outScalar, &outScalarCount,
+                                    &outScalarS, &outScalarCountS,
                                     ob.baseAddress, &outSz2)
             }
         }
         let k10s = UInt32(bitPattern: kr10s)
         if k10s == 0 {
             let hex = outBuff2.map { String(format: "%02x", $0) }.joined()
-            log("sel10 name sc1 insz=64: kr=0x\(String(k10s, radix:16)) outSz_ret=\(outSz2) hex=\(hex) osc=\(outScalarCount)")
-            if outScalarCount > 0 { log("  scalar: \(outScalar.prefix(Int(outScalarCount)).map { String(format: "0x%016llx", $0) }.joined(separator: " "))") }
+            log("sel10 name sc1 insz=64: kr=0x\(String(k10s, radix:16)) outSz_ret=\(outSz2) hex=\(hex) osc=\(outScalarCountS)")
+            if outScalarCountS > 0 { log("  scalar: \(outScalarS.prefix(Int(outScalarCountS)).map { String(format: "0x%016llx", $0) }.joined(separator: " "))") }
         } else {
             log("sel10 name sc1 insz=64: kr=0x\(String(k10s, radix:16))")
         }
