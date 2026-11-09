@@ -1,0 +1,21 @@
+# Large firmware / kernelcache artifacts
+*.ipsw
+*.zip
+*.json
+firmware/
+extraction/
+iOS-Research/
+*.dmg
+*.img4
+
+# Build artifacts
+.build/
+DerivedData/
+*.xcuserstate
+
+# macOS
+.DS_Store
+
+# Temp scratch
+tools/opencode-temp/*.swift.bak
+tools/opencode-temp/*.tmp
