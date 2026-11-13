@@ -7,6 +7,12 @@ void run_decmpfs_leak(const char *base_dir);
 void log_from_c(const char* msg);
 void run_iosurface_notify_probe(void);
 
+// Cross-zone OOL reclaim spray for the socket-UAF harness (SockUafSpray.c).
+#include <stddef.h>
+int sockuaf_ool_spray(size_t size, int count, uint64_t fill);
+void sockuaf_ool_reset(void);
+int sockuaf_ool_count(void);
+
 // Container-manager extension probe (see WQProbe.c).
 #include <stdint.h>
 int64_t wq_grant(const char *target, const char *group, uint64_t flags);

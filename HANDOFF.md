@@ -1,107 +1,142 @@
-# HANDOFF — iOS 27.0.1 jailbreak research (2026-11-13, ~13:35)
+# HANDOFF — iOS 27.0.1 jailbreak research (2026-11-13, ~17:45)
 
-Read this first if you are picking the work up cold.
+Read this first if you are picking the work up cold. Supersedes all earlier notes.
 
 ## Goal
 
-Get a working jailbreak on iOS 27.0/27.0.1. Missing gate: a kernel read/write primitive.
+**Semi-untethered jailbreak** on iOS 27.0/27.0.1 (user only needs semi-untethered — no
+bootrom / LLB / trampoline work required). An app-carried kernel exploit → kernel R/W →
+rootless bootstrap is sufficient. Missing gate: a **kernel read/write primitive**.
+
 Top vector: **CVE-2026-112514** socket-buffer use-after-free (`uipc_socket2.c`), live on
-27.0/27.0.1, fixed in 27.2 only.
+27.0/27.0.1, fixed in 27.2 only. **The race is won on hardware** (see below).
 
-**The race is won.** 20 confirmed stale kernel writes into reallocated sockets
-(`analysis/socket-uaf-stale-write-2026-11-13.md`). Current work is conversion to controlled
-R/W, not triggering. Per-path completion: `JAILBREAK-PATHS.md`.
+Overall readiness ~30 %; socket path 80 %. Full per-path table: `JAILBREAK-PATHS.md`.
 
-## Targets
+## Targets (note the exact UDIDs)
 
 | Device | UDID | OS | State |
 |---|---|---|---|
-| iPhone 17 Pro (iPhone18,1) | `00008150-00095CD93444C01C` | **27.0.1** (exact target) | healthy, paired to the Mac, USB -> MacBook |
-| iPhone 13 Pro (iPhone14,2) | `00008110-000E095936C1801E` | 27.0 (24A5390f) | **dropped off usbmux**, needs a physical force-restart |
+| iPhone 17 Pro (iPhone18,1) | `00008150-00095CD93444C01C` | **27.0.1** (24A446, target) | healthy, USB → MacBook |
+| iPhone 13 Pro (iPhone14,2) | `00008110-000E095936C1801E` | 27.0 (24A5390f) | healthy again, USB → MacBook |
+
+⚠️ The 17 Pro UDID ends **`...C01C`** (not `...C01E`). A one-character typo here makes every
+pymobiledevice3 device lookup fail with "usbmux has no device matching udid" while
+`usbmux list` still shows the device — cost real time to diagnose.
 
 ## Access / toolchain
 
-- **MacBook**: reachable over Tailscale as `volpidash@100.110.170.78`
-  (node `no-oness-macbook-pro`, macOS 27.3, Xcode 27.2, arm64).
-  SSH key: `~/.ssh/mac_ios16_ed25519`. Wi-Fi is flaky — always retry, run long jobs detached
-  (`nohup ... &`) and poll their logs.
-- **PC**: Windows 11. Apple USBMux on `127.0.0.1:27015`; `pymobiledevice3` installed under
-  `C:\Users\Volpi\AppData\Local\Programs\Python\Python314` (use `python -m pymobiledevice3`).
-  Device commands used so far: `usbmux list`, `apps list/install/pull/afc`, `crash`,
-  `developer dvt launch '<bundle> <args>'`.
+- **MacBook**: Tailscale `volpidash@100.110.170.78` (`No-Oness-MacBook-Pro.local`, macOS 27.3,
+  Xcode 27.2, arm64). SSH key `~/.ssh/mac_ios16_ed25519`. Wi-Fi is flaky — retry, run long jobs
+  detached, poll logs. `192.168.1.99` also pings but **port 22 is not reachable** (the PC is not
+  on that LAN); Tailscale is the working route.
+- **PC**: Windows 11. Its own Apple usbmuxd is on `127.0.0.1:27015`. Python 3.14 at
+  `C:/Users/Volpi/AppData/Local/Programs/Python/Python314/python.exe` with pymobiledevice3 in
+  site-packages. Physical Ethernet is **disconnected**; the PC's live link is a USB-tethered
+  adapter (`10.249.56.43`) and Tailscale was down for a while (service running, state `NoState`).
+- **Reach both iPhones from the PC** (set up this session, still running):
+  1. Mac runs `/private/tmp/usbmux_relay.py` → TCP `127.0.0.1:27015` bridged to Apple's
+     unix-socket usbmuxd `/var/run/usbmuxd` (macOS Tahoe exposes no TCP usbmux).
+  2. PC holds an SSH tunnel: `ssh -N -L 27016:127.0.0.1:27015 -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78`
+  3. Then:
+     ```
+     export PYMOBILEDEVICE3_USBMUX=127.0.0.1:27016
+     export PYMOBILEDEVICE3_UDID=00008150-00095CD93444C01C
+     python -m pymobiledevice3 crash pull --match "AGXProbe|Jetsam|NRD" OUTDIR
+     ```
+     (listing subcommand is `crash ls`, **not** `list`; `pull` takes `--udid` / `--match`.)
+- **Mac python**: `~/ios27-ai-venv/bin/python` now has pymobiledevice3 (installed this session).
 - **Build/deploy pipeline (working)**:
-  1. `xcodebuild -project AGXProbe.xcodeproj -scheme AGXProbe -configuration Debug
-     -destination "id=<udid>" -derivedDataPath .build13 -allowProvisioningUpdates build`
-  2. `xcrun devicectl device install app --device <udid> <path>/AGXProbe.app`
-  3. `xcrun devicectl device process launch --device <udid> --console --terminate-existing
-     com.nianticlabs.pokemongo.4L9HF29JJU --sockuaf`
-- Build script on the Mac: `~/build_race.sh` (destination currently the 17 Pro UDID).
-  Signing: `iOS Team Provisioning Profile: com.nianticlabs.pokemongo.4L9HF29JJU`
-  (**expires 2026-11-15** — regenerate before then).
+  ```
+  bash ~/build_race.sh            # DEV defaults to the 17 Pro UDID
+  xcrun devicectl device install app --device 00008150-00095CD93444C01C \
+      ~/agx-probe-project/.build13/Build/Products/Debug-iphoneos/AGXProbe.app
+  xcrun devicectl device process launch --device 00008150-00095CD93444C01C --console \
+      --terminate-existing com.nianticlabs.pokemongo.4L9HF29JJU --sockprec
+  ```
+  Signing profile expires **2026-11-15** — regenerate before then or nothing builds/installs.
 
-## Where the code lives
+## Where the code lives (important)
 
-- Carrier source (local copy, authoritative for edits):
-  `C:\Users\Volpi\AppData\Local\hermes\cache\scratch\ContentView.swift`
-  Remote: `~/agx-probe-project/AGXProbe/ContentView.swift` on the Mac.
-- Repo clone: `G:/iOS 27.0.1/iOS` → `github.com/ramonburf/ios-27-jailbreak-research` (public).
-  `gh` CLI is authenticated as `ramonburf`; push with `git push origin main`.
-  Release `v0.4-socket-uaf` carries the carrier source archive; the signed IPA still has to be
-  built on the Mac and attached to it.
+- **Authoritative carrier source = the Mac's file**:
+  `~/agx-probe-project/AGXProbe/ContentView.swift` (sha1 `88f4cb1f…`, **1423 lines**).
+  The repo copy `carrier/AGXProbe/ContentView.swift` was stale (1235 lines) — re-synced to
+  match at handoff. If they diverge again, trust the Mac.
+- Local scratch copy: `C:\Users\Volpi\AppData\Local\hermes\cache\scratch\mac_ContentView.swift`.
+- Repo: `G:/iOS 27.0.1/iOS` → `github.com/ramonburf/ios-27-jailbreak-research` (public).
+  `gh` authenticated as `ramonburf`. Release tag `v0.4-socket-uaf` exists.
 
-## Socket-UAF status (stage 4, ~80%)
+## Socket-UAF status (stage 4, ~80 %)
 
-Carrier `--sockuaf` runs five variants per iteration (`it % 5`, round-robin):
+The precision variant (E) wins reliably: 20 confirmed stale writes into reallocated sockets on
+hardware, first at iteration 9, via a peer-delivery oracle
+(`analysis/socket-uaf-stale-write-2026-11-13.md`).
 
-- A: single-fd close-vs-send
-- B: 8-fd close-half / send-half
-- C: AF_UNIX socketpair close-vs-send
-- D: retire a timer-armed socket (keepalive / RTO live in the kernel)
-- E: **precision** — gated one-shot send per sender, close only after all six are in-kernel,
-  refill with connected sockets, peer-delivery oracle
+### Carrier modes (launch args)
 
-### Results
+`--sockuaf` runs variants A–E round-robin; solo modes pick one:
 
-| Run | Device | Result |
-|---|---|---|
-| v1 | 13 Pro | died iter 0, SIGPIPE (fixed: `signal(SIGPIPE, SIG_IGN)`) |
-| v2 | 17 Pro | 3000 iters clean, race not won |
-| v3 | 17 Pro | ~6700 iters, then SIGKILL; race not won |
-| hammer | 17 Pro | 17.8 k iters, 145 M sends, probes only |
-| **precision** | **17 Pro** | **20 confirmed stale writes, first at iter 9; write primitive proven** |
+| arg | variant |
+|---|---|
+| `--sockprec` | E: gated one-shot send per sender + peer-delivery oracle (the winner) |
+| `--sockool` | F: cross-zone reclaim with mach_msg OOL pages |
+| `--sockxz` | G: free a whole socket page block, then OOL spray |
+| `--sockgc` | H: batch-free past the zone page-return delay, then OOL spray |
+| `--sockudp` | connected-UDP spray (type confusion instead of peer bytes) |
 
-Fixed along the way: SIGPIPE ignore; the 0x8BADF00D scene-create watchdog (loop moved off the
-MainActor); per-iteration thread churn (persistent workers); double-close (CAS); weak detection
-(peer-delivery oracle).
+Variants F/G/H were added on the Mac **after** the last repo sync and had not been evaluated
+when work paused. `SockUafSpray.c` provides `sockuaf_ool_spray(size, count, fill)`.
 
-### Open problem (the only one that matters now)
+### Open problem (the only one that matters)
 
-The freed slot is reclaimed by another **socket**. A socket-to-socket stale write is a real
-UAF but not yet R/W.
+The freed `struct socket` slot is reclaimed by another **socket**, so the stale write lands in
+socket-shaped fields. That is a real UAF write but not R/W. Need:
 
-1. Reclaim with attacker-influenced data instead — cross-zone page exhaustion + `mach_msg`
-   OOL spray, or observable socket fields (`so_proto`, `so_pcb`, `so_usecount`).
-2. Add a leak (KASLR slide + overlapped object address) to build a fake `so_proto`.
-3. Verify one controlled field differential, then use the dangling socket as the R/W channel.
+1. Reclaim with attacker-influenced data (cross-zone page exhaustion → `mach_msg` OOL spray),
+   or with a socket whose overwritten fields are observable (`so_proto` / `so_pcb`).
+2. A leak (KASLR slide + heap address of the overlapped object) to build a fake `so_proto`.
+3. Prove one controlled field differential, then use the dangling socket as the R/W channel.
 
-## Other active threads
+## ⚠️ Known blocker found this session: the CPU watchdog kills the app
 
-- **Kernelcache diff 27.0.1 → 27.2**: complete (`tools/opencode-temp/kc_diff_all.json`,
-  91 kexts changed, 542 kernel functions). Confirms IOSurface notify-UAF fix,
-  IOHIDFamily count-check fix, and a cluster of new state-byte checks that are candidates
-  for the unmapped kernel UAFs. Triage scripts: `analyze_diff.py`, `analyze_diff2.py`.
-- **AppleJPEGDriver** (kernel driver, t8150): reachable from an unprivileged sandboxed app
-  (opens on type 0/1), dispatch table recovered (selectors 1–7 callable without
-  `com.apple.private.*`). Consumes caller-supplied image structs (0x58 / 0x1000 / 0xda0).
-  **No bug found yet** — see `analysis/LEAD-ASSESSMENT.md` §12.
-- **Bounty folder**: `C:\Users\Volpi\Documents\Apple-Security-Bounty\` — README, template,
-  candidate entries. Honest status: **no confirmed novel vulnerability yet**; everything
-  with a known root cause already carries a CVE.
+All four `AGXProbe.cpu_resource-*.ips` reports say the same thing:
+
+```
+CPU: 90 seconds cpu time over 94 seconds (96% cpu average),
+     exceeding limit of 50% cpu over 180 seconds
+```
+
+The harness dies after ~94 s because six persistent sender threads spin at 100 % CPU. Fix
+before any long run — replace the busy-waits in
+`~/agx-probe-project/AGXProbe/ContentView.swift`:
+
+- line ~495 `if st.gate == 0 { continue }` → add `usleep(20)`
+- line ~502 `while st.gate != 0 && st.stop == 0 { }` → `usleep(5)` inside
+- line ~505 `if st.phase == 0 { continue }` → add `usleep(50)`
+- closer loop ~547: spin only when `st.phase == 2`, else `usleep(100)`
+- main iteration loop: add `usleep(200)` between iterations
+
+This preserves the race window (variant E gates on `st.entered == 6` before closing) but drops
+average CPU well below the 50 % threshold, so runs can go long enough to evaluate F/G/H.
+
+## Other log findings from the 17 Pro (2026-11-13)
+
+- `com.apple.NRD.UpdateBrainService` crashed 3× (13:33, 15:21, 17:09) — **Apple's own bug**:
+  dyld aborts because the staged binary was `built for platform tvOS` but launched on iOS.
+  Recurs roughly every 2 h, unrelated to our work. Possibly reportable, low impact.
+- Both `JetsamEvent`s (13:29, 15:10) name **Discord** as largest process, reasons
+  `per-process-limit` / `fc-thrashing` / `highwater` — not caused by AGXProbe.
+- No kernel panic and no device reboot in any run.
+
+## Bounty folder
+
+`C:\Users\Volpi\Documents\Apple-Security-Bounty\` — README (rules + submission channels),
+`TEMPLATE.md`, `candidates/`. Honest status: **no confirmed novel Apple vulnerability yet**;
+everything with a known root cause already carries a CVE. Closest leads recorded there.
 
 ## Environment gotchas
 
-- The macOS Tahoe VM (`G:/Hackintosh/macOS-VM`) boots to OpenCore but lists **no bootable
-  OS**; its recovery image fails on `usr/standalone/OS.dmg.root_hash`. Do not trust it
-  until fixed. `config.plist` was patched (`UEFI.APFS.GlobalConnect=true`), original backed
-  up as `config.plist.orig-bak`.
-- The 13 Pro needs someone physically present to force-restart it.
+- The macOS Tahoe VM (`G:/Hackintosh/macOS-VM`) boots to OpenCore but lists **no bootable OS**;
+  its recovery image fails on `usr/standalone/OS.dmg.root_hash`. Do not rely on it.
+  `config.plist` was patched (`UEFI.APFS.GlobalConnect=true`); original at `config.plist.orig-bak`.
+- Nothing in the tree contains secrets; do not commit credentials.
