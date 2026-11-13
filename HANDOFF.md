@@ -137,6 +137,34 @@ before any long run — replace the busy-waits in
 This preserves the race window (variant E gates on `st.entered == 6` before closing) but drops
 average CPU well below the 50 % threshold, so runs can go long enough to evaluate F/G/H.
 
+## CPU-throttle experiment (done, needs a better fix)
+
+Applied `usleep` throttles to the carrier on the Mac (sha1 `d08c01e9…`, also synced into the
+repo). Idle waits only, so race timing should be untouched:
+
+- sender gate poll → `usleep(20)`
+- post-send gate wait → `usleep(5)`
+- mode-0 idle path → `usleep(50)`
+- main loop → `usleep(200)` per iteration
+
+Built (`BUILD_EXIT=0`), installed and launched with `--sockprec` on the 17 Pro (PID 39278).
+
+**Result:** no CPU-watchdog kill within ~6 min (previously killed at ~94 s) — throttle works.
+But the race rate collapsed: only **1 hit at ITER 13** (41104 bytes delivered), with
+`sends in flight at close: 1/6` where the pre-throttle runs showed 2–6/6. The 20 µs gate poll
+desynchronises the six senders, so by the time the last one enters `sendmsg` the earlier ones
+have already returned — fewer are in flight when the close lands.
+
+The run also stopped emitting output after ITER 13 while the process stayed alive. The loop's
+break condition is `hits >= 1 && it > 40` for solo modes, so it should have continued past 13;
+either the loop exited unexpectedly or the log writer stopped flushing. **Unresolved** — check
+`/tmp/uaf_throttle.log` on the Mac and pull the app container log.
+
+**Better fix:** replace the busy-wait on the gate with a blocking primitive that still wakes in
+microseconds (a `DispatchSemaphore`/`os_unfair_cond`), instead of `usleep` polling. Blocked
+threads cost ~0 % CPU but wake immediately, preserving the simultaneous-fire behaviour the race
+depends on.
+
 ## Other log findings from the 17 Pro (2026-11-13)
 
 - `com.apple.NRD.UpdateBrainService` crashed 3× (13:33, 15:21, 17:09) — **Apple's own bug**:

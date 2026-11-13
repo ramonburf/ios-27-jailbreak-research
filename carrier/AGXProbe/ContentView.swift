@@ -494,17 +494,17 @@ func runFuzzMode() async {
         var n: Int32 = 0
         while st.stop == 0 {
             if st.mode == 1 {
-                if st.gate == 0 { continue }
+                if st.gate == 0 { usleep(20); continue }
                 let pfd = st.fd
                 if pfd >= 0 {
                     OSAtomicIncrement32Barrier(&st.p[14])
                     _ = sendmsg(pfd, &msg, MSG_DONTWAIT)
                     OSAtomicIncrement32Barrier(&st.p[13])
                 }
-                while st.gate != 0 && st.stop == 0 { }
+                while st.gate != 0 && st.stop == 0 { usleep(5) }
                 continue
             }
-            if st.phase == 0 { continue }
+            if st.phase == 0 { usleep(50); continue }
             let fd = st.fd
             if fd < 0 { continue }
             n &+= 1
@@ -1157,6 +1157,9 @@ func runFuzzMode() async {
                 }
             }
             if st.postCloseOk > maxAfterClose { maxAfterClose = st.postCloseOk }
+            // Pace the loop: the CPU watchdog kills the app at ~90 s of CPU per
+            // 180 s window (see analysis/evidence AGXProbe.cpu_resource reports).
+            usleep(200)
 
             if it % 200 == 0 && it > 0 {
                 let secs = Date().timeIntervalSince(t0)
