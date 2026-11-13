@@ -46,6 +46,8 @@ R/W, not triggering. Per-path completion: `JAILBREAK-PATHS.md`.
   Remote: `~/agx-probe-project/AGXProbe/ContentView.swift` on the Mac.
 - Repo clone: `G:/iOS 27.0.1/iOS` → `github.com/ramonburf/ios-27-jailbreak-research` (public).
   `gh` CLI is authenticated as `ramonburf`; push with `git push origin main`.
+  Release `v0.4-socket-uaf` carries the carrier source archive; the signed IPA still has to be
+  built on the Mac and attached to it.
 
 ## Socket-UAF status (stage 4, ~80%)
 
