@@ -105,6 +105,18 @@ the wrong size entirely. To fix:
 A previous attempt at this analysis was interrupted before it produced output; nothing exists at
 `analysis/socket-struct-size.md` yet.
 
+- Also recover offsets of `so_proto`, `so_pcb`, `so_rcv`, `so_snd` and the defunct/usecount flag;
+  those are needed to shape a fake object once the slot is reclaimed.
+
+**Partial static work (interrupted before completing):**
+A subagent scan (50 tool calls, interrupted) located the arm64e kernelcache and searched for
+`kalloc`/zone-related symbols and `struct socket`-sized objects but did not converge on a size
+or offsets. Notable findings it left behind: the kernel slide constant `0x3c0` in the
+non-paged kernel slide code (`mov x2, #0x3c0`), and a live `kalloc` search pattern — the
+approach is still viable, just not finished.
+
+- No output file was written (`analysis/socket-struct-size.md` does not exist yet).
+
 ### Open problem (the only one that matters)
 
 The freed `struct socket` slot is reclaimed by another **socket**, so the stale write lands in
