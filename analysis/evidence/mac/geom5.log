@@ -1,0 +1,7 @@
+=== AGXProbe v5 — direct IOSurfaceRoot === build 24A446 / t8150
+SAFETY: creation only; no Metal, no writes, no cross-object attempt
+IOServiceOpen(IOSurfaceRoot, type 0) kr=0x0 conn=0x5f03
+
+--- stage 1: benign dict ---
+S1 sel0: sel=0 xml=968 kr=0xe00002c2 outLen=0xc68
+stage 1 failed -> route not usable with this input shape; stopping

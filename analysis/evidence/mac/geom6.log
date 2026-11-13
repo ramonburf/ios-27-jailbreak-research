@@ -1,0 +1,26 @@
+=== AGXProbe v6 — selector-0 input shape === build 24A446 / t8150
+SAFETY: creation attempts only; no Metal, no writes
+IOServiceOpen kr=0x0 conn=0x7203
+payload: full=968 B, stripped=794 B
+first 160 chars: <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.
+S1-full: sel=0 shape=length xml=968 kr=0xe00002c2 outLen=0xc68
+S1-full: sel=0 shape=zero xml=968 kr=0xe00002c2 outLen=0xc68
+S1-full: sel=0 shape=one xml=968 kr=0xe00002c2 outLen=0xc68
+S1-full: sel=0 shape=none xml=968 kr=0xe00002c2 outLen=0xc68
+S1-stripped: sel=0 shape=length xml=794 kr=0xe00002c2 outLen=0xc68
+S1-stripped: sel=0 shape=zero xml=794 kr=0xe00002c2 outLen=0xc68
+S1-stripped: sel=0 shape=one xml=794 kr=0xe00002c2 outLen=0xc68
+S1-stripped: sel=0 shape=none xml=794 kr=0xe00002c2 outLen=0xc68
+
+--- selector sweep 1..5 with scalar=length, full payload ---
+sweep sel1: sel=1 shape=length xml=968 kr=0xe00002c2 outLen=0xc68
+sweep sel2: sel=2 shape=length xml=968 kr=0xe00002c2 outLen=0xc68
+sweep sel3: sel=3 shape=length xml=968 kr=0xe00002c2 outLen=0xc68
+sweep sel4: sel=4 shape=length xml=968 kr=0xe00002c2 outLen=0xc68
+sweep sel5: sel=5 shape=length xml=968 kr=0xe00002c2 outLen=0xc68
+
+no input shape accepted; route not usable with this payload form
+
+=== done ===

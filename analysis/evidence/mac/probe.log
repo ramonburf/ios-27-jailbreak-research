@@ -1,0 +1,50 @@
+[3:12:28 PM] === IOKit Service Enumeration Starting ===
+[3:12:28 PM]   ... scanned 100 services so far
+[3:12:29 PM]   FOUND service: AGXArmFirmwareMapper
+[3:12:29 PM]   ... scanned 200 services so far
+[3:12:29 PM]   ... scanned 300 services so far
+[3:12:29 PM]   ... scanned 400 services so far
+[3:12:29 PM]   ... scanned 500 services so far
+[3:12:29 PM]   FOUND service: AGXFirmwareKextG17RTBuddy
+[3:12:29 PM]   FOUND service: AGXFirmwareKextG17RTBuddy
+[3:12:29 PM]   ... scanned 600 services so far
+[3:12:29 PM]   ... scanned 700 services so far
+[3:12:29 PM]   ... scanned 800 services so far
+[3:12:29 PM]   ... scanned 900 services so far
+[3:12:29 PM]   FOUND service: AGXAcceleratorG18P
+[3:12:29 PM]   ... scanned 1000 services so far
+[3:12:29 PM]   ... scanned 1100 services so far
+[3:12:29 PM]   ... scanned 1200 services so far
+[3:12:29 PM]   ... scanned 1300 services so far
+[3:12:29 PM]   ... scanned 1400 services so far
+[3:12:29 PM]   ... scanned 1500 services so far
+[3:12:29 PM] === Enumeration Complete ===
+[3:12:29 PM] Total IOKit services found: 1542
+[3:12:29 PM] AGX/GPU services found: 4
+[3:12:29 PM]   → AGXArmFirmwareMapper
+[3:12:29 PM]   → AGXFirmwareKextG17RTBuddy
+[3:12:29 PM]   → AGXFirmwareKextG17RTBuddy
+[3:12:29 PM]   → AGXAcceleratorG18P
+[3:12:29 PM] 
+=== Querying properties of: AGXArmFirmwareMapper ===
+[3:12:29 PM]   IOServiceOpen(type=0) failed: -536870201 (0x-1ffffd39)
+[3:12:29 PM]   IOServiceOpen(type=1) failed: -536870201 (0x-1ffffd39)
+[3:12:29 PM] 
+=== Querying properties of: AGXFirmwareKextG17RTBuddy ===
+[3:12:29 PM]   IOServiceOpen(type=0) failed: -536870201 (0x-1ffffd39)
+[3:12:29 PM]   IOServiceOpen(type=1) failed: -536870201 (0x-1ffffd39)
+[3:12:29 PM] 
+=== Querying properties of: AGXFirmwareKextG17RTBuddy ===
+[3:12:29 PM]   IOServiceOpen(type=0) failed: -536870201 (0x-1ffffd39)
+[3:12:29 PM]   IOServiceOpen(type=1) failed: -536870201 (0x-1ffffd39)
+[3:12:29 PM] 
+=== Querying properties of: AGXAcceleratorG18P ===
+[3:12:29 PM]   IOServiceOpen(type=0) failed: -536870201 (0x-1ffffd39)
+[3:12:29 PM]   IOServiceOpen(type=1) SUCCESS! Connect handle: 0x79d3
+[3:12:29 PM]   Connection closed
+[3:12:29 PM] 
+=== Searching for IOUserClient instances ===
+[3:12:29 PM]   FOUND UserClient: IOWatchdogUserClient
+[3:12:29 PM]   FOUND UserClient: AppleMultitouchDeviceUserClient
+[3:12:29 PM] Total IOUserClient instances: 6
+[3:12:29 PM] === All Done ===

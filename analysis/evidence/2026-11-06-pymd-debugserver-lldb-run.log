@@ -1,0 +1,71 @@
+﻿python : 2026-11-06 22:06:08 Volpidash pymobiledevice3.cli.developer.debugserver[39088] INFO Bundle identifier: 
+com.nianticlabs.pokemongo.4L9HF29JJU
+At C:\Users\Volpi\AppData\Local\Temp\opencode\run_sweep.ps1:38 char:1
++ python -m pymobiledevice3 developer debugserver lldb $BUNDLE `
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (2026-11-06 22:0...ongo.4L9HF29JJU:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+2026-11-06 22:06:08 Volpidash pymobiledevice3.cli.developer.debugserver[39088] INFO Remote path: 
+/private/var/containers/Bundle/Application/F6C277BB-9FD3-4134-B3AF-559BFA143E19/AGXProbe.app
+2026-11-06 22:06:08 Volpidash pymobiledevice3.cli.developer.debugserver[39088] INFO App is not running; launching 
+suspended for debugger attach
+2026-11-06 22:06:12 Volpidash pymobiledevice3.cli.developer.debugserver[39088] INFO Attaching to pid 18280
+2026-11-06 22:06:12 Volpidash pymobiledevice3.cli.developer.debugserver[39088] INFO Starting lldb with automated setup 
+and connection
+2026-11-06 22:06:12 Volpidash pymobiledevice3.tcp_forwarder[39088] INFO Closing everything
++--------------------- Traceback (most recent call last) ---------------------+
+| C:\Users\Volpi\AppData\Local\Programs\Python\Python314\Lib\site-packages\ty |
+| per_injector\_inject.py:154 in wrapper                                      |
+|                                                                             |
+| C:\Users\Volpi\AppData\Local\Programs\Python\Python314\Lib\site-packages\ty |
+| per_injector\_inject.py:125 in invoke_with_dependencies                     |
+|                                                                             |
+| C:\Users\Volpi\AppData\Local\Programs\Python\Python314\Lib\site-packages\py |
+| mobiledevice3\cli\cli_common.py:245 in wrapper                              |
+|                                                                             |
+|   242         task = cli_loop.create_task(func(*args, **kwargs))            |
+|   243         try:                                                          |
+|   244             with cancel_on_sigint(task):                              |
+| > 245                 return cli_loop.run_until_complete(task)              |
+|   246         except asyncio.CancelledError:                                |
+|   247             raise typer.Exit(code=130) from None                      |
+|   248         except KeyboardInterrupt:                                     |
+|                                                                             |
+| C:\Users\Volpi\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_eve |
+| nts.py:720 in run_until_complete                                            |
+|                                                                             |
+|    717         if not future.done():                                        |
+|    718             raise RuntimeError('Event loop stopped before Future     |
+|        completed.')                                                         |
+|    719                                                                      |
+| >  720         return future.result()                                       |
+|    721                                                                      |
+|    722     def stop(self):                                                  |
+|    723         """Stop running the event loop.                              |
+|                                                                             |
+| C:\Users\Volpi\AppData\Local\Programs\Python\Python314\Lib\site-packages\py |
+| mobiledevice3\cli\developer\debugserver.py:277 in debugserver_lldb          |
+|                                                                             |
+|   274                 commands += user_commands                             |
+|   275                                                                       |
+|   276             logger.info("Starting lldb with automated setup and       |
+|       connection")                                                          |
+| > 277             await _run_lldb(lldb_command, commands)                   |
+|   278     finally:                                                          |
+|   279         if temp_dir is not None:                                      |
+|   280             temp_dir.cleanup()                                        |
+|                                                                             |
+| C:\Users\Volpi\AppData\Local\Programs\Python\Python314\Lib\site-packages\py |
+| mobiledevice3\cli\developer\debugserver.py:307 in _run_lldb                 |
+|                                                                             |
+|   304 async def _run_lldb(lldb_command: str, commands: list[str]) -> None:  |
+|   305     """Run lldb on a pty, feed it the setup commands, then hand the   |
+|       terminal over to the user."""                                         |
+|   306     # Works only on unix-based systems, so keep these imports here    |
+| > 307     import fcntl                                                      |
+|   308     import pty                                                        |
+|   309     import termios                                                    |
+|   310     import tty                                                        |
++-----------------------------------------------------------------------------+
+ModuleNotFoundError: No module named 'fcntl'

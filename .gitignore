@@ -40,3 +40,12 @@ tools/opencode-temp/screen*.ppm
 tools/opencode-temp/chunk*.raw
 tools/opencode-temp/*_head.bin
 tools/opencode-temp/*.tmp
+
+# Very large local-only artifacts (do not commit)
+analysis/ios/
+audit/
+analysis/evidence/mac/kernelcache.t8132
+analysis/evidence/video/
+
+# Vendored toolchains (huge)
+tools/go-toolchain/

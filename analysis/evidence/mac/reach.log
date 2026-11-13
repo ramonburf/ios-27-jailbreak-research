@@ -1,0 +1,23 @@
+=== AGXProbe v8 — user-client reachability === build 24A446 / t8150
+SAFETY: IOServiceOpen/Close only; no method calls, no Metal, no writes
+filters: SAR, Analytics, DiskImage, SmartIO, NVMe, Thunderbolt, JPEGDriver, IOSurface, IOGPU, AGX, IOHIDFamily, ApNonce
+  BadArgument type=0 kr=0xe00002c2 AppleDiskImagesController  [uc=?]
+  BadArgument type=1 kr=0xe00002c2 AppleDiskImagesController  [uc=?]
+  NotPermitted type=0 kr=0xe00002c1 AKSAnalytics  [uc=?]
+  NotPermitted type=1 kr=0xe00002c1 AKSAnalytics  [uc=?]
+  other type=0 kr=0xe00002e2 AppleSARService  [uc=?]
+  other type=1 kr=0xe00002e2 AppleSARService  [uc=?]
+  other type=0 kr=0xe00002c5 CoreAnalyticsHub  [uc=?]
+  other type=1 kr=0xe00002bc CoreAnalyticsHub  [uc=?]
+  BadArgument type=0 kr=0xe00002c2 AppleSmartIO  [uc=?]
+  BadArgument type=1 kr=0xe00002c2 AppleSmartIO  [uc=?]
+  OPEN  type=0  IOSurfaceRoot  [uc=?]
+  OPEN  type=1  AGXAcceleratorG18P  [uc=?]
+  other type=0 kr=0xe00002e2 AppleMobileApNonce  [uc=?]
+  other type=1 kr=0xe00002e2 AppleMobileApNonce  [uc=?]
+  OPEN  type=0  AppleJPEGDriver  [uc=?]
+  OPEN  type=1  AppleJPEGDriver  [uc=?]
+  other type=0 kr=0xe00002bd KDIDiskImageNub  [uc=?]
+  other type=1 kr=0xe00002bd KDIDiskImageNub  [uc=?]
+
+=== done === services=1483 matched=20 reported=10

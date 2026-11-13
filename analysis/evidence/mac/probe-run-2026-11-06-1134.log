@@ -1,0 +1,69 @@
+[11:34:16 AM] === AGXProbe — command/ownership gate probe ===
+[11:34:16 AM] goal: find a reachable path to the channel-index bitmap helper
+[11:34:16 AM] --- step 0: IOServiceOpen type sweep ---
+[11:34:16 AM] open type=0 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] open type=1 OK handle=0x6523
+[11:34:16 AM] open type=2 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] open type=3 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] open type=4 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] open type=5 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] open type=6 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] open type=7 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] open type=8 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] open type=9 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] open type=10 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] open type=11 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] open type=12 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] open type=13 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] open type=14 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] open type=15 kr=-536870201 (0xe00002c7)
+[11:34:16 AM] IOServiceOpen(type=1) handle=0x7b0b
+[11:34:16 AM] --- step 1: device info queries ---
+[11:34:16 AM] info sel=0x100 in=0 out=152 kr=0 (0x0) gotOut=152 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3f 00 00 00 00 00 00 00
+[11:34:16 AM] info sel=0x101 in=0 out=160 kr=0 (0x0) gotOut=160 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3f 00 00 00 00 00 00 00
+[11:34:16 AM] info sel=0x102 in=0 out=456 kr=0 (0x0) gotOut=456 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[11:34:16 AM] --- step 2: 0x105 cmd 0xb status query ---
+[11:34:16 AM] query sel=0x105 in=72 out=72 kr=0 (0x0) gotOut=72 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[11:34:16 AM] status flags=0x0 ownerBits=0 entitled=false gpuFlag=false
+[11:34:16 AM] --- step 3: 0x105 command sweep ---
+[11:34:16 AM] cmd0 sel=0x105 in=72 out=72 kr=-536870207 (0xe00002c1) gotOut=72 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[11:34:16 AM]    cmd=0 kr=-536870207 flags=0x0
+[11:34:16 AM] cmd1 sel=0x105 in=72 out=72 kr=-536870207 (0xe00002c1) gotOut=72 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[11:34:16 AM]    cmd=1 kr=-536870207 flags=0x0
+[11:34:16 AM] cmd2 sel=0x105 in=72 out=72 kr=-536870207 (0xe00002c1) gotOut=72 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[11:34:16 AM]    cmd=2 kr=-536870207 flags=0x0
+[11:34:16 AM] cmd3 sel=0x105 in=72 out=72 kr=-536870207 (0xe00002c1) gotOut=72 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[11:34:16 AM]    cmd=3 kr=-536870207 flags=0x0
+[11:34:16 AM] cmd4 sel=0x105 in=72 out=72 kr=-536870207 (0xe00002c1) gotOut=72 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[11:34:16 AM]    cmd=4 kr=-536870207 flags=0x0
+[11:34:17 AM] cmd5 sel=0x105 in=72 out=72 kr=-536870207 (0xe00002c1) gotOut=72 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[11:34:17 AM]    cmd=5 kr=-536870207 flags=0x0
+[11:34:17 AM] cmd6 sel=0x105 in=72 out=72 kr=-536870207 (0xe00002c1) gotOut=72 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[11:34:17 AM]    cmd=6 kr=-536870207 flags=0x0
+[11:34:17 AM] cmd7 sel=0x105 in=72 out=72 kr=-536870207 (0xe00002c1) gotOut=72 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[11:34:17 AM]    cmd=7 kr=-536870207 flags=0x0
+[11:34:17 AM] cmd8 sel=0x105 in=72 out=72 kr=-536870207 (0xe00002c1) gotOut=72 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[11:34:17 AM]    cmd=8 kr=-536870207 flags=0x0
+[11:34:17 AM] cmd9 sel=0x105 in=72 out=72 kr=-536870207 (0xe00002c1) gotOut=72 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[11:34:17 AM]    cmd=9 kr=-536870207 flags=0x0
+[11:34:17 AM] cmd10 sel=0x105 in=72 out=72 kr=-536870207 (0xe00002c1) gotOut=72 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[11:34:17 AM]    cmd=10 kr=-536870207 flags=0x0
+[11:34:17 AM] cmd11 sel=0x105 in=72 out=72 kr=0 (0x0) gotOut=72 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[11:34:17 AM]    cmd=11 kr=0 flags=0x0
+[11:34:17 AM] --- step 4: 0x109 command sweep ---
+[11:34:17 AM] 109cmd0 sel=0x109 in=8 out=8 kr=-536870207 (0xe00002c1) gotOut=8 00 00 00 00 00 00 00 00
+[11:34:17 AM] 109cmd1 sel=0x109 in=8 out=8 kr=-536870207 (0xe00002c1) gotOut=8 00 00 00 00 00 00 00 00
+[11:34:17 AM] 109cmd2 sel=0x109 in=8 out=8 kr=-536870207 (0xe00002c1) gotOut=8 00 00 00 00 00 00 00 00
+[11:34:17 AM] 109cmd3 sel=0x109 in=8 out=8 kr=-536870207 (0xe00002c1) gotOut=8 00 00 00 00 00 00 00 00
+[11:34:17 AM] --- step 5: 0x109 cmd0 set-owner (entitled=false) ---
+[11:34:17 AM] setowner sel=0x109 in=8 out=8 kr=-536870207 (0xe00002c1) gotOut=8 00 00 00 00 00 00 00 00
+[11:34:17 AM] skipping privileged 0x105 retry: entitlement bit is clear
+[11:34:17 AM] --- step 7: 0x10d command sweep ---
+[11:34:17 AM] 10dcmd1 sel=0x10d in=8 out=8 kr=-536870207 (0xe00002c1) gotOut=8 00 00 00 00 00 00 00 00
+[11:34:17 AM] 10dcmd2 sel=0x10d in=8 out=8 kr=-536870207 (0xe00002c1) gotOut=8 00 00 00 00 00 00 00 00
+[11:34:17 AM] 10dcmd3 sel=0x10d in=8 out=8 kr=-536870207 (0xe00002c1) gotOut=8 00 00 00 00 00 00 00 00
+[11:34:17 AM] --- step 8: 0x110 query sweep ---
+[11:34:17 AM] 110sel0 sel=0x110 in=8 out=0 kr=0 (0x0) gotOut=0 -
+[11:34:17 AM] 110sel1 sel=0x110 in=8 out=0 kr=0 (0x0) gotOut=0 -
+[11:34:17 AM] 110sel2 sel=0x110 in=8 out=0 kr=0 (0x0) gotOut=0 -
+[11:34:17 AM] === Done. ===

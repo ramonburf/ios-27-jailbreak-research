@@ -1,0 +1,23 @@
+=== AGXProbe v7 — payload format === build 24A446 / t8150
+SAFETY: creation attempts only; no Metal, no writes
+IOServiceOpen kr=0x0 conn=0x5f03
+  xml/len scalar=968 n=968 kr=0xe00002c2 out=0xc68
+  xml/none scalar=none n=968 kr=0xe00002c2 out=0xc68
+  xml+nul/len scalar=969 n=969 kr=0xe00002c2 out=0xc68
+  xml+nul/none scalar=none n=969 kr=0xe00002c2 out=0xc68
+  binary/len scalar=428 n=428 kr=0xe00002c2 out=0xc68
+  binary/none scalar=none n=428 kr=0xe00002c2 out=0xc68
+  stripped/len scalar=794 n=794 kr=0xe00002c2 out=0xc68
+  stripped/none scalar=none n=794 kr=0xe00002c2 out=0xc68
+  stripped+nul/len scalar=795 n=795 kr=0xe00002c2 out=0xc68
+  stripped+nul/none scalar=none n=795 kr=0xe00002c2 out=0xc68
+  u32-prefix+xml/len scalar=972 n=972 kr=0xe00002c2 out=0xc68
+  u32-prefix+xml/none scalar=none n=972 kr=0xe00002c2 out=0xc68
+  u64-prefix+xml/len scalar=976 n=976 kr=0xe00002c2 out=0xc68
+  u64-prefix+xml/none scalar=none n=976 kr=0xe00002c2 out=0xc68
+  u32zero+xml/len scalar=972 n=972 kr=0xe00002c2 out=0xc68
+  u32zero+xml/none scalar=none n=972 kr=0xe00002c2 out=0xc68
+
+all payload forms rejected (0xe00002c2) -> selector-0 route closed
+
+=== done ===
