@@ -14,7 +14,7 @@ not "probability it will work". 100% = done and verified on hardware.
 | 1 | Target acquisition | Firmware/kernelcache/dyld-cache for 24A446 (17 Pro) + 24B119 (27.2 reference) | Complete | **100%** |
 | 2 | Reachability map | Sandbox-app reachability of AGX/IOHID/IOSurface/WebKit daemons | Complete (AGX sweep v39, iokit enumeration, crash corpus) | **95%** |
 | 3 | Vulnerability ID | Whole-kernelcache diff 27.0.1 -> 27.2 (91 kexts, 542 changed kernel funcs) mapped to CVEs | Complete | **90%** |
-| 4 | Kernel r/w primitive | **CVE-2026-112514 socket-buffer UAF** (CVSS 9.1, network-reachable, no entitlements) | Bug identified; public PoC analysed; Swift trigger ported into AGXProbe (`--sockuaf`); carrier built + installed; **race not yet executed** | **65%** |
+| 4 | Kernel r/w primitive | **CVE-2026-112514 socket-buffer UAF** (CVSS 9.1, network-reachable, no entitlements) | Bug identified; PoC analysed; Swift trigger ported into AGXProbe (`--sockuaf`); carrier built+installed on both phones; **first runs done** — app died at iter 0 (SIGPIPE, fixed) then reached iter ~1200 before a jetsam SIGKILL; no corruption detected yet | **55%** |
 | 4b | Kernel r/w primitive | IOSurface notify UAF family (CVE-2026-112517 / -112516 / -112477) | Identified; PAC/type-confusion constraints unresolved | **25%** |
 | 4c | Kernel r/w primitive | IOHIDFamily OOB r/w (CVE-2026-112507) | Patch confirmed in diff; no sandbox-openable HID class | **20%** |
 | 4d | Kernel r/w primitive | Other diff-derived kernel UAF candidates | Triage list produced; unconfirmed | **15%** |
@@ -45,7 +45,14 @@ build pipeline) is essentially done; everything downstream (EL1, bootstrap) is u
 3. Wrap as IPA, transfer to the Windows PC.
 4. Install onto the USB-attached iPhone with `pymobiledevice3 apps install`.
 
+## Device status (2026-11-13)
+
+- **iPhone 17 Pro** (iPhone18,1, iOS 27.0.1): healthy, paired to the Mac, exact target build. Primary test device.
+- **iPhone 13 Pro** (iPhone14,2, iOS 27.0): dropped off `usbmux` after run 1; USB node still
+  enumerates but the mux protocol does not answer. Needs a physical force-restart / cable check.
+
 ## Immediate next step
 
-Run `AGXProbe --sockuaf` on the 13 Pro, capture the resulting panic/corruption or clean exit,
-and use it to calibrate the race (iterations, buffer sizes, spray shape).
+Port both race variants from the upstream PoC into the Swift carrier (the single-fd and the
+8-fd close/send split), keep the spray under jetsam limits, then rerun on the 17 Pro and look
+for either `CORRUPTION DETECTED` or a kernel panic. Full log: `analysis/socket-uaf-run-2026-11-13.md`.
