@@ -18,4 +18,25 @@ DerivedData/
 
 # Temp scratch
 tools/opencode-temp/*.swift.bak
+
+# Massive derived assets / unrelated projects
+*.aea
+*.msi
+iPhone18,1_27.2_24B119_Restore/
+analysis/ios/dsc/
+minecraft_ai/
+estrogen_bot.py
+estrogen_probe.py
+
+# Toolchains / vendored trees (huge)
+tools/opencode-temp/llvm/
+tools/opencode-temp/f1-iosurface/
+tools/opencode-temp/t8150map/
+
+# Python cache + scratch dumps
+__pycache__/
+*.pyc
+tools/opencode-temp/screen*.ppm
+tools/opencode-temp/chunk*.raw
+tools/opencode-temp/*_head.bin
 tools/opencode-temp/*.tmp
