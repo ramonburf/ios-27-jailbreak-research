@@ -57,6 +57,31 @@ A stronger detector would either:
 - look for a kernel panic when a socket's `so_proto` is replaced by fill bytes — none
   occurred across ~1,500 total iterations.
 
+## Decisive result: the race fires, but the slot is always reclaimed by a socket
+
+The cross-zone variant had no observer, so it was impossible to tell whether the race even
+fired there. A peer-delivery observer was added to `sockUafRaceCrossZone`: it connects 48
+probe sockets whose peers are already accepted, sends nothing on them, and afterwards drains
+the peers. Any byte that arrives is stale-sender data.
+
+Result, both devices, `--sockool`:
+
+```
+17 Pro: ITER 54 crosszone: *** STALE WRITE into a socket: 49152 byte(s) ***
+        (sprayed 256x832 OOL, peer bytes=49152, senders done=6)
+13 Pro: ITER 39 crosszone: *** STALE WRITE into a socket: 40960 byte(s) ***
+```
+
+So in this mode the race wins just as reliably as in the precision mode, and the freed slot
+is **always** taken by another socket — never by the attacker-controlled out-of-line data.
+That rules out the cross-zone reclaim strategy as implemented, and explains the absence of
+both fill-hits and kernel panics.
+
+Why: only one socket is freed per iteration, so its zone page stays resident; the zone free
+list is LIFO and hands that exact slot straight to the next allocation. Returning a page
+requires freeing *every* socket on it at once, with nothing allocating before the spray —
+which variants G and H attempt but have not yet been given an observer.
+
 ## Variant I (UDP type confusion) — tested, no effect
 
 `--sockudp` ran the full 40,000 iterations on both devices in ~180 s without being killed by
