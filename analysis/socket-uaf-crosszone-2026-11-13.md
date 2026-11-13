@@ -57,11 +57,37 @@ A stronger detector would either:
 - look for a kernel panic when a socket's `so_proto` is replaced by fill bytes — none
   occurred across ~1,500 total iterations.
 
+## Variant I (UDP type confusion) — tested, no effect
+
+`--sockudp` ran the full 40,000 iterations on both devices in ~180 s without being killed by
+the CPU watchdog — confirming the watchdog cost comes from the out-of-line spraying, not the
+race itself. `afterClose(max)=0` and no panic on either device.
+
+Interpretation: the socket zone is almost certainly shared across protocols (one element
+size), and because the kernel frees and the in-flight send touches the slot within
+microseconds entirely in kernel context, user space cannot interleave a foreign-protocol
+allocation into that window. Type confusion by allocator ordering does not look reachable
+this way.
+
 ## Next steps
 
-1. Determine `sizeof(struct socket)` from the binary rather than assuming 832 (static
-   analysis of the kernelcache is blocked by chained-fixup pointer encoding; needs the
-   fixup chain decoded).
-2. Replace the fill detector with one that survives field initialisation.
-3. Once a reclaim is demonstrably happening, shape the fill as a fake `so_proto` using the
-   known offsets of `so_proto`, `so_pcb`, `so_rcv`, `so_snd`.
+In priority order — each is a concrete, testable experiment:
+
+1. **Give F/G/H an observer.** Those modes currently have no way to report whether the race
+   fires at all: they never set up the listener peers, so `afterCloseOk` stays zero no matter
+   what happens. Add peer-delivery tracking to them. If the race wins but nothing is
+   observed, the slot is definitely being reclaimed by a compatible socket and cross-zone
+   reclaim has failed. If the race does *not* win in those modes, that is a harness bug
+   instead — either answer is worth knowing before changing anything else.
+2. **Decode the kernelcache fixup chain.** Pointer values in the kernelcache are stored as
+   chained-fixup relative offsets, which is why the syscall-table route produced garbage.
+   Decoding the chain (format documented in Apple's dyld sources) lets us read
+   `bsd_syscall_table`, find the `socket` handler, and disassemble the allocation to get
+   `sizeof(struct socket)` and the allocator used.
+3. **Replace the fill detector** with one that is not defeated by field initialisation —
+   e.g. look for a socket whose `so_proto` is foreign by calling a protocol operation on it
+   after filling its page with a distinctive pattern.
+4. **Sweep `--spraysize`** once the true element size is known, rather than guessing 832.
+5. Only after a reclaim is demonstrably happening: shape the fill as a fake `so_proto` using
+   the offsets of `so_proto`, `so_pcb`, `so_rcv`, `so_snd`.
+
