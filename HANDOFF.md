@@ -87,6 +87,24 @@ hardware, first at iteration 9, via a peer-delivery oracle
 Variants F/G/H were added on the Mac **after** the last repo sync and had not been evaluated
 when work paused. `SockUafSpray.c` provides `sockuaf_ool_spray(size, count, fill)`.
 
+### Unsolved static question (needed for the reclaim)
+
+The exact kernel allocation size of `struct socket` on iOS 27.0.1 (and any zone/type name) is
+**not yet determined**. The OOL spray in `SockUafSpray.c` currently uses a hard-coded 4096,
+which almost certainly does not match the socket allocation class — so F/G/H may be spraying
+the wrong size entirely. To fix:
+
+- Locate the iOS 27.0.1 kernelcache under `firmware/` (or the already-extracted kext dir used by
+  `tools/opencode-temp/kc_diff_all.py`), then find the socket-creation path (`socreate` /
+  `so_create`) and read the `kalloc`/`kalloc_type`/`kalloc_nova` size argument.
+- Cross-check against a real XNU `struct socket` (arm64e, ~600s/2600s) being roughly
+  0x180–0x220 bytes — but confirm from the binary, do not assume.
+- Also recover offsets of `so_proto`, `so_pcb`, `so_rcv`, `so_snd` and the defunct/usecount flag;
+  those are needed to shape a fake object once the slot is reclaimed.
+
+A previous attempt at this analysis was interrupted before it produced output; nothing exists at
+`analysis/socket-struct-size.md` yet.
+
 ### Open problem (the only one that matters)
 
 The freed `struct socket` slot is reclaimed by another **socket**, so the stale write lands in
