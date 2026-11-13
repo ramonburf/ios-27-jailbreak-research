@@ -72,7 +72,7 @@ Files.  Pushing there requires the phone to be unlocked (AFC returns
 If Files does not show the Downloads folder, use the local HTTP server:
 
 ```
-http://192.168.1.85:8000/type5_devicen8.pdf
+http://<host>:8000/type5_devicen8.pdf
 ```
 
 Open that URL in Safari on the phone (same Wi-Fi as the PC).

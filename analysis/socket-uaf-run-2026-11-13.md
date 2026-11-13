@@ -6,7 +6,7 @@ Date: 2026-11-13
 
 | Piece | Detail |
 |---|---|
-| Build host | MacBook (Xcode 27.2, arm64, macOS 27.3) over Tailscale |
+| Build host | the build host (Xcode 27.2, arm64, macOS 27.3) over the VPN mesh |
 | Deploy hosts | Windows PC (`pymobiledevice3`) for the 13 Pro; Mac (`devicectl`) for the 17 Pro |
 | Target A | iPhone 13 Pro, iPhone14,2, iOS 27.0 (24A5390f), USB -> PC |
 | Target B | iPhone 17 Pro, iPhone18,1, iOS **27.0.1** (exact target), USB -> Mac |

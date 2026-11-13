@@ -1,54 +1,125 @@
-# iPhone 17 Pro firmware baseline
+# iOS 27 jailbreak research
 
-Recorded 5 November 2026 for iPhone18,1, board v53ap, platform t8150. The archive
-contains the Python inspection tool and the JSON output for three Apple IPSWs.
+Research toward a **semi-untethered jailbreak** on iOS 27.0 / 27.0.1 (arm64e).
 
-## Reproduce
+The aim is an app-carried kernel exploit that yields kernel read/write, followed by a
+rootless bootstrap (package manager + tweaks). No bootrom, LLB or trampoline work is in
+scope — a semi-untethered result is the goal, not a boot-time untethered one.
 
-Use Python 3 and the [LZFSE command-line decoder](https://github.com/lzfse/lzfse).
-The commands read bounded ranges from Apple's CDN. Each `--kernel` run reads
-the kernelcache entry (roughly 23–24 MB) in addition to the metadata. Omit
-`--kernel` for the DeviceTree and monitor checks only.
+All testing happens on **owned, authorised devices** under a strict no-data-loss rule: no
+restores, no firmware writes, no updates or downgrades.
 
-```bash
-git clone https://github.com/lzfse/lzfse.git
-make -C lzfse
-for build in 24A446 24B119 24C5037i; do
-  python3 firmware_baseline.py "$build" --lzfse ./lzfse/build/bin/lzfse --kernel
-done
+## Status
+
+| # | Stage | Status |
+|---|-------|--------|
+| 1 | Target acquisition (firmware, kernelcache, dyld shared cache) | Done |
+| 2 | Reachability map of interesting daemons from an ordinary app sandbox | Done |
+| 3 | Vulnerability identification via whole-kernelcache diff (27.0.1 → 27.2) | Done |
+| 4 | **Kernel read/write primitive** — CVE-2026-112514 socket-buffer UAF | **Race won on hardware; conversion to controlled R/W not started** |
+| 4b–4d | Alternate r/w candidates (IOSurface notify UAF family, IOHIDFamily OOB) | Identified, constrained |
+| 5 | Build / deploy pipeline | Working |
+| 6 | EL1 code execution past PAC/CTRR/SPTM | Not started |
+| 7 | Rootless bootstrap | Not started |
+
+Overall: roughly 30 %. Everything upstream of stage 4 is essentially complete; everything
+downstream is untouched.
+
+## The lead: CVE-2026-112514
+
+A use-after-free in the socket buffer accounting path (`uipc_socket2.c`) that is live in
+iOS 27.0/27.0.1 and was fixed in 27.2 only. It needs no entitlements and is reachable from
+an ordinary app sandbox, which makes it unusually valuable.
+
+The bug: when a socket is torn down while sends are still being processed, the kernel can
+keep using a socket buffer that has already been freed and reallocated. By racing a close
+against concurrent sends from several threads, the kernel can be made to append data to a
+buffer that now belongs to a *different* socket.
+
+**What has been demonstrated on real hardware:** a reliable race win, confirmed by a
+peer-delivery oracle — 20 confirmed stale kernel writes into sockets that had been
+reallocated after the free. See `analysis/socket-uaf-stale-write-2026-11-13.md`.
+
+**What remains:** turning that into a controlled read/write primitive. The freed slot gets
+reclaimed by another *socket*, so the stale write lands in socket-shaped memory rather than
+attacker-controlled data. The next step is to reclaim the slot with attacker-influenced
+contents (cross-zone page exhaustion plus an out-of-line `mach_msg` spray), then obtain a
+leak (KASLR slide and heap address) needed to shape a fake protocol-control object.
+
+## Repository layout
+
+```
+carrier/            The on-device harness ("AGXProbe") — SwiftUI app, no entitlements.
+  AGXProbe/           App source. ContentView.swift is the main entry point.
+  tests/              Headless regression tests for non-UI logic (see its README).
+analysis/           Per-topic research notes, bug analysis and evidence logs.
+  socket-uaf-*.md     The working notes for CVE-2026-112514, including hardware results.
+  LEAD-ASSESSMENT.md  Survey and ranking of every candidate surface examined so far.
+JAILBREAK-PATHS.md  Readiness table per exploitation path.
+PROGRESS.md          Stage-by-stage progress tracker.
+HANDOFF.md           Current state, blockers and immediate next steps.
+FIRMWARE-BASELINE.md Firmware inspection notes and how to reproduce them.
 ```
 
-Decoder revision used: `e634ca58b4821d9f3d560cdc6df5dec02ffc93fd`.
-To use a local archive, add `--ipsw /path/to/file.ipsw`. The tool validates
-the build, supported product, and board from the manifest and reads archive
-entries without extracting files to disk or interacting with an iPhone.
+Kernelcache diffing tooling lives under `tools/opencode-temp/` (not all of it is tracked —
+the firmware images themselves are far too large for git and are listed in `.gitignore`).
 
-## Measurements
+## Building and running
 
-| Measurement | 24A446 | 24B119 | 24C5037i |
-|---|---:|---:|---:|
-| DeviceTree decoded bytes | 361,112 | 361,072 | 360,912 |
-| SPTM decoded bytes | 1,261,600 | 1,327,136 | 1,327,136 |
-| SPTM version tag | 820.0.22 | 820.40.24 | 820.60.12 |
-| TXM decoded bytes | 557,088 | 557,088 | 557,088 |
-| Kernelcache decoded bytes | 78,135,296 | 78,512,128 | 79,495,168 |
-| Exclave bundle IM4P entry bytes | 31,490,282 | 31,719,658 | 32,112,874 |
+Requirements: macOS with Xcode, an Apple developer account (a free one is sufficient), and
+the target device attached over USB with Developer Mode enabled.
 
-JSON receipts contain the full SHA-256 values. The TXM payloads have the
-same size and version tag (`txm-374`) and three different hashes. A hash
-difference alone does not identify a change in executable logic.
+```sh
+DEV=<device-udid> ./build_race.sh                 # builds .build13/.../AGXProbe.app
+xcrun devicectl device install app --device $DEV \
+    .build13/Build/Products/Debug-iphoneos/AGXProbe.app
+xcrun devicectl device process launch --device $DEV --terminate-existing \
+    com.bench27.agxprobe --sockprec               # substitute your own bundle id
+```
 
-## Research gates
+`com.bench27.agxprobe` above is a placeholder — replace it with whatever bundle identifier
+your own signing identity uses.
 
-- **DeviceTree configuration.** Each decoded tree has 448 nodes. The exact
-  property `verify-gmmu-tlbis-at-sync` is absent, with
-  `issue-gmmu-tlbis-at-retype` and `tlbi-flushes-smmu` present as controls.
-  Runtime behavior and reachability remain unverified.
-- **GPU driver.** The Mach-O fileset inventories list `com.apple.AGXG18P`
-  in all three builds. The reference finding covers `AGXG17P` on a different
-  device. The inventory identifies which driver must be independently
-  analyzed. It does not establish whether an analogous change exists.
-- **Jailbreak.** The evidence here is a static baseline. There is no
-  demonstrated exploit primitive, privilege escalation, or installable jailbreak.
+### Launch arguments
 
-Reference methodology: [iOS-Research](https://github.com/AzozzALFiras/iOS-Research/tree/d0df826a6ccd8dca8ac014a6e7e5aadb53476d4a).
+| Argument | Mode |
+|---|---|
+| `--sockuaf` | Socket-UAF harness, variants A–E round-robin |
+| `--sockprec` | Variant E only: gated one-shot send per sender + peer-delivery oracle (the current best) |
+| `--sockool` | Variant F: cross-zone reclaim using an out-of-line `mach_msg` spray |
+| `--sockxz` | Variant G: free a whole socket page block, then spray |
+| `--sockgc` | Variant H: batch-free past the zone's page-return delay, then spray |
+| `--web`, `--webscan` | WebKit probing |
+| `--probe` | IOSurface probe sweep |
+
+## Accessing the device from another machine
+
+When the device is attached to a machine other than the build host, `usbmuxd` usually
+exposes only a local unix socket, and some tooling wants TCP. A small relay bridges the two:
+
+```sh
+# on the machine with the device attached
+python3 usbmux_relay.py        # /var/run/usbmuxd  ->  127.0.0.1:27015
+# on the analysis machine
+ssh -N -L 27016:127.0.0.1:27015 <user>@<host>
+export PYMOBILEDEVICE3_USBMUX=127.0.0.1:27016
+python3 -m pymobiledevice3 crash pull --match "AGXProbe" outdir/
+```
+
+## Verifying changes
+
+```sh
+cd carrier/tests
+swiftc -O fixcheck.swift -o /tmp/fixcheck && /tmp/fixcheck
+swiftc -O logcheck.swift -o /tmp/logcheck && /tmp/logcheck
+```
+
+Both programs print `PASS`/`FAIL` per assertion and exit non-zero on failure. See
+`carrier/tests/README.md` for what each covers and what still needs manual UI testing.
+
+## Notes
+
+- Nothing in this repository contains credentials or signing material; do not commit any.
+- Findings here are published for defensive and research purposes, on hardware owned by the
+  researcher. Any vulnerability discovered is intended to be reported to Apple through the
+  official security bounty programme before broader disclosure.

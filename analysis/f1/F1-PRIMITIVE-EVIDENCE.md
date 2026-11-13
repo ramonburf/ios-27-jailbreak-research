@@ -1,7 +1,7 @@
 # F1 (IOGPU + Metal) cross-object GPU overlap — video evidence
 
 Date captured: 2026-11-07
-Source artifact: `C:\Users\Volpi\Downloads\HNvr78FcHnHWtN8k.mp4`
+Source artifact: `%USERPROFILE%\Downloads\HNvr78FcHnHWtN8k.mp4`
   (h264, 576x1280, 25 fps, 19.458 s, 1 393 235 bytes)
 Preserved frames: `analysis/evidence/video/`
 Contact sheet:   `analysis/evidence/video-contact-sheet.png`

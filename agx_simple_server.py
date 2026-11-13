@@ -2,7 +2,7 @@ import http.server, socketserver
 from pathlib import Path
 
 PORT = 8081
-PDF_DIR = Path('G:/iOS 27.0.1/iOS/analysis/pdf')
+PDF_DIR = Path('this repository/analysis/pdf')
 
 INDEX_HTML = """<!DOCTYPE html>
 <html>
@@ -10,7 +10,7 @@ INDEX_HTML = """<!DOCTYPE html>
 <body style="background:#1a1a1a;color:#0f0;font-family:monospace;padding:2rem;">
   <h1>&#x2705; Server Reachable</h1>
   <p>If you can see this, the HTTP server is working from your iPhone.</p>
-  <p><strong>PC IP:</strong> 192.168.1.85</p>
+  <p><strong>PC IP:</strong> 127.0.0.1</p>
   <p><strong>Port:</strong> 8081</p>
   <h2>PDF Probes:</h2>
   <ul>
@@ -60,8 +60,8 @@ class H(http.server.BaseHTTPRequestHandler):
             self.end_headers()
 
 print(f'Serving on 0.0.0.0:{PORT}')
-print(f'iPhone URL: http://192.168.1.85:{PORT}/')
-print(f'PDF: http://192.168.1.85:{PORT}/pdf/type5_devicen8.pdf')
+print(f'iPhone URL: http://127.0.0.1:{PORT}/')
+print(f'PDF: http://127.0.0.1:{PORT}/pdf/type5_devicen8.pdf')
 import sys
 sys.stdout.flush()
 

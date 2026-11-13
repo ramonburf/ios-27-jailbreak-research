@@ -82,6 +82,7 @@ final class Logger {
     static let shared = Logger()
 
     private var handle: FileHandle?
+    private let lock = NSRecursiveLock()
     private let stamp: DateFormatter
     let logURL: URL
     var sink: ((String) -> Void)?
@@ -143,6 +144,8 @@ final class Logger {
     // MARK: test boundaries
 
     func beginTest(_ id: String, _ title: String) {
+        lock.lock()
+        defer { lock.unlock() }
         inTest = true
         testLines.removeAll()
         append("", toScreen: false)
@@ -152,6 +155,8 @@ final class Logger {
     /// Closes the current test, returns "ok", "fail" or "skipped".
     @discardableResult
     func endTest(_ id: String, elapsed: TimeInterval) -> String {
+        lock.lock()
+        defer { lock.unlock() }
         let failed = testLines.contains { $0.contains("[NO]") }
         let produced = !testLines.isEmpty
         let result = !produced ? "skipped" : (failed ? "fail" : "ok")
@@ -165,6 +170,8 @@ final class Logger {
     func log(_ message: String) { append(message) }
 
     private func append(_ message: String, toScreen: Bool = true) {
+        lock.lock()
+        defer { lock.unlock() }
         let line = message.isEmpty ? "" : "[\(stamp.string(from: Date()))] \(message)"
         if let data = (line + "\n").data(using: .utf8) {
             handle?.seekToEndOfFile()
@@ -464,6 +471,7 @@ final class ViewController: UIViewController {
     ]
 
     private var cards: [String: ArticleCard] = [:]
+    private var isRunningArticle = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -630,10 +638,13 @@ final class ViewController: UIViewController {
     // MARK: run
 
     @objc private func onTapCard(_ gr: UITapGestureRecognizer) {
+        guard !isRunningArticle else { return }
         guard let card = gr.view as? ArticleCard,
               card.tag < articles.count else { return }
         let article = articles[card.tag]
 
+        isRunningArticle = true
+        cards.values.forEach { $0.setEnabled(false) }
         card.setEnabled(false)
         card.setRunning(true)
         spinner.startAnimating()
@@ -665,7 +676,8 @@ final class ViewController: UIViewController {
             DispatchQueue.main.async {
                 self.spinner.stopAnimating()
                 card.setRunning(false)
-                card.setEnabled(true)
+                self.isRunningArticle = false
+                self.cards.values.forEach { $0.setEnabled(true) }
                 card.setStatus(summary, color: colour)
             }
         }

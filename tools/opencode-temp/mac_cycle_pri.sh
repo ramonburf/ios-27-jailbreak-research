@@ -1,8 +1,8 @@
 #!/bin/bash
 # Primary device probe — iPhone 17 Pro (iPhone18,1), iOS 27.0.1 (24A446)
 cd ~/agx-probe-project || exit 1
-DEV=00008150-00095CD93444C01C
-BID=com.nianticlabs.pokemongo.4L9HF29JJU
+DEV=<device-udid>
+BID=com.<your-bundle-id>
 APP=.build/Build/Products/Debug-iphoneos/AGXProbe.app
 echo "=== kill resident AGXProbe on primary device ==="
 PID=$(xcrun devicectl device info processes --device "$DEV" --json-output - 2>/dev/null | python3 -c "
@@ -20,7 +20,7 @@ fi
 echo "=== BUILD incremental (keychain unlock) ==="
 security unlock-keychain -p '3854' "$HOME/Library/Keychains/login.keychain-db" || { echo UNLOCK_FAILED; exit 3; }
 security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '3854' "$HOME/Library/Keychains/login.keychain-db" >/dev/null 2>&1
-xcodebuild -project AGXProbe.xcodeproj -scheme AGXProbe -configuration Debug -destination 'id=00008150-00095CD93444C01C' -derivedDataPath .build -allowProvisioningUpdates build > /tmp/build_pri.log 2>&1
+xcodebuild -project AGXProbe.xcodeproj -scheme AGXProbe -configuration Debug -destination 'id=<device-udid>' -derivedDataPath .build -allowProvisioningUpdates build > /tmp/build_pri.log 2>&1
 echo "BUILD_RC=$?"
 grep -nE 'error:' /tmp/build_pri.log | head -20
 echo "=== install ==="

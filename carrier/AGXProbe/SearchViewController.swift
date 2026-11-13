@@ -9,6 +9,23 @@
 
 import UIKit
 
+private final class SearchCancellationToken {
+    private let lock = NSLock()
+    private var cancelled = false
+
+    var isCancelled: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return cancelled
+    }
+
+    func cancel() {
+        lock.lock()
+        cancelled = true
+        lock.unlock()
+    }
+}
+
 final class SearchResultsController: UITableViewController {
 
     private struct Group {
@@ -28,6 +45,9 @@ final class SearchResultsController: UITableViewController {
 
     private var groups: [Group] = []
     private var workItem: DispatchWorkItem?
+    private var cancellationToken: SearchCancellationToken?
+    private let searchQueue = DispatchQueue(label: "SearchResultsController.search", qos: .userInitiated)
+    private var searchGeneration = 0
     private var visited = 0
     private let visitCap = 20_000
     private let hitCap = 400
@@ -45,24 +65,32 @@ final class SearchResultsController: UITableViewController {
 
     func search(_ text: String) {
         let query = text.trimmingCharacters(in: .whitespaces).lowercased()
+        searchGeneration &+= 1
+        let generation = searchGeneration
         workItem?.cancel()
+        cancellationToken?.cancel()
         guard query.count >= 2 else {
             groups = []
             tableView.reloadData()
             return
         }
-        let item = DispatchWorkItem { [weak self] in self?.run(query: query) }
+        let token = SearchCancellationToken()
+        cancellationToken = token
+        let item = DispatchWorkItem { [weak self] in
+            guard !token.isCancelled else { return }
+            self?.run(query: query, generation: generation, token: token)
+        }
         workItem = item
-        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.2, execute: item)
+        searchQueue.asyncAfter(deadline: .now() + 0.2, execute: item)
     }
 
-    private func run(query: String) {
+    private func run(query: String, generation: Int, token: SearchCancellationToken) {
         visited = 0
         var buckets: [String: Group] = [:]
         var order: [String] = []
 
-        for root in roots where visited < visitCap && order.count < hitCap {
-            walk(root, depth: 0, query: query) { name, full, isDir in
+        for root in roots where !token.isCancelled && visited < visitCap && order.count < hitCap {
+            walk(root, depth: 0, query: query, token: token) { name, full, isDir in
                 if var group = buckets[name] {
                     group.paths.append(full)
                     buckets[name] = group
@@ -75,19 +103,22 @@ final class SearchResultsController: UITableViewController {
 
         let result = order.compactMap { buckets[$0] }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        let visitCount = visited
+        guard !token.isCancelled else { return }
 
         DispatchQueue.main.async {
+            guard self.searchGeneration == generation else { return }
             self.groups = result
             self.tableView.reloadData()
-            Logger.shared.note("search: \"\(query)\" ??? \(result.count) name(s), visited \(self.visited)")
+            Logger.shared.note("search: \"\(query)\" ??? \(result.count) name(s), visited \(visitCount)")
         }
     }
 
     /// Depth 5 covers SystemGroup/<id>/Library/Caches/file; the cap keeps a search
     /// over hundreds of containers from running away.
-    private func walk(_ dir: String, depth: Int, query: String,
+    private func walk(_ dir: String, depth: Int, query: String, token: SearchCancellationToken,
                       found: (String, String, Bool) -> Void) {
-        guard depth <= 5, visited < visitCap else { return }
+        guard !token.isCancelled, depth <= 5, visited < visitCap else { return }
 
         // The root of each place is not a container, so no grant is issued for it.
         // Its children are still resolvable by inode, and each child *is* a
@@ -98,6 +129,7 @@ final class SearchResultsController: UITableViewController {
             defer { Escape.revoke(handle) }
             if let d = opendir(dir) {
                 while let e = readdir(d) {
+                    if token.isCancelled { break }
                     let name = withUnsafeBytes(of: e.pointee.d_name) { raw -> String in
                         String(decoding: raw.prefix { $0 != 0 }, as: UTF8.self)
                     }
@@ -107,11 +139,11 @@ final class SearchResultsController: UITableViewController {
                 closedir(d)
             }
         } else {
-            names = inodeChildren(dir)
+            names = inodeChildren(dir, token: token)
         }
 
         for name in names {
-            if visited >= visitCap { return }
+            if token.isCancelled || visited >= visitCap { return }
             visited += 1
             let full = (dir as NSString).appendingPathComponent(name)
             var sb = stat()
@@ -122,19 +154,20 @@ final class SearchResultsController: UITableViewController {
                 found(name, full, isDir)
             }
             if isDir && !name.hasPrefix(".") {
-                walk(full, depth: depth + 1, query: query, found: found)
+                walk(full, depth: depth + 1, query: query, token: token, found: found)
             }
         }
     }
 
     /// Children of a directory that cannot be granted, resolved by inode.
-    private func inodeChildren(_ path: String) -> [String] {
+    private func inodeChildren(_ path: String, token: SearchCancellationToken) -> [String] {
         var st = statfs()
         guard statfs(path, &st) == 0 else { return [] }
         var buf = [CChar](repeating: 0, count: 1024)
         let prefix = path.hasSuffix("/") ? path : path + "/"
         var names = Set<String>()
         for inode in UInt64(1)...UInt64(250_000) {
+            if inode & 0xFF == 0 && token.isCancelled { return Array(names) }
             if names.count > 400 { break }
             var fs = st.f_fsid
             let n = buf.withUnsafeMutableBufferPointer { bp -> Int in

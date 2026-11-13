@@ -1,73 +1,75 @@
-# iOS 27.0.1 Jailbreak Research — Current Status
+# Findings so far
 
-## Objective
-Develop a jailbreak for iPhone 17 Pro (iPhone18,1 / t8150 / A19 Pro) on iOS 27.0.1 (24A446).
-**Real goal:** "i just want to have sileo and tweaks working"
+Summary of every attack surface examined, and why each one is or is not being pursued. For
+the full survey, see `analysis/LEAD-ASSESSMENT.md`.
 
-## Devices
-- **Primary:** iPhone 17 Pro (iPhone18,1 / t8150 / A19 Pro), iOS 27.0.1 (24A446), UDID `00008150-00095CD93444C01C`
-- **Secondary:** iPhone 13 Pro (iPhone14,2), iOS 27.0 dev beta 4, UDID `00008110-000E095936C1801E`
-- Both plugged into user's MacBook (`ssh -i "$env:USERPROFILE\.ssh\mac_ios16_ed25519" volpidash@192.168.1.99`)
-- Devices are paired/booted, Developer Mode on, probes installed
+## Constraints
 
-## Requirements
-- No firmware writes, restores, updates, downgrades or boot-chain changes
-- Kernel probes only on secondary/paired devices under a no-brick rule; stop on app crash, SpringBoard respring, or reboot; pull crash logs first
-- Confirm any positive result on primary iPhone 17 Pro only after verified benign on secondary
-- SCP NOT enabled on Mac — transfer via `cat <local> | ssh ... 'cat > <remote>'` or write directly on Mac
-- Remote commands from script files / quote-free payloads; PowerShell rejects `&&`, `||`, `head`, `tail`, `base64`; zsh mangles nested quotes
-- PC temp/scratch under `G:\iOS 27.0.1\iOS\tools\opencode-temp\`, never C:
-- Only do what the user tells you; don't try to fix unrelated things
-- Prioritize fastest path to a working jailbreak
+- No firmware writes, restores, updates, downgrades or boot-chain changes. Devices must stay
+  on their current OS with all data intact.
+- Kernel probes run only on secondary hardware first; anything that might cause an app crash,
+  SpringBoard respring or reboot is stopped immediately and its crash logs are pulled.
+- Any positive result is confirmed on the primary target device only after it has been shown
+  to be benign on the secondary device.
+- The goal is a semi-untethered jailbreak; nothing in the boot chain needs to be touched.
 
-## Current State — What We've Tested
+## IOSurface (`com.apple.iokit.IOSurface`)
 
-### IOSurfaceRoot (com.apple.iokit.IOSurface)
-- Service reachable from app sandbox: `IOServiceOpen(type=0)` succeeds
-- sel0 (create): works — creates surfaces with `IOSurfacePlaneInfo`
-- sel1 (release): returns `0xe00002c2` for all IDs — NOT functional via struct input
-- sel9 (setValue): `kr=0x0` with string value ("testname") — works but returns counter `0x03000000`
-- sel10 (getValue): `kr=0x0` but empty output (`outSz=0`) — doesn't return stored property
-- sel10: `0xe00002c2` for small outSize (<13), `0xe00002bd` at insz=13
-- sel10 insz=16/20/24/32: `kr=0x0` but outSz=0 (empty output)
-- sel26, sel46, sel47, sel48, sel50, sel54: all `0xe00002c2` (BadArgument)
-- sel9 sel9 with scalarCount=1: `0xe00002c2`
-- All create edge cases (Width=0, Height=0, BPE=0, BPR=0, max width/alloc, plane offset/size max, plane base, address ranges): **all return 0xE00002C2** (properly validated)
-- **Superbuffer aliasing CONFIRMED** on both 13 Pro and 17 Pro: parent + child with `IOSurfaceAllocateFromSuperbuffer` and same plane offset share user pages — writes through either visible through the other. But this is within-IOSurface shared pages, not arbitrary kernel memory.
+The most thoroughly mapped surface.
 
-### AGX / AGXG18P
-- `AGXAcceleratorG14P` (13 Pro) and `AGXAcceleratorG18P` (17 Pro) reachable via `IOServiceOpen(type=1)`
-- sel=0x4: returns `0x0` with 32-byte output containing 2 pointer-like values + size=0x4000 — appears to be static userland buffer info, NOT kernel pointers, not surface-correlated
-- sel=0x103: returns `0x0` with zeroed output
-- All other selectors 0x0-0xFF: `0xe00002c7` (Unsupported)
-- AGX channel-index OOB read at `0xfffffe0008556f54` exists in kext but is NOT reachable through any user-connectable selector (installed via module init, not dispatch table)
-- AGX is **exhausted as an attack surface**
+- The service is reachable from an ordinary app sandbox: `IOServiceOpen(type=0)` succeeds.
+- Selector 0 (create) works and produces surfaces with `IOSurfacePlaneInfo`.
+- Selector 1 (release) returns `0xe00002c2` for every ID via struct input — not functional.
+- Selector 9 (`setValue`) accepts a string value; selector 10 (`getValue`) returns success but
+  an empty output buffer.
+- Selectors 26, 46–54 all return `0xe00002c2` (bad argument).
+- Every create edge case tried (zero width/height/bytes-per-element/bytes-per-row, maximum
+  values, plane offsets and sizes, address ranges) is correctly validated.
+- **Superbuffer aliasing is confirmed on both devices**: a parent and child surface created
+  with `IOSurfaceAllocateFromSuperbuffer`, sharing a plane offset, share user pages — writes
+  through one are visible through the other. This is real, but it stays inside IOSurface's own
+  shared pages rather than reaching arbitrary kernel memory.
 
-### AppleJPEGDriver
-- Reachable via `IOServiceOpen(type=0 AND 1)`
-- Selector 10 dispatch table recovered (10 entries)
-- Selectors 1-7 callable without entitlements
-- All codec selectors return `0xe00002cc` (NotResponding) or `0xe00002bc` (Error) — no exploitable behavior found yet
-- AppleJPEGCodec selectors power-gated
+A separate use-after-free family in this kext (CVE-2026-112517 / -112516 / -112477) is
+identified but constrained by pointer authentication and type-confusion barriers; it remains
+a secondary candidate at roughly 25 % readiness.
 
-### GitHub Repo
-- Created: `https://github.com/ramonburf/iOS27-Research-Exploits`
-- 3 commits pushed with analysis docs and probe scripts
+## AGX / AGXG18P
 
-## Current Build Error (v42)
-The Swift probe file `ContentView-v42.swift` has repeated build errors:
-- `cannot convert value of type 'Data' to expected argument type '[UInt8]'` — `callIO` expects `[UInt8]` but `Data` is passed
-- `invalid redeclaration of 'u64'` / `xmlNul` — duplicate function declarations
-- `cannot convert value of type '(UInt32, UInt32, UInt32)' to expected argument type '(UInt32, String, UInt32)'` — tuple type mismatch
-- `cannot use mutating member on immutable value: 'p2' is a 'let' constant` — mutating a let variable
-- `consecutive statements on a line must be separated by ';'` — statements collapsed onto one line
-- `invalid redeclaration of 'inScalar'` / `outScalar` / `outScalarCount` — duplicate variable declarations in same scope
+**Exhausted as an attack surface.**
 
-The root cause: the `callIO` function signature changed between versions (sometimes `(conn, sel, scalars, sdata, outSize)`, sometimes `callIO(dict:conn:sel:scalars:outSize:)`), and call sites weren't updated consistently. Also `xmlNul` was declared twice and `u64` was declared twice.
+- The accelerator user client is reachable from the app sandbox on both device classes.
+- Selector 4 returns a 32-byte output containing two pointer-like values and a size of
+  `0x4000`; these look like static userland buffer information, not kernel pointers.
+- Selector 0x103 returns success with an all-zero output.
+- All other selectors in 0x0–0xFF return `0xe00002c7` (unsupported).
+- An out-of-bounds channel-index read does exist in the kext, but it is installed during
+  module initialisation rather than in any dispatch table, so it is not reachable through a
+  user-connectable selector.
 
-## Next Steps
-1. Fix v42 Swift build errors (consistent callIO signature, remove duplicate function declarations)
-2. Run v42 on iPhone 13 Pro to test IOSurface sel0 with extreme plane header/size values
-3. If IOSurface path is exhausted (likely), pivot to AppleJPEGDriver codec fuzzing
-4. The SKVLENT repo (https://github.com/ramonburf/iOS27-Research-Exploits) has similar research — their finding #01 (IOSurface size validation) shows a 4 GiB header region is accepted for 64 KiB allocation on iPhone 17 Pro, but they report NO exploitable primitive from it
-5. Consider other surfaces: AppleJPEGDriver, AppleSARService (dropped: 0xE00002E2), AGX (exhausted)
+## AppleJPEGDriver
+
+- Reachable via `IOServiceOpen(type=0 and type=1)`.
+- The selector 10 dispatch table was recovered (10 entries); selectors 1–7 are callable
+  without entitlements.
+- All codec selectors return `0xe00002cc` (not responding) or `0xe00002bc` (error), and the
+  codec selectors appear power-gated. No exploitable behaviour found.
+
+## IOHIDFamily
+
+An out-of-bounds read/write was identified in the 27.0.1 → 27.2 diff (CVE-2026-112507): four
+accessors gained bounds checks. However, no HID class could be opened from the app sandbox,
+so the path is not currently reachable. Readiness ~20 %.
+
+## Sockets — CVE-2026-112514 (lead)
+
+See `HANDOFF.md` and `analysis/socket-uaf-stale-write-2026-11-13.md`. The race is won on
+hardware (20 confirmed stale kernel writes via a peer-delivery oracle); converting that into
+a controlled read/write primitive is the current focus.
+
+## What to do next
+
+1. Determine the kernel allocation size of `struct socket` (blocks evaluation of the
+   cross-zone reclaim variants F/G/H).
+2. Reclaim the freed socket slot with attacker-influenced contents instead of another socket.
+3. Obtain a leak (KASLR slide plus heap address) to shape a fake `so_proto`.

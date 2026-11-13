@@ -1,10 +1,10 @@
 # AGXG18P channel-index OOB helper — dynamic reachability result
 
 Date: 2026-11-06 11:34 local
-Device: Ramon's iPhone 17 Pro (iPhone18,1, t8150), iOS 27.0.1 (24A446)
-UDID: 00008150-00095CD93444C01C
-App: AGXProbe, bundle ID `com.nianticlabs.pokemongo.4L9HF29JJU`
-Signing: `Apple Development: ramon.burford@icloud.com (CT2NGWCYS4)`, team `4L9HF29JJU`
+Device: REDACTED_PERSON's iPhone 17 Pro (iPhone18,1, t8150), iOS 27.0.1 (24A446)
+UDID: <device-udid>
+App: AGXProbe, bundle ID `com.<your-bundle-id>`
+Signing: `Apple Development: redacted@example.invalid (<your-team-id>)`, team `<your-team-id>`
 
 ## Result
 
@@ -145,13 +145,12 @@ None accepts a channel index in the range needed to reach the OOB read.
 `codesign -d --entitlements :-` on the installed build shows only:
 
 ```
-application-identifier = 4L9HF29JJU.com.nianticlabs.pokemongo.4L9HF29JJU
-com.apple.developer.team-identifier = 4L9HF29JJU
+application-identifier = <your-team-id>.com.<your-bundle-id>
+com.apple.developer.team-identifier = <your-team-id>
 get-task-allow = true
 ```
 
 `com.apple.private.agx.performance-spi` is absent. Adding it is not
-possible with the free-team provisioning profile; AMFI would reject the
 signature at launch.
 
 ## Conclusion

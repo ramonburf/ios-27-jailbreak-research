@@ -403,7 +403,7 @@ func runFuzzMode() async {
     func runWebMode() async {
         isRunning = true; status = "Web probe..."; log = ""
         try? "".write(to: logFileURL, atomically: true, encoding: .utf8)
-        let target = webTarget.isEmpty ? "http://192.168.1.99:8777/brtest" : webTarget
+        let target = webTarget.isEmpty ? "http://REDACTED_IP:8777/brtest" : webTarget
         webProbeURL = target
         emit("loading \(target) in a WKWebView; the WebKit networking process decodes it")
         try? await Task.sleep(nanoseconds: 15_000_000_000)
@@ -423,7 +423,7 @@ func runFuzzMode() async {
     func runWebScanMode() async {
         isRunning = true; status = "Web scan..."; log = ""; scanDone = false
         try? "".write(to: logFileURL, atomically: true, encoding: .utf8)
-        let base = webTarget.isEmpty ? "http://192.168.1.99:8777" : webTarget
+        let base = webTarget.isEmpty ? "http://REDACTED_IP:8777" : webTarget
         var target = base.hasSuffix("/page") ? base : base + "/page"
         target += "?t=\(Int(Date().timeIntervalSince1970))"
         emit("loading \(target); page streams decoded /brtest back")

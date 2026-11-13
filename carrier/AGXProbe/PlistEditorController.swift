@@ -8,6 +8,7 @@
 //
 
 import UIKit
+import CoreFoundation
 
 /// Shared mutable state: the parsed tree, where it lives, and how it was stored.
 final class PlistDocument {
@@ -31,7 +32,8 @@ enum PlistTree {
             if let key = step as? String, let dict = node as? [String: Any] {
                 guard let next = dict[key] else { return nil }
                 node = next
-            } else if let index = step as? Int, let array = node as? [Any], index < array.count {
+            } else if let index = step as? Int, let array = node as? [Any],
+                      index >= 0, index < array.count {
                 node = array[index]
             } else {
                 return nil
@@ -50,7 +52,8 @@ enum PlistTree {
             set(value, in: &child, path: Array(path.dropFirst()))
             dict[key] = child
             root = dict
-        } else if let index = first as? Int, var array = root as? [Any], index < array.count {
+        } else if let index = first as? Int, var array = root as? [Any],
+                  index >= 0, index < array.count {
             var child = array[index]
             set(value, in: &child, path: Array(path.dropFirst()))
             array[index] = child
@@ -158,6 +161,9 @@ final class PlistEditorController: UITableViewController {
     }
 
     private func describe(_ value: Any) -> String {
+        if let number = value as? NSNumber, CFGetTypeID(number) == CFBooleanGetTypeID() {
+            return number.boolValue ? "true" : "false"
+        }
         switch value {
         case let s as String: return s.isEmpty ? "???" : s
         case let n as NSNumber: return n.stringValue
@@ -204,20 +210,34 @@ final class PlistEditorController: UITableViewController {
     }
 
     private func typeName(_ value: Any) -> String {
+        if let number = value as? NSNumber, CFGetTypeID(number) == CFBooleanGetTypeID() {
+            return "boolean"
+        }
         switch value {
         case is String: return "string"
-        case is NSNumber: return "number or boolean"
+        case is NSNumber: return "number"
         default: return "value"
         }
     }
 
     private func apply(step: Any, text: String, old: Any) {
         var converted: Any = text
-        if old is NSNumber {
+        if let number = old as? NSNumber,
+           CFGetTypeID(number) == CFBooleanGetTypeID() {
+            switch text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+            case "true", "1": converted = true
+            case "false", "0": converted = false
+            default:
+                report("Invalid Boolean", detail: "enter true, false, 1, or 0")
+                return
+            }
+        } else if old is NSNumber {
             if let n = Int(text) { converted = n }
             else if let d = Double(text) { converted = d }
-            else if text.lowercased() == "true" { converted = true }
-            else if text.lowercased() == "false" { converted = false }
+            else {
+                report("Invalid number", detail: "enter a valid integer or decimal number")
+                return
+            }
         }
         var root = doc.root
         PlistTree.set(converted, in: &root, path: path + [step])

@@ -1,5 +1,5 @@
 import json
-d = json.load(open("G:/iOS 27.0.1/iOS/tools/opencode-temp/kc_diff_all.json"))
+d = json.load(open("this repository/tools/opencode-temp/kc_diff_all.json"))
 
 def show(name, limit=40):
     for r in d:

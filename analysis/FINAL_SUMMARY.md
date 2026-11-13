@@ -7,8 +7,8 @@ Develop a jailbreak for iPhone 17 Pro (iPhone18,1 / t8150 / A19 Pro) on iOS 27.0
 ## Devices Tested
 | Device | Model | SoC | iOS | UDID |
 |--------|-------|-----|-----|------|
-| Primary | iPhone 17 Pro | A19 Pro (T8150) | 27.0.1 (24A446) | 00008150-00095CD93444C01C |
-| Secondary | iPhone 13 Pro | A14 | 27.0 dev beta 4 | 00008110-000E095936C1801E |
+| Primary | iPhone 17 Pro | A19 Pro (T8150) | 27.0.1 (24A446) | <device-udid> |
+| Secondary | iPhone 13 Pro | A14 | 27.0 dev beta 4 | <device-udid> |
 
 Both devices paired, Developer Mode on, probes installed and verified working.
 

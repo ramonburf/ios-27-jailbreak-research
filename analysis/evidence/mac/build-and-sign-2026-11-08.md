@@ -1,7 +1,7 @@
 # Signed build + install on t8150 — 2026-11-08
 
-**Host:** Mac `192.168.1.99` (`volpidash`), Xcode 27.2 (27B52)
-**Device:** iPhone18,1 / iPhone 17 Pro / t8150 — iOS 27.0.1 (24A446), UDID `00008150-00095CD93444C01C`
+**Host:** Mac `<host>` (`<user>`), Xcode 27.2 (27B52)
+**Device:** iPhone18,1 / iPhone 17 Pro / t8150 — iOS 27.0.1 (24A446), UDID `<device-udid>`
 **Project:** `~/agx-probe-project` (`AGXProbe`)
 
 ## Outcome
@@ -34,21 +34,20 @@ security unlock-keychain -p '<pw>' "$HOME/Library/Keychains/login.keychain-db"
 security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '<pw>' \
   "$HOME/Library/Keychains/login.keychain-db"
 xcodebuild -project AGXProbe.xcodeproj -scheme AGXProbe -configuration Debug \
-  -destination 'id=00008150-00095CD93444C01C' \
+  -destination 'id=<device-udid>' \
   -derivedDataPath .build -allowProvisioningUpdates build
 # -> ** BUILD SUCCEEDED **  (build_rc=0)
 ```
 
-Signing identity used: `Apple Development: ramon.burford@icloud.com (CT2NGWCYS4)`
+Signing identity used: `Apple Development: redacted@example.invalid (<your-team-id>)`
 (`3D787264F545F61A7DEABFE375C4C022EA70E25B`), profile
-`iOS Team Provisioning Profile: com.nianticlabs.pokemongo.4L9HF29JJU`
 (`f0e794bd-104c-4bbf-b61c-9e2e14fc18ba`).
 
 Install confirmation:
 
 ```
 App installed:
-  bundleID: com.nianticlabs.pokemongo.4L9HF29JJU
+  bundleID: com.<your-bundle-id>
   installationURL: file:///private/var/containers/Bundle/Application/A4726870-12F5-4C41-8EB5-22EB222576F7/AGXProbe.app/
   databaseUUID: F1CDFBFA-D98D-4B4F-B0EB-D0695EE8F683
 ```
@@ -102,10 +101,10 @@ Log goes to `Documents/geom.log` in the app container.
 Unlock the phone, then:
 
 ```bash
-xcrun devicectl device process launch --device 00008150-00095CD93444C01C \
-  --terminate-existing com.nianticlabs.pokemongo.4L9HF29JJU --autorun
-xcrun devicectl device copy from --device 00008150-00095CD93444C01C \
+xcrun devicectl device process launch --device <device-udid> \
+  --terminate-existing com.<your-bundle-id> --autorun
+xcrun devicectl device copy from --device <device-udid> \
   --domain-type appDataContainer \
-  --domain-identifier com.nianticlabs.pokemongo.4L9HF29JJU \
+  --domain-identifier com.<your-bundle-id> \
   --source Documents/geom.log --destination /tmp/geom.log
 ```

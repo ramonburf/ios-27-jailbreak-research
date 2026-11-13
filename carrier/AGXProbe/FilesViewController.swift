@@ -68,12 +68,10 @@ final class FilesViewController: UITableViewController {
                     }
                     closedir(d)
                 }
-                Escape.revoke(handle)
-
                 // Labelling costs a grant per child; skip it for very long listings.
-            let label = raw.count <= 60
+                let label = raw.count <= 60
 
-            for name in raw.sorted(by: { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }) {
+                for name in raw.sorted(by: { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }) {
                     let full = (path as NSString).appendingPathComponent(name)
                     var sb = stat()
                     let isDir = stat(full, &sb) == 0 && (sb.st_mode & S_IFMT) == S_IFDIR
@@ -86,6 +84,8 @@ final class FilesViewController: UITableViewController {
                     entries.append(Entry(name: name, display: display, subtitle: subtitle,
                                          isDir: isDir, writable: writable))
                 }
+                // Keep the directory grant alive while checking child metadata.
+                Escape.revoke(handle)
                 Logger.shared.note("files: \(path) ??? \(entries.count) entries (granted, writable=\(dirWritable))")
             }
         }
@@ -345,6 +345,8 @@ final class FilesViewController: UITableViewController {
 /// bytes at an offset.
 final class FilePreviewController: UIViewController {
 
+    private static let previewLimit = 1 * 1024 * 1024
+
     private let path: String
     private let textView = UITextView()
     private let mode = UISegmentedControl(items: ["Text", "Hex"])
@@ -415,10 +417,33 @@ final class FilePreviewController: UIViewController {
 
     private func load() {
         let parent = (path as NSString).deletingLastPathComponent
-        let maybe: Data?? = Escape.withAccess(parent) { FileManager.default.contents(atPath: path) }
-        guard let whole = maybe ?? nil else {
+        let result: (data: Data?, tooLarge: Bool)? = Escape.withAccess(parent) {
+            guard let file = try? FileHandle(forReadingFrom: URL(fileURLWithPath: path)) else {
+                return (nil, false)
+            }
+            defer { try? file.close() }
+            let bytes = file.readData(ofLength: Self.previewLimit + 1)
+            guard bytes.count <= Self.previewLimit else { return (nil, true) }
+            return (bytes, false)
+        }
+        guard let result else {
             data = nil
             textView.text = "cannot read this file\n\nno grant, or the file is not readable"
+            mode.isHidden = true
+            navigationItem.rightBarButtonItems = nil
+            return
+        }
+        guard !result.tooLarge else {
+            data = nil
+            textView.text = "file is larger than the 1 MiB preview limit"
+            mode.isHidden = true
+            navigationItem.rightBarButtonItems = nil
+            Logger.shared.note("files: preview skipped for large file \(path)")
+            return
+        }
+        guard let whole = result.data else {
+            data = nil
+            textView.text = "cannot read this file\n\nfile access failed"
             mode.isHidden = true
             navigationItem.rightBarButtonItems = nil
             return
@@ -574,11 +599,15 @@ final class FilePreviewController: UIViewController {
                 patch.append(byte)
                 index = next
             }
-            guard Int(offset) + patch.count <= data.count else {
+            guard offset <= UInt64(data.count) else {
+                self.report("Out of range", detail: "file is \(data.count) bytes"); return
+            }
+            let start = Int(offset)
+            guard patch.count <= data.count - start else {
                 self.report("Out of range", detail: "file is \(data.count) bytes"); return
             }
             var updated = data
-            updated.replaceSubrange(Int(offset)..<(Int(offset) + patch.count), with: patch)
+            updated.replaceSubrange(start..<(start + patch.count), with: patch)
             if self.save(updated) {
                 self.render()
                 self.report("Patched", detail: "\(patch.count) byte(s) at 0x\(String(offset, radix: 16))")

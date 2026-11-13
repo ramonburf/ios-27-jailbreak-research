@@ -1,200 +1,148 @@
-# HANDOFF — iOS 27.0.1 jailbreak research (2026-11-13, ~17:45)
+# Current state, blockers and next steps
 
-Read this first if you are picking the work up cold. Supersedes all earlier notes.
+Last updated 2026-11-13. Read this first if you are picking the work up cold; it supersedes
+the earlier status notes. For the background survey of every surface examined, see
+`JAILBREAK-PATHS.md` and `analysis/LEAD-ASSESSMENT.md`.
 
-## Goal
+## Goal and scope
 
-**Semi-untethered jailbreak** on iOS 27.0/27.0.1 (user only needs semi-untethered — no
-bootrom / LLB / trampoline work required). An app-carried kernel exploit → kernel R/W →
-rootless bootstrap is sufficient. Missing gate: a **kernel read/write primitive**.
+A **semi-untethered jailbreak** on iOS 27.0 / 27.0.1. An app-carried kernel exploit leading
+to kernel read/write, then a rootless bootstrap, is sufficient — bootrom / LLB /
+trampoline work is explicitly out of scope.
 
-Top vector: **CVE-2026-112514** socket-buffer use-after-free (`uipc_socket2.c`), live on
-27.0/27.0.1, fixed in 27.2 only. **The race is won on hardware** (see below).
+The missing gate is a **kernel read/write primitive**. The top candidate is
+**CVE-2026-112514**, a socket-buffer use-after-free in `uipc_socket2.c`, live on 27.0/27.0.1
+and fixed only in 27.2.
 
-Overall readiness ~30 %; socket path 80 %. Full per-path table: `JAILBREAK-PATHS.md`.
+Overall readiness is about 30 %; the socket path itself is about 80 % complete.
 
-## Targets (note the exact UDIDs)
+## Devices used for testing
 
-| Device | UDID | OS | State |
-|---|---|---|---|
-| iPhone 17 Pro (iPhone18,1) | `00008150-00095CD93444C01C` | **27.0.1** (24A446, target) | healthy, USB → MacBook |
-| iPhone 13 Pro (iPhone14,2) | `00008110-000E095936C1801E` | 27.0 (24A5390f) | healthy again, USB → MacBook |
+| Device | OS | Role |
+|---|---|---|
+| One iPhone 18,1 class device (A19 Pro, t8150) | **27.0.1** (build 24A446) — the target build | Primary |
+| One iPhone 14,2 class device (A16) | 27.0 (build 24A5390f) | Secondary / pre-flight check |
 
-⚠️ The 17 Pro UDID ends **`...C01C`** (not `...C01E`). A one-character typo here makes every
-pymobiledevice3 device lookup fail with "usbmux has no device matching udid" while
-`usbmux list` still shows the device — cost real time to diagnose.
+Both are healthy, supervised, and used under a no-data-loss rule. A one-character mistake in
+a device UDID makes every `usbmux`-based lookup fail with "no device matching udid" while the
+device still appears in listings — worth double-checking before debugging anything else.
 
-## Access / toolchain
+## Toolchain
 
-- **MacBook**: Tailscale `volpidash@100.110.170.78` (`No-Oness-MacBook-Pro.local`, macOS 27.3,
-  Xcode 27.2, arm64). SSH key `~/.ssh/mac_ios16_ed25519`. Wi-Fi is flaky — retry, run long jobs
-  detached, poll logs. `192.168.1.99` also pings but **port 22 is not reachable** (the PC is not
-  on that LAN); Tailscale is the working route.
-- **PC**: Windows 11. Its own Apple usbmuxd is on `127.0.0.1:27015`. Python 3.14 at
-  `C:/Users/Volpi/AppData/Local/Programs/Python/Python314/python.exe` with pymobiledevice3 in
-  site-packages. Physical Ethernet is **disconnected**; the PC's live link is a USB-tethered
-  adapter (`10.249.56.43`) and Tailscale was down for a while (service running, state `NoState`).
-- **Reach both iPhones from the PC** (set up this session, still running):
-  1. Mac runs `/private/tmp/usbmux_relay.py` → TCP `127.0.0.1:27015` bridged to Apple's
-     unix-socket usbmuxd `/var/run/usbmuxd` (macOS Tahoe exposes no TCP usbmux).
-  2. PC holds an SSH tunnel: `ssh -N -L 27016:127.0.0.1:27015 -i ~/.ssh/mac_ios16_ed25519 volpidash@100.110.170.78`
-  3. Then:
-     ```
-     export PYMOBILEDEVICE3_USBMUX=127.0.0.1:27016
-     export PYMOBILEDEVICE3_UDID=00008150-00095CD93444C01C
-     python -m pymobiledevice3 crash pull --match "AGXProbe|Jetsam|NRD" OUTDIR
-     ```
-     (listing subcommand is `crash ls`, **not** `list`; `pull` takes `--udid` / `--match`.)
-- **Mac python**: `~/ios27-ai-venv/bin/python` now has pymobiledevice3 (installed this session).
-- **Build/deploy pipeline (working)**:
-  ```
-  bash ~/build_race.sh            # DEV defaults to the 17 Pro UDID
-  xcrun devicectl device install app --device 00008150-00095CD93444C01C \
-      ~/agx-probe-project/.build13/Build/Products/Debug-iphoneos/AGXProbe.app
-  xcrun devicectl device process launch --device 00008150-00095CD93444C01C --console \
-      --terminate-existing com.nianticlabs.pokemongo.4L9HF29JJU --sockprec
-  ```
-  Signing profile expires **2026-11-15** — regenerate before then or nothing builds/installs.
+- A macOS host with Xcode builds the carrier with `xcodebuild`
+  (`-destination generic/platform=iOS -allowProvisioningUpdates`). No custom toolchains,
+  no jailbroken host, no paid entitlement is required — a free developer account is enough.
+- Deployment is `xcrun devicectl`; the app is installed and launched over USB with
+  `--terminate-existing`.
+- Crash reports are pulled from the device with `pymobiledevice3 crash pull`. Note the
+  subcommand spelling: it is `crash ls`, not `crash list`, and `pull` takes `--udid` /
+  `--match`.
+- When the analysis machine is separate from the machine the device is attached to, bridge
+  `usbmuxd`'s unix socket to TCP (see `README.md`) and point `PYMOBILEDEVICE3_USBMUX` at the
+  forwarded port.
 
-## Where the code lives (important)
+Code signing material, bundle identifiers and provisioning details are deliberately kept
+out of this repository. Substitute your own.
 
-- **Authoritative carrier source = the Mac's file**:
-  `~/agx-probe-project/AGXProbe/ContentView.swift` (sha1 `88f4cb1f…`, **1423 lines**).
-  The repo copy `carrier/AGXProbe/ContentView.swift` was stale (1235 lines) — re-synced to
-  match at handoff. If they diverge again, trust the Mac.
-- Local scratch copy: `C:\Users\Volpi\AppData\Local\hermes\cache\scratch\mac_ContentView.swift`.
-- Repo: `G:/iOS 27.0.1/iOS` → `github.com/ramonburf/ios-27-jailbreak-research` (public).
-  `gh` authenticated as `ramonburf`. Release tag `v0.4-socket-uaf` exists.
+## Where the code lives
 
-## Socket-UAF status (stage 4, ~80 %)
+- `carrier/AGXProbe/` — the harness source. `ContentView.swift` is the main entry point and
+  holds all socket-UAF race variants.
+- The repository copy and the copy on the build machine should be identical; when they have
+  diverged in the past, the build machine was authoritative. Sync both ways after edits.
+- `carrier/tests/` — headless regression tests for everything that can be checked without
+  tapping the screen.
 
-The precision variant (E) wins reliably: 20 confirmed stale writes into reallocated sockets on
-hardware, first at iteration 9, via a peer-delivery oracle
-(`analysis/socket-uaf-stale-write-2026-11-13.md`).
+## Socket-UAF status (stage 4)
 
-### Carrier modes (launch args)
+The precision variant (**E**) wins reliably on hardware: 20 confirmed stale writes into
+reallocated sockets, the first appearing around iteration 9, using a peer-delivery oracle as
+the detector. Full evidence: `analysis/socket-uaf-stale-write-2026-11-13.md`.
 
-`--sockuaf` runs variants A–E round-robin; solo modes pick one:
+### Carrier modes (launch arguments)
 
-| arg | variant |
+| Argument | Variant |
 |---|---|
+| `--sockuaf` | A–E round-robin |
 | `--sockprec` | E: gated one-shot send per sender + peer-delivery oracle (the winner) |
-| `--sockool` | F: cross-zone reclaim with mach_msg OOL pages |
+| `--sockool` | F: cross-zone reclaim with an out-of-line `mach_msg` spray |
 | `--sockxz` | G: free a whole socket page block, then OOL spray |
-| `--sockgc` | H: batch-free past the zone page-return delay, then OOL spray |
-| `--sockudp` | connected-UDP spray (type confusion instead of peer bytes) |
+| `--sockgc` | H: batch-free past the zone's page-return delay, then OOL spray |
+| `--sockudp` | connected-UDP spray (type confusion rather than peer bytes) |
 
-Variants F/G/H were added on the Mac **after** the last repo sync and had not been evaluated
-when work paused. `SockUafSpray.c` provides `sockuaf_ool_spray(size, count, fill)`.
+Variants F/G/H exist and compile but have never been evaluated. `SockUafSpray.c` provides
+`sockuaf_ool_spray(size, count, fill)` for them.
 
-### Unsolved static question (needed for the reclaim)
+### Unsolved static question (needed before F/G/H can work)
 
-The exact kernel allocation size of `struct socket` on iOS 27.0.1 (and any zone/type name) is
-**not yet determined**. The OOL spray in `SockUafSpray.c` currently uses a hard-coded 4096,
-which almost certainly does not match the socket allocation class — so F/G/H may be spraying
-the wrong size entirely. To fix:
+The exact kernel allocation size of `struct socket` on iOS 27.0.1 — and any associated
+zone or type name — has not been determined. The out-of-line spray currently hard-codes
+**4096**, which almost certainly does not match the socket allocation class, so F/G/H may be
+spraying the wrong size entirely. To resolve it:
 
-- Locate the iOS 27.0.1 kernelcache under `firmware/` (or the already-extracted kext dir used by
-  `tools/opencode-temp/kc_diff_all.py`), then find the socket-creation path (`socreate` /
-  `so_create`) and read the `kalloc`/`kalloc_type`/`kalloc_nova` size argument.
-- Cross-check against a real XNU `struct socket` (arm64e, ~600s/2600s) being roughly
-  0x180–0x220 bytes — but confirm from the binary, do not assume.
-- Also recover offsets of `so_proto`, `so_pcb`, `so_rcv`, `so_snd` and the defunct/usecount flag;
-  those are needed to shape a fake object once the slot is reclaimed.
+1. Locate the iOS 27.0.1 kernelcache (under `firmware/`, or the already-extracted kext tree
+   used by `tools/opencode-temp/kc_diff_all.py`), find the socket creation path (`socreate`
+   / `so_create`) and read the size argument passed to `kalloc` / `kalloc_type` /
+   `kalloc_nova`.
+2. Cross-check against a real XNU `struct socket` for arm64e (~600s/2600s era), which is
+   roughly 0x180–0x220 bytes — confirm from the binary, do not assume.
+3. Also recover the offsets of `so_proto`, `so_pcb`, `so_rcv`, `so_snd` and the defunct /
+   usecount flag. Those are needed to shape a fake object once the slot is reclaimed.
 
-A previous attempt at this analysis was interrupted before it produced output; nothing exists at
-`analysis/socket-struct-size.md` yet.
+A previous attempt at this analysis was interrupted and produced no output;
+`analysis/socket-struct-size.md` does not exist yet. Partial work located the arm64e
+kernelcache and a working `kalloc` search pattern, plus the kernel slide constant `0x3c0`,
+but did not converge on a size.
 
-- Also recover offsets of `so_proto`, `so_pcb`, `so_rcv`, `so_snd` and the defunct/usecount flag;
-  those are needed to shape a fake object once the slot is reclaimed.
+### The open problem
 
-**Partial static work (interrupted before completing):**
-A subagent scan (50 tool calls, interrupted) located the arm64e kernelcache and searched for
-`kalloc`/zone-related symbols and `struct socket`-sized objects but did not converge on a size
-or offsets. Notable findings it left behind: the kernel slide constant `0x3c0` in the
-non-paged kernel slide code (`mov x2, #0x3c0`), and a live `kalloc` search pattern — the
-approach is still viable, just not finished.
+The freed socket slot is immediately reclaimed by another **socket**, so the stale write
+lands in socket-shaped fields. That is a genuine use-after-free write but not read/write.
+Getting from here to a controlled primitive requires:
 
-- No output file was written (`analysis/socket-struct-size.md` does not exist yet).
+1. Reclaiming the slot with attacker-influenced data — either cross-zone page exhaustion
+   followed by an out-of-line `mach_msg` spray, or a socket whose overwritten fields are
+   observable (`so_proto` / `so_pcb`).
+2. A leak — KASLR slide plus the heap address of the overlapped object — to build a fake
+   `so_proto`.
+3. Proof of one controlled field differential, after which the dangling socket can serve as
+   the read/write channel.
 
-### Open problem (the only one that matters)
+## Known blocker: the CPU watchdog kills the harness
 
-The freed `struct socket` slot is reclaimed by another **socket**, so the stale write lands in
-socket-shaped fields. That is a real UAF write but not R/W. Need:
-
-1. Reclaim with attacker-influenced data (cross-zone page exhaustion → `mach_msg` OOL spray),
-   or with a socket whose overwritten fields are observable (`so_proto` / `so_pcb`).
-2. A leak (KASLR slide + heap address of the overlapped object) to build a fake `so_proto`.
-3. Prove one controlled field differential, then use the dangling socket as the R/W channel.
-
-## ⚠️ Known blocker found this session: the CPU watchdog kills the app
-
-All four `AGXProbe.cpu_resource-*.ips` reports say the same thing:
+Every `AGXProbe.cpu_resource` crash report says the same thing:
 
 ```
 CPU: 90 seconds cpu time over 94 seconds (96% cpu average),
      exceeding limit of 50% cpu over 180 seconds
 ```
 
-The harness dies after ~94 s because six persistent sender threads spin at 100 % CPU. Fix
-before any long run — replace the busy-waits in
-`~/agx-probe-project/AGXProbe/ContentView.swift`:
+Six persistent sender threads spin at 100 % CPU, so the app is killed after roughly 94
+seconds. Any fix must cut average CPU below the threshold **without** widening the race
+window — variant E gates on all six senders having entered `sendmsg` before the close, so
+the senders must fire simultaneously.
 
-- line ~495 `if st.gate == 0 { continue }` → add `usleep(20)`
-- line ~502 `while st.gate != 0 && st.stop == 0 { }` → `usleep(5)` inside
-- line ~505 `if st.phase == 0 { continue }` → add `usleep(50)`
-- closer loop ~547: spin only when `st.phase == 2`, else `usleep(100)`
-- main iteration loop: add `usleep(200)` between iterations
+Simply adding `usleep()` to the idle waits does reduce CPU (no kill within ~6 minutes), but
+it collapses the race rate: with a 20 µs poll, the six senders wake staggered, the early
+ones finish their sends before the last one even enters `sendmsg`, and far fewer are in
+flight when the close lands. In testing, hits dropped from 2–6 senders in flight to 1.
 
-This preserves the race window (variant E gates on `st.entered == 6` before closing) but drops
-average CPU well below the 50 % threshold, so runs can go long enough to evaluate F/G/H.
+The right fix is a blocking primitive that still wakes in microseconds — a
+`DispatchSemaphore` or `os_unfair_cond` — rather than polling. Blocked threads cost ~0 %
+CPU but wake immediately, preserving the simultaneous-fire behaviour the race depends on.
 
-## CPU-throttle experiment (done, needs a better fix)
+## Other observations from device logs
 
-Applied `usleep` throttles to the carrier on the Mac (sha1 `d08c01e9…`, also synced into the
-repo). Idle waits only, so race timing should be untouched:
+- `com.apple.NRD.UpdateBrainService` crashes repeatedly (roughly every two hours). This is
+  Apple's own bug: dyld aborts because the staged binary was built for tvOS and launched on
+  iOS. It recurs independently of this project. Possibly reportable, low impact.
+- Jetsam events name an unrelated third-party chat application as the largest process, with
+  reasons `per-process-limit` / `fc-thrashing` / `highwater`. Not caused by this harness.
+- No kernel panic and no device reboot occurred in any run.
 
-- sender gate poll → `usleep(20)`
-- post-send gate wait → `usleep(5)`
-- mode-0 idle path → `usleep(50)`
-- main loop → `usleep(200)` per iteration
+## Immediate next step
 
-Built (`BUILD_EXIT=0`), installed and launched with `--sockprec` on the 17 Pro (PID 39278).
-
-**Result:** no CPU-watchdog kill within ~6 min (previously killed at ~94 s) — throttle works.
-But the race rate collapsed: only **1 hit at ITER 13** (41104 bytes delivered), with
-`sends in flight at close: 1/6` where the pre-throttle runs showed 2–6/6. The 20 µs gate poll
-desynchronises the six senders, so by the time the last one enters `sendmsg` the earlier ones
-have already returned — fewer are in flight when the close lands.
-
-The run also stopped emitting output after ITER 13 while the process stayed alive. The loop's
-break condition is `hits >= 1 && it > 40` for solo modes, so it should have continued past 13;
-either the loop exited unexpectedly or the log writer stopped flushing. **Unresolved** — check
-`/tmp/uaf_throttle.log` on the Mac and pull the app container log.
-
-**Better fix:** replace the busy-wait on the gate with a blocking primitive that still wakes in
-microseconds (a `DispatchSemaphore`/`os_unfair_cond`), instead of `usleep` polling. Blocked
-threads cost ~0 % CPU but wake immediately, preserving the simultaneous-fire behaviour the race
-depends on.
-
-## Other log findings from the 17 Pro (2026-11-13)
-
-- `com.apple.NRD.UpdateBrainService` crashed 3× (13:33, 15:21, 17:09) — **Apple's own bug**:
-  dyld aborts because the staged binary was `built for platform tvOS` but launched on iOS.
-  Recurs roughly every 2 h, unrelated to our work. Possibly reportable, low impact.
-- Both `JetsamEvent`s (13:29, 15:10) name **Discord** as largest process, reasons
-  `per-process-limit` / `fc-thrashing` / `highwater` — not caused by AGXProbe.
-- No kernel panic and no device reboot in any run.
-
-## Bounty folder
-
-`C:\Users\Volpi\Documents\Apple-Security-Bounty\` — README (rules + submission channels),
-`TEMPLATE.md`, `candidates/`. Honest status: **no confirmed novel Apple vulnerability yet**;
-everything with a known root cause already carries a CVE. Closest leads recorded there.
-
-## Environment gotchas
-
-- The macOS Tahoe VM (`G:/Hackintosh/macOS-VM`) boots to OpenCore but lists **no bootable OS**;
-  its recovery image fails on `usr/standalone/OS.dmg.root_hash`. Do not rely on it.
-  `config.plist` was patched (`UEFI.APFS.GlobalConnect=true`); original at `config.plist.orig-bak`.
-- Nothing in the tree contains secrets; do not commit credentials.
+Convert the confirmed stale write into a controlled primitive: reclaim the freed socket slot
+with attacker-shaped data (or a cross-zone page spray) instead of another socket, and add a
+leak. Start by resolving the `struct socket` allocation size, since F/G/H cannot be
+evaluated until the spray matches it.

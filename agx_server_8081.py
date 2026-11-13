@@ -2,7 +2,7 @@ import http.server, socketserver
 from pathlib import Path
 
 PORT = 8081
-PDF_DIR = Path('G:/iOS 27.0.1/iOS/analysis/pdf')
+PDF_DIR = Path('this repository/analysis/pdf')
 
 class H(http.server.BaseHTTPRequestHandler):
     def log_message(self, format, *args):
@@ -33,8 +33,8 @@ class H(http.server.BaseHTTPRequestHandler):
             self.end_headers()
 
 print(f'Serving on 0.0.0.0:{PORT}')
-print(f'iPhone URL: http://192.168.1.85:{PORT}/status')
-print(f'PDF: http://192.168.1.85:{PORT}/pdf/type5_devicen8.pdf')
+print(f'iPhone URL: http://127.0.0.1:{PORT}/status')
+print(f'PDF: http://127.0.0.1:{PORT}/pdf/type5_devicen8.pdf')
 import sys
 sys.stdout.flush()
 

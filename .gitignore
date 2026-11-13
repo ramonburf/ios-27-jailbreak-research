@@ -47,5 +47,9 @@ audit/
 analysis/evidence/mac/kernelcache.t8132
 analysis/evidence/video/
 
+# Local-only session transcripts / machine-specific scratch
+file.txt
+*.local.md
+
 # Vendored toolchains (huge)
 tools/go-toolchain/

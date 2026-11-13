@@ -12,8 +12,8 @@ Kext under test: `com.apple.AGXG18P`
 |---|---|
 | Xcode project created | ✅ `AGXProbe.xcodeproj` |
 | Compiles for iOS device | ✅ `BUILD SUCCEEDED` |
-| Signed with development cert | ✅ team `4L9HF29JJU` |
-| Installed on the connected iPhone | ✅ `com.nianticlabs.pokemongo.4L9HF29JJU` |
+| Signed with development cert | ✅ team `<your-team-id>` |
+| Installed on the connected iPhone | ✅ `com.<your-bundle-id>` |
 | Launched automatically | ✅ with `--autorun` |
 | Command/ownership probe | ✅ completed, no crash/respring |
 | OOB helper reachable | ⛔ gated by `com.apple.private.agx.performance-spi` |
@@ -65,11 +65,11 @@ AGXProbe.
 ## Signing note
 
 The free-account App ID limit ("up to 10 App IDs every 7 days") was already
-reached, so `com.ramonburford.agxprobe` could not be registered. Per your
+reached, so `com.<repo-owner>ord.agxprobe` could not be registered. Per your
 request, the project reuses the sideloaded iPogo App ID:
 
 ```
-com.nianticlabs.pokemongo.4L9HF29JJU
+com.<your-bundle-id>
 ```
 
 Xcode created a fresh development profile for it. Consequences:
@@ -95,11 +95,11 @@ xcodebuild -project AGXProbe.xcodeproj -scheme AGXProbe \
 
 # build, sign, install on the connected iPhone
 xcodebuild -project AGXProbe.xcodeproj -scheme AGXProbe \
-  -destination 'id=00008150-00095CD93444C01C' \
+  -destination 'id=<device-udid>' \
   -allowProvisioningUpdates build
 
 xcrun devicectl device install app \
-  --device 00008150-00095CD93444C01C \
+  --device <device-udid> \
   .build/Build/Products/Debug-iphoneos/AGXProbe.app
 ```
 

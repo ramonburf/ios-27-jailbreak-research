@@ -1,1 +1,1 @@
-"C:\Users\Volpi\AppData\Local\Programs\Python\Python314\python.exe" "G:\iOS 27.0.1\iOS\analysis\evidence\mac\disasm_ajd.py"
+"%USERPROFILE%\AppData\Local\Programs\Python\Python314\python.exe" "G:\iOS 27.0.1\iOS\analysis\evidence\mac\disasm_ajd.py"

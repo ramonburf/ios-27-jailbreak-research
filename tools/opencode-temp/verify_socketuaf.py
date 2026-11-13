@@ -10,7 +10,7 @@ if _extra.is_dir():
 from capstone import Cs, CS_ARCH_ARM64, CS_MODE_ARM
 from kc_iosurface import parse_fileset, member_segments, function_starts
 
-KC = sys.argv[1] if len(sys.argv) > 1 else "G:/iOS 27.0.1/iOS/firmware/24A446/kernelcache.release.macho"
+KC = sys.argv[1] if len(sys.argv) > 1 else "this repository/firmware/24A446/kernelcache.release.macho"
 TARGETS = [int(a, 16) for a in sys.argv[2:]] or [0xfffffff00b153a3c]
 
 data = Path(KC).read_bytes()

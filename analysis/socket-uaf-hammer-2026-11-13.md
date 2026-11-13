@@ -40,8 +40,8 @@ footprint only ~15 MB, so the earlier "memory pressure" theory was wrong.
 - **Written locally, NOT yet built**: steps 4–6 (`sendmsg`, UAF probe, timer variant).
   The last build failed on a Swift string-literal error at `ContentView.swift:650`; the
   local source is **already fixed** but was not re-uploaded. Build it from the local
-  authoritative copy `C:\Users\Volpi\AppData\Local\hermes\cache\scratch\ContentView.swift`
-  (identical to `~/agx-probe-project/AGXProbe/ContentView.swift` whenever synced).
+  authoritative copy `<scratch-dir>\ContentView.swift`
+  (identical to `<carrier-source>/ContentView.swift` whenever synced).
 
 ## Resuming
 

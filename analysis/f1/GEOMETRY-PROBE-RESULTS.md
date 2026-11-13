@@ -9,8 +9,8 @@
 > 32-bit `(data + header) * sliceCount` overflow is reachable unprivileged.
 > See the Addendum at the end of this file.
 
-**Device:** iPhone18,1 / iPhone 17 Pro / t8150 — iOS 27.0.1 (24A446), UDID `00008150-00095CD93444C01C`
-**Harness:** `~/agx-probe-project` (Xcode 27.2), app `com.nianticlabs.pokemongo.4L9HF29JJU`
+**Device:** iPhone18,1 / iPhone 17 Pro / t8150 — iOS 27.0.1 (24A446), UDID `<device-udid>`
+**Harness:** `~/agx-probe-project` (Xcode 27.2), app `com.<your-bundle-id>`
 **Safety:** every probe below is read-only — no Metal, no GPU submission, no writes to
 any surface, no cross-object attempt. Surfaces are created, inspected, released.
 
@@ -1203,7 +1203,7 @@ explicitly off limits and is never contacted.
 
 `/tmp/sweep.sh` on the Mac runs the grid unattended on the **13 Pro** (the 6s+ is not
 contacted): for each combination it regenerates the payload, serves it (the server
-allowlists only 192.168.1.48), fires the app's `--web` mode so the WebKit networking
+allowlists only <host>), fires the app's `--web` mode so the WebKit networking
 daemon decodes it, then pulls the crash logs and looks for a `WebKit` crash - a crash
 means the wild copy landed on something fatal, i.e. the aim worked.
 
@@ -1222,5 +1222,5 @@ fatally - that is the first foothold towards aiming it at a chosen object instea
 `systemCrashLogs` tree is copied back), so an iteration is ~5-7 minutes rather than
 the ~80 s the payload generation alone would take; the 36-combination grid is
 therefore a multi-hour unattended run on the 13 Pro, appending to `/tmp/sweep.log`.
-It is safe to leave running: the server allowlists only 192.168.1.48, every payload
+It is safe to leave running: the server allowlists only <host>, every payload
 is served with a post-body connection abort, and the 6s+ is never contacted.

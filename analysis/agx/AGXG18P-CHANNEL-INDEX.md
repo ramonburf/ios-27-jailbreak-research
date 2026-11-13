@@ -39,8 +39,8 @@ kernelcache, not only in the reference device's AGXG17P.
 
 | Build | Kext | Size | SHA-256 | Source version |
 |---|---|---:|---|---|
-| 24A446 (27.0.1) | `com.apple.AGXG18P` | 1,106,000 | `61dde04c8f4a2370c04df0ef82ca0523ed56909af637ca9070368bdc9939dfe1` | `360.34.5.1.0` |
-| 24B119 (27.2) | `com.apple.AGXG18P` | 1,122,416 | `c366e9a2b27d20a6b49cb8fded1218d4d3cc46bcb0c422c796b1b89add109beb` | `362.5.0.0.0` |
+| 24A446 (27.0.1) | `com.apple.AGXG18P` | 1,106,000 | `61dde04c8f4a2370c04df0ef82ca0523ed56909af637ca9070368bdc9939dfe1` | `<host>.0` |
+| 24B119 (27.2) | `com.apple.AGXG18P` | 1,122,416 | `c366e9a2b27d20a6b49cb8fded1218d4d3cc46bcb0c422c796b1b89add109beb` | `<host>.0` |
 
 Extraction:
 
