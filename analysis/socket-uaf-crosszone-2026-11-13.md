@@ -82,6 +82,40 @@ list is LIFO and hands that exact slot straight to the next allocation. Returnin
 requires freeing *every* socket on it at once, with nothing allocating before the spray —
 which variants G and H attempt but have not yet been given an observer.
 
+## Variants G and H — same outcome
+
+With the observer in place, `--sockxz` (G, free a 16-socket block) and `--sockgc` (H,
+batch-free 700 sockets) were run on the two devices:
+
+```
+17 Pro, G: ITER 205 pagefree: *** STALE WRITE into a socket: 49152 byte(s) ***
+        (16 freed, sprayed 512x832 OOL, peer bytes=49152)
+13 Pro, H: ITER  12 batchgc: *** STALE WRITE into a socket: 49152 byte(s) ***
+13 Pro, H: ITER  21 batchgc: *** STALE WRITE into a socket: 49152 byte(s) ***
+```
+
+All four reclaim/type-confusion variants now agree: the race fires, and the stale write
+lands in a **socket** every time. Freeing 700 sockets at once does not change that either.
+
+Conclusion: with a per-process, per-protocol socket allocation pattern, the freed slot is
+always handed straight back to another socket. Cross-zone reclaim is ruled out for this
+approach, which explains the zero fill-hits and the absence of any kernel panic across
+roughly 2,000 reclaim-variant iterations on two devices.
+
+## Size sweep — the spray size does not matter
+
+`--spraysize=<n>` was fixed to accept the single-token form and both sizes were then run on
+both devices (`--sockool --spraysize=4096`, confirmed active via `sprayed 256x4096 OOL`):
+
+```
+17 Pro: ITER 10 crosszone: *** STALE WRITE into a socket: 49152 byte(s) ***
+13 Pro: ITER 48 crosszone: *** STALE WRITE into a socket: 49152 byte(s) ***
+```
+
+At 4096 bytes the outcome is identical to 832. Whatever size the out-of-line payload uses,
+the freed slot is still taken by another socket — so the size of the allocation class is not
+the limiting factor, and the `sizeof(struct socket)` question no longer blocks this path.
+
 ## Variant I (UDP type confusion) — tested, no effect
 
 `--sockudp` ran the full 40,000 iterations on both devices in ~180 s without being killed by
@@ -96,23 +130,23 @@ this way.
 
 ## Next steps
 
-In priority order — each is a concrete, testable experiment:
+Cross-zone reclaim is now ruled out for this approach, so the remaining ideas change shape:
 
-1. **Give F/G/H an observer.** Those modes currently have no way to report whether the race
-   fires at all: they never set up the listener peers, so `afterCloseOk` stays zero no matter
-   what happens. Add peer-delivery tracking to them. If the race wins but nothing is
-   observed, the slot is definitely being reclaimed by a compatible socket and cross-zone
-   reclaim has failed. If the race does *not* win in those modes, that is a harness bug
-   instead — either answer is worth knowing before changing anything else.
-2. **Decode the kernelcache fixup chain.** Pointer values in the kernelcache are stored as
-   chained-fixup relative offsets, which is why the syscall-table route produced garbage.
-   Decoding the chain (format documented in Apple's dyld sources) lets us read
-   `bsd_syscall_table`, find the `socket` handler, and disassemble the allocation to get
-   `sizeof(struct socket)` and the allocator used.
-3. **Replace the fill detector** with one that is not defeated by field initialisation —
-   e.g. look for a socket whose `so_proto` is foreign by calling a protocol operation on it
-   after filling its page with a distinctive pattern.
-4. **Sweep `--spraysize`** once the true element size is known, rather than guessing 832.
-5. Only after a reclaim is demonstrably happening: shape the fill as a fake `so_proto` using
-   the offsets of `so_proto`, `so_pcb`, `so_rcv`, `so_snd`.
+1. **Race a cross-type allocation against the stale write.** The slot is always reused by
+   whatever the process allocates next, and the free/touch window is only microseconds wide —
+   but that window is concurrent with the senders, not after them. A dedicated thread that
+   hammers `socket(AF_INET, SOCK_DGRAM, ...)` continuously *while* the race runs could get a
+   datagram socket into the slot during the window, turning the same UAF write into a
+   TCP-vs-UDP type confusion instead of a plain socket-to-socket delivery. This is the most
+   promising untested idea.
+2. **Use the stale write as a primitive in its own right.** It appends attacker-chosen bytes
+   to a live socket's send buffer, reliably and repeatedly. Worth measuring exactly which
+   fields of the receiving socket are modified (`sb_cc`, `sb_mbcnt`, record pointers) before
+   assuming they are useless.
+3. **Decode the kernelcache fixup chain** to confirm `sizeof(struct socket)` and read
+   `socreate_common`. Still useful for shaping any future fake object, but no longer
+   blocking: the size sweep showed the outcome does not depend on it.
+4. **Move the whole exploit off the OOL spray.** Variant I showed that without per-iteration
+   spraying, runs reach 40,000 iterations and ~180 s without tripping the CPU watchdog —
+   plenty of runway once an approach needs many attempts.
 
