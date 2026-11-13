@@ -108,6 +108,18 @@ Getting from here to a controlled primitive requires:
 3. Proof of one controlled field differential, after which the dangling socket can serve as
    the read/write channel.
 
+## Cross-zone reclaim attempts (2026-11-13)
+
+Two harness bugs were found and fixed: the out-of-line spray hard-coded **4096** bytes when
+the socket size class is **832** (now `--spraysize`, default 832), and the solo-mode flags
+were swapped (`--sockool` ran the page-free variant and vice versa). Zone-exhaustion
+pre-phase and a fill detector were added.
+
+Tested on both devices: variants F (`--sockool`), G (`--sockxz`) and H (`--sockgc`) each ran
+255–511 iterations with the race firing (4–6 of 6 senders still in flight at close) but no
+cross-zone effect was observed, and the CPU watchdog killed every run after ~100 s.
+Full detail and the caveats of the detector: `analysis/socket-uaf-crosszone-2026-11-13.md`.
+
 ## Known blocker: the CPU watchdog kills the harness
 
 Every `AGXProbe.cpu_resource` crash report says the same thing:
