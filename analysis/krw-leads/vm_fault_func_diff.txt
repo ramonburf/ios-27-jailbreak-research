@@ -1,0 +1,237 @@
+--- 27.0.1 0xfffffe000ac889f8-0xfffffe000ac88b2c
++++ 27.2 0xfffffe000acd9d94-0xfffffe000acda1ac
+@@ -1,22 +1,207 @@
+-ldrh wR, [xR, #Nxc8]
+-and wR, wR, #Nxfffc
+-ldur wR, [xR, #-0xac]
++ldr wR, [xR, #Nx28]
++orr wR, wR, #Nx2000
++str wR, [xR, #Nx28]
++ldr wR, [xR, #Nx10]
++mov xR, xR
++ldr xR, [sp, #Nx60]
++mov xR, xR
++bl #ADDR
++mov xR, xR
++mov xR, xR
++mov xR, xR
++bl #ADDR
++ldr xR, [sp, #Nx68]
++cbz xR, #ADDR
++str wR, [xR]
++b #ADDR
++ldp xR, xR, [sp, #Nx60]
++cbnz xR, #ADDR
++cmp wR, #N
++b.ne #ADDR
++ldrb wR, [xR, #Nx2d]
++tbz wR, #N, #ADDR
++mov xR, xR
++bl #ADDR
++ldr xR, [xR, #Nx388]
++ldrh wR, [xR, #Nx1b0]
++add xR, xR, xR, lsl #N
++mov wR, #N
++ldadd xR, xR, [xR]
++adrp xR, #ADDR
++ldr xR, [xR, #Nx450]
++ldrh wR, [xR, #Nx1b0]
++add xR, xR, xR, lsl #N
++ldadd xR, xR, [xR]
++ldr xR, [xR, #Nx398]
++ldrh wR, [xR, #Nx1b0]
++add xR, xR, xR, lsl #N
++ldadd xR, xR, [xR]
++adrp xR, #ADDR
++ldr xR, [xR, #Nx10]
++cmp xR, xR
++b.hi #ADDR
++adrp xR, #ADDR
++ldr xR, [xR, #N]
++cmp xR, xR
++b.hs #ADDR
++sub xR, xR, xR
++lsr xR, xR, #N
++adrp xR, #ADDR
++ldr wR, [xR]
++add wR, wR, wR
++b #ADDR
++sub wR, wR, #N
++cmp wR, #N
++b.hi #ADDR
++adrp xR, #ADDR
++ldr xR, [xR, #Nx4c0]
++ldrh wR, [xR, #Nx1b0]
++add xR, xR, xR, lsl #N
++mov wR, #N
++ldadd xR, xR, [xR]
++ldr wR, [xR, #Nx570]
++add wR, wR, #N
++str wR, [xR, #Nx570]
++b #ADDR
++ldr wR, [xR, #Nx3c]
++mov xR, xR
++bl #ADDR
++ldrb wR, [xR, #Nx2d]
++tbz wR, #N, #ADDR
++ldr wR, [xR, #Nx1c]
++mov xR, #-#ADDR
++orr xR, xR, xR, lsl #N
++ldg xR, [xR]
++ldr wR, [xR, #Nxa0]
++add wR, wR, #N
++str wR, [xR, #Nxa0]
++ldrb wR, [xR, #Nx2d]
++and wR, wR, #ADDR
++strb wR, [xR, #Nx2d]
++adrp xR, #ADDR
++ldr xR, [xR, #Nx8c8]
++ldrh wR, [xR, #Nx1b0]
++add xR, xR, xR, lsl #N
++mov wR, #N
++ldadd xR, xR, [xR]
++mov xR, xR
++bl #ADDR
++ldr wR, [xR, #Nx28]
++orr wR, wR, #Nx2000
++str wR, [xR, #Nx28]
++ldr wR, [xR, #Nx10]
++mov xR, xR
++mov xR, xR
++bl #ADDR
++mov xR, xR
++bl #ADDR
++tbnz wR, #N, #ADDR
++mov xR, xR
++mov xR, xR
++mov xR, xR
++bl #ADDR
++ldrb wR, [xR, #Nxab]
++tbnz wR, #N, #ADDR
++mov wR, #N
++b #ADDR
++ldr wR, [sp, #Nx74]
++tbnz wR, #N, #ADDR
++mov wR, #N
++ldr xR, [sp, #Nx48]
++ldr wR, [xR]
++and wR, wR, #ADDR
++str wR, [xR]
++ldrh wR, [xR, #Nxc8]
++and wR, wR, #Nxfffc
++orr wR, wR, wR
++strh wR, [xR, #Nxc8]
++b #ADDR
++mov xR, xR
++bl #ADDR
++mov xR, xR
++mov xR, xR
++bl #ADDR
++ldrh wR, [xR, #Nxc8]
++and wR, wR, #Nxfffc
++orr wR, wR, wR
++strh wR, [xR, #Nxc8]
++adrp xR, #ADDR
++ldr xR, [xR, #Nx168]
++add xR, xR, #N
++str xR, [xR, #Nx168]
++cbz xR, #ADDR
++ldr xR, [xR, #Nx4f0]
++b #ADDR
++mov xR, #N
++mov wR, #Nx24
++movk wR, #Nx100, lsl #N
++add xR, xR, #Nxe4
++b #ADDR
++mov xR, xR
++ldr xR, [sp, #Nxa0]
++bl #ADDR
++ldrh wR, [xR, #Nxc8]
++and wR, wR, #Nxfffc
++ldr wR, [sp, #Nx94]
++orr wR, wR, wR
++strh wR, [xR, #Nxc8]
++cbnz xR, #ADDR
++mov xR, #N
++mov wR, #Nx24
++movk wR, #Nx100, lsl #N
++b #ADDR
++cbz xR, #ADDR
++mov xR, xR
++bl #ADDR
++ldr wR, [xR, #Nx28]
++mov wR, #-#ADDR
++mov wR, #N
++movk wR, #Nxf000, lsl #N
++add wR, wR, wR
++cmp wR, wR
++b.lo #ADDR
++add wR, wR, #N
++str wR, [xR, #Nx28]
++mov xR, xR
++ldr xR, [sp, #Nxa0]
++bl #ADDR
++mov xR, xR
++bl #ADDR
++ldrb wR, [xR, #Nx75]
++tbnz wR, #N, #ADDR
++cbz xR, #ADDR
++ldrb wR, [xR, #Nx28]
++tbnz wR, #N, #ADDR
++mov xR, xR
++mov wR, #N
++mov xR, xR
++mov wR, #N
++bl #ADDR
++mov xR, xR
++ldr wR, [sp, #Nx94]
++b #ADDR
++mov xR, xR
++ldr xR, [sp, #Nxa0]
++bl #ADDR
++ldrh wR, [xR, #Nxc8]
++and wR, wR, #Nxfffc
++ldr wR, [sp, #Nx94]
+ orr wR, wR, wR
+ strh wR, [xR, #Nxc8]
+ ldr wR, [xR, #Nx74]
+ ubfx xR, xR, #Nx19, #N
+ adrp xR, #ADDR
+-add xR, xR, #Nx120
++add xR, xR, #Nx138
+ ldr wR, [xR, xR, lsl #N]
+ cbz xR, #ADDR
+ ldr xR, [xR, #Nx4f0]
+ b #ADDR
+ mov xR, xR
+-ldur xR, [xR, #-0xa0]
+-bl #ADDR
+-ldrh wR, [xR, #Nxc8]
+-and wR, wR, #Nxfffc
+-ldur wR, [xR, #-0xac]
++ldr xR, [sp, #Nxa0]
++bl #ADDR
++ldrh wR, [xR, #Nxc8]
++and wR, wR, #Nxfffc
++ldr wR, [sp, #Nx94]
+ orr wR, wR, wR
+ strh wR, [xR, #Nxc8]
+ cbz xR, #ADDR
+@@ -29,7 +214,7 @@
+ cmp wR, wR
+ b.ne #ADDR
+ mov xR, xR
+-mov xR, xR
++ldr xR, [sp, #Nxa0]
+ bl #ADDR
+ ldrh wR, [xR, #Nxc8]
+ and wR, wR, #Nxfffc
+@@ -64,7 +249,7 @@
+ add wR, wR, #N
+ str wR, [xR, #Nx28]
+ mov xR, xR
+-ldur xR, [xR, #-0xa0]
++ldr xR, [sp, #Nxa0]
+ bl #ADDR
+ mov xR, xR
+ bl #ADDR
