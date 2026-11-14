@@ -12,11 +12,11 @@ not "probability it will work". 100 % means done and verified on hardware.
 | 1 | Target acquisition | Firmware / kernelcache / dyld shared cache for build 24A446 (target) plus a 27.2 reference build | Complete | **100%** |
 | 2 | Reachability map | Sandbox-app reachability of AGX / IOHID / IOSurface / WebKit daemons | Complete (AGX sweep, iokit enumeration, crash corpus) | **95%** |
 | 3 | Vulnerability ID | Whole-kernelcache diff 27.0.1 → 27.2 (91 kexts, 542 changed kernel functions) mapped to CVEs | Complete | **90%** |
-| 4 | Kernel r/w primitive | **CVE-2026-112514 socket-buffer UAF** (CVSS 9.1, network-reachable, no entitlements) | **Race won on hardware**, and as of 2026-11-14 the freed slot can be forced into a `SOCK_DGRAM` object: `--sockmix` delivered 335 attacker-controlled datagrams on the 13 Pro and 14 on the 17 Pro, all exact multiples of one 8 KiB sender buffer. Still not kR/W — only payload and destination are controlled; no field differential yet | **83%** |
+| 4 | Kernel r/w primitive | **CVE-2026-112514 socket-buffer UAF** (CVSS 9.1, network-reachable, no entitlements) | **Race won on hardware**, and as of 2026-11-14 the freed slot can be forced into a `SOCK_DGRAM` object (`--sockmix`: 335 datagrams on the 13 Pro, 14 on the 17 Pro). Exact function diffing shows the whole BSD socket core is **semantically unchanged** in 27.2, so this is probably not the CVE-2026-112514 fix site; and `struct socket` is allocated through a view-based typed allocator, so cross-type reclaim is structurally blocked. Still not kR/W | **83%** |
 | 4b | Kernel r/w primitive | IOSurface notify UAF family (CVE-2026-112517 / -112516 / -112477) | Identified; PAC / type-confusion constraints unresolved | **25%** |
 | 4c | Kernel r/w primitive | IOHIDFamily OOB r/w (CVE-2026-112507) | Patch confirmed in the diff; no sandbox-openable HID class found | **20%** |
 | 4d | Kernel r/w primitive | Other diff-derived kernel UAF candidates | Triage list produced; unconfirmed | **15%** |
-| 4e | Kernel r/w primitive | `uipc_mbuf2.c` mbuf-chain length arithmetic (four 32→64-bit sites, confirmed changed in 27.2) | Instruction-level fix site localised by xref-delta alignment against 27.2; caller audit and reachability outstanding | **20%** |
+| 4e | Kernel r/w primitive | `uipc_mbuf2.c` mbuf-chain length arithmetic (four 32→64-bit sites, confirmed changed in 27.2) | Exact-diff tooling localised the changed functions to `0xb166b5c` and `0xb166da8`; the panic message `%d`→`%u` change is confirmed. Caller audit and reachability outstanding | **20%** |
 | 5 | Build / deploy pipeline | macOS + Xcode → signed `.app` → `devicectl` install → launch on device | Working end-to-end | **100%** |
 | 6 | EL1 code exec past PAC/CTRR/SPTM (TXM trustcache) | Required after kernel r/w before any persistent code runs | Not started | **5%** |
 | 7 | Credential patch + rootless bootstrap (package manager) | Final stage | Not started | **5%** |
@@ -55,8 +55,16 @@ substitute your own.
 
 ## Immediate next step
 
-Convert the cross-type collision into a controlled primitive. Name the field the stale writer
-corrupts (27.0.1 vs 27.2 `sb*` diff), then make it observable or controllable on a reclaimed
-datagram socket, and only then look for a leak. Evidence and harness notes:
+The socket UAF is re-scoped: exact function diffing shows no BSD socket code changed in 27.2,
+and the allocator is type-isolated, so this bug cannot be groomed into kernel read/write.
+
+1. Re-rank the leads above the heap/type wall — the IOSurface-backed external-object path,
+   page-replacement/CoW races, physical-page primitives.
+2. Localise CVE-2026-112514 properly from the netinet-side changed functions (`ip_dummynet.c`,
+   `nd6_send.c`, `necp`, `net_filter_event` are already flagged in the triage output).
+3. Use `tools/opencode-temp/kc_fstarts.py` + `kc_norm_diff.py` + `kc_align_region.py` for all
+   future 27.0.1↔27.2 comparisons; the method is exact and removes relocation noise.
+
+Evidence: `analysis/kernelcache-funcstarts-exact-diff-2026-11-14.md`,
 `analysis/socket-uaf-crosstype-2026-11-14.md`, `analysis/socket-uaf-stale-write-2026-11-13.md`,
-and the open technical questions in `HANDOFF.md`.
+and `HANDOFF.md`.

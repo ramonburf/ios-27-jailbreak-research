@@ -1,0 +1,759 @@
+0xfffffe000ab5b28c szA 612 szB 628 sim 0.69 IDIOM
+    delta: {'cbnz': 1, 'cmp': -7, 'stp': -1, 'b.hs': -2, 'adrp': 4, 'ldrb': 3, 'tbnz': 2, 'cbz': 5, 'umull': -1, 'autda': 2, 'movk': -1, 'lsl': 1, 'brk': 1, 'dmb': 1, 'add': -1, 'csel': 2, 'subs': 2, 'lsr': -1, 'b.ls': -1, 'sub': -2, 'b': -3, 'ldadda': -1, 'ldrh': 3, 'ubfx': -1, 'b.hi': -1, 'bics': -1, 'str': -2, 'stlr': 2, 'b.ne': -1, 'tst': 2}
+    refs: 
+0xfffffe000ab6cd68 szA 244 szB 228 sim 0.73 IDIOM
+    delta: {'cbnz': 1, 'cmp': -3, 'ccmp': -1, 'ldr': 1, 'cbz': 1, 'add': -2, 'bl': 1, 'ldur': -1, 'sub': -1, 'mov': 2, 'b': 1, 'b.hi': -1, 'b.ne': -2}
+    refs: 
+0xfffffe000ab72418 szA 616 szB 532 sim 0.68 IDIOM
+    delta: {'cmp': 1, 'stp': -1, 'adrp': -1, 'ccmp': 1, 'ldr': 1, 'b.eq': -1, 'and': -2, 'fmov': 1, 'ldrb': -3, 'tbnz': -1, 'strh': 3, 'cbz': -4, 'umull': -1, 'autda': -2, 'asr': 1, 'movk': -1, 'lsl': -3, 'brk': -1, 'dmb': -1, 'add': -2, 'csel': -1, 'bl': -1, 'subs': -2, 'lsr': -1, 'ldg': 1, 'eor': 1, 'mrs': 2, 'ldp': -2, 'sub': 1, 'mov': 1, 'b': -1, 'ldrh': 1, 'ldset': 1, 'str': -1, 'stlr': -2, 'b.ne': -1, 'tbz': 1, 'tst': -1, 'ubfiz': -1}
+    refs: 
+0xfffffe000ab7a6a4 szA 276 szB 276 sim 0.84 IDIOM
+    delta: {'cmp': -1, 'ccmp': -1, 'b.eq': -1, 'ldrb': 1, 'cbz': 1, 'add': -2, 'b.ls': 1, 'mov': 1, 'b': 1, 'b.hi': -1, 'tbz': 1}
+    refs: 
+0xfffffe000ab86870 szA 496 szB 524 sim 0.95 IDIOM
+    delta: {'strb': 2, 'ldr': 1, 'mov': 4}
+    refs: %s: invalid role(%d) for task @%s:%d | coalition.c | i_coal_jetsam_set_taskrole
+0xfffffe000ab86a60 szA 96 szB 104 sim 0.92 IDIOM
+    delta: {'strb': 1, 'mov': 1}
+    refs: 
+0xfffffe000ab87804 szA 280 szB 304 sim 0.90 IDIOM
+    delta: {'cmp': 1, 'b.eq': -1, 'ldrb': 1, 'sxtb': 1, 'b': 2, 'b.ne': 2}
+    refs: 
+0xfffffe000ab8b1b0 szA 968 szB 1116 sim 0.87 IDIOM
+    delta: {'stp': 1, 'adrp': 2, 'ldr': 2, 'cbz': 1, 'stur': 1, 'add': 14, 'bl': 1, 'ldur': 1, 'mrs': 1, 'mov': 5, 'b': 1, 'str': 2, 'orr': 4, 'tbz': 1}
+    refs: 
+0xfffffe000ab8d20c szA 2472 szB 2712 sim 0.88 IDIOM
+    delta: {'stp': 6, 'ldr': 36, 'ldrb': 1, 'cbz': 2, 'stur': -2, 'brk': 1, 'add': 5, 'bl': 3, 'sub': 1, 'str': 8, 'adrp': 1, 'tbnz': 1, 'autda': 1, 'movk': 1, 'lsr': 2, 'ldrsw': 2, 'ldp': 1, 'mov': -10, 'b': 1, 'sxtw': -1}
+    refs: exsurfacedarwinservice_incrementdarwinusecount__result_s=C(?={exsurfacedarwinservice_exsurfacedarwinerror_s=Q})}8 | surfacedarwinservice_decrementdarwinusecount__result_s=C(?={exsurfacedarwinservice_exsurfacedarwinerror_
+0xfffffe000ab95360 szA 116 szB 120 sim 0.73 IDIOM
+    delta: {'cmp': 1, 'strb': -1, 'ldr': 1, 'mov': 1, 'and': -1, 'csel': 1, 'ldrb': -1, 'str': 1, 'lsl': -1}
+    refs: 
+0xfffffe000ab953d4 szA 124 szB 124 sim 0.77 IDIOM
+    delta: {'cmp': 1, 'strb': -1, 'ldr': 1, 'and': -1, 'csel': 1, 'ldrb': -1, 'str': 1, 'lsl': -1}
+    refs: 
+0xfffffe000ab95450 szA 120 szB 124 sim 0.74 IDIOM
+    delta: {'cmp': 1, 'strb': -1, 'ldr': 1, 'mov': 1, 'and': -1, 'csel': 1, 'ldrb': -1, 'str': 1, 'lsl': -1}
+    refs: 
+0xfffffe000ab954c8 szA 120 szB 128 sim 0.72 IDIOM
+    delta: {'cmp': 1, 'strb': -1, 'ldr': 1, 'mov': 2, 'and': -1, 'csel': 1, 'ldrb': -1, 'str': 1, 'lsl': -1}
+    refs: 
+0xfffffe000ab956bc szA 128 szB 132 sim 0.81 IDIOM
+    delta: {'cmp': 1, 'cset': 1, 'strb': -1, 'ldr': 1, 'and': -1, 'ldrb': -1, 'str': 1}
+    refs: 
+0xfffffe000ab9573c szA 136 szB 140 sim 0.82 IDIOM
+    delta: {'cmp': 1, 'cset': 1, 'strb': -1, 'ldr': 1, 'and': -1, 'ldrb': -1, 'str': 1}
+    refs: 
+0xfffffe000ab957c4 szA 132 szB 136 sim 0.81 IDIOM
+    delta: {'cmp': 1, 'cset': 1, 'strb': -1, 'ldr': 1, 'and': -1, 'ldrb': -1, 'str': 1}
+    refs: 
+0xfffffe000ab95848 szA 132 szB 136 sim 0.81 IDIOM
+    delta: {'cmp': 1, 'cset': 1, 'strb': -1, 'ldr': 1, 'and': -1, 'ldrb': -1, 'str': 1}
+    refs: 
+0xfffffe000aba9880 szA 21492 szB 22204 sim 0.97 IDIOM
+    delta: {'pacda': 4, 'cbnz': 2, 'cmp': 5, 'stp': 6, 'adrp': 14, 'ccmp': -1, 'ldr': 16, 'b.eq': 1, 'ldrb': 2, 'tbnz': 2, 'cbz': 5, 'movk': 13, 'stur': 2, 'add': 26, 'bl': 10, 'blraa': 2, 'sub': 4, 'mov': 25, 'b': 6, 'pacia': 2, 'b.le': 1, 'movi': 2, 'str': 26, 'b.ne': 3}
+    refs:  %p @%s:%d |  @%s:%d |  addr=%p, size=%zd, flags=0x%x): invalid arguments passed @%s:%d |  already wired @%s:%d |  an MTE-enabled object @%s:%d |  delete source; it must have changed after it was locked (kr = %d) @%s:%d 
+0xfffffe000abc25c4 szA 320 szB 392 sim 0.76 IDIOM
+    delta: {'b.lo': -1, 'cmp': 2, 'stp': 1, 'b.hs': 1, 'adrp': 4, 'b.eq': 1, 'stur': -1, 'add': 4, 'bl': 2, 'ldur': -1, 'ldp': 1, 'mov': 3, 'b': 1, 'b.ne': 1}
+    refs: 
+0xfffffe000abcb724 szA 676 szB 696 sim 0.90 IDIOM
+    delta: {'cbnz': 1, 'stp': -1, 'adrp': 2, 'ret': -2, 'ldrb': 1, 'autibsp': -1, 'add': 1, 'bl': 1, 'bti': -1, 'ldp': -1, 'mov': 4, 'b': -1, 'retab': 1, 'tbz': 1}
+    refs: com.apple.private.set-exception-port | com.apple.security.only-one-exception-port
+0xfffffe000ac0c4b8 szA 560 szB 552 sim 0.92 IDIOM
+    delta: {'cmp': -2, 'cset': -1, 'tbnz': 1, 'csel': -2, 'mov': 1, 'b': 1, 'str': 1, 'orr': 1, 'b.ne': -1, 'tst': -1}
+    refs: 
+0xfffffe000ac6934c szA 3964 szB 3976 sim 0.97 IDIOM
+    delta: {'cmp': -3, 'cset': -3, 'ldr': 2, 'ldrb': -1, 'stur': 1, 'add': 1, 'rev64': 1, 'cmeq': 1, 'adrp': 1, 'strb': -4, 'ld1': 1, 'mvn': 1, 'xtn': 2, 'ldp': -1, 'uzp1': 1, 'mov': 2, 'movi': 1}
+    refs: NING: process %d[%s]: rejecting invalid page (phys#0x%x) at address 0x%llx from offset 0x%llx in file "%s%s%s" (cs_mtime | low @%s:%d | ressor_wk_sw
+0xfffffe000ac7a670 szA 3452 szB 3448 sim 0.92 IDIOM
+    delta: {'cbnz': 1, 'cmp': -1, 'and': -1, 'ldrb': -1, 'tbnz': -1, 'cbz': -2, 'b': -1}
+    refs: 2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222212
+0xfffffe000ac7ef90 szA 4092 szB 4644 sim 0.65 IDIOM
+    delta: {'cmp': 3, 'adrp': 2, 'ccmp': -1, 'cset': -1, 'ldr': 1, 'b.eq': 1, 'lsl': 1, 'add': 3, 'bl': 1, 'mov': 2, 'ubfx': 1, 'str': 4, 'tbz': -1, 'b.ne': 1, 'csinc': 1, 'tst': -1}
+    refs:  to create VM reclaim thread, %d @%s:%d | : tried accessing addresses spanning more than one page %#llx %#lx @%s:%d | ess @%s:%d | ferred_reclamation_metadata_s | resses spanning more than one page %#llx %#lx @%s:%d
+0xfffffe000ac80b7c szA 15648 szB 15368 sim 0.98 IDIOM
+    delta: {'cbnz': -1, 'stp': -2, 'ldr': 9, 'and': 1, 'ldrb': -3, 'cbz': -3, 'add': -1, 'csel': 1, 'sub': -4, 'ldrh': 1, 'str': -3, 'tst': -1, 'adrp': -4, 'b.eq': -2, 'tbnz': -4, 'autda': -1, 'movk': -1, 'b.ls': -1, 'ldp': -10, 'mov': -5, 'b.ne': 1}
+    refs:  - bufstats.bufs_iobufinuse < 0 @%s:%d | atic_init returned %d | done! @%s:%d | own task | us=N, and the boot CPU must be enabled @%s:%d
+0xfffffe000ac8532c szA 656 szB 636 sim 0.96 IDIOM
+    delta: {'ldr': -3, 'ldrb': 1, 'ldp': -1, 'str': -2}
+    refs: vm_object_internal.h
+0xfffffe000ac86c10 szA 9776 szB 8860 sim 0.95 IDIOM
+    delta: {'stp': 3, 'ldr': 7, 'stur': -7, 'ldur': -7, 'str': 2}
+    refs:  type 0x%hhx for nesting, grand=%p, subord=%p, vstart=%p, size=%#llx @%s:%d |  unsupprted type 0x%hhx for nesting, grand=%p, subord=%p, vstart=%p, size=%#llx @%s:%d | S_CHECKED_WR | ch_bridge_recv_timestamps | p)=%#llx t
+0xfffffe000ac89620 szA 200 szB 208 sim 0.85 IDIOM
+    delta: {'cset': -1, 'b.eq': 1, 'ldr': -1, 'tbnz': -1, 'add': 1, 'mov': 2, 'tbz': 1}
+    refs: 
+0xfffffe000ac8d5e8 szA 928 szB 1084 sim 0.84 IDIOM
+    delta: {'cmp': 6, 'ldr': 4, 'and': 2, 'ldrb': 2, 'cbz': 3, 'lsl': 1, 'add': 4, 'csel': 1, 'b.hi': 1, 'orr': 2, 'tst': -1, 'ubfiz': 1, 'b.eq': 3, 'tbnz': 1, 'movk': 1, 'lsr': 1, 'ldg': 2, 'ldrsw': 1, 'b.ls': 1, 'mov': 1, 'b': 2, 'tbz': 1, 'b.ne': -1}
+    refs:  object. @%s:%d | lock_rw.c | panic: rw lock exclusive check done outside of kernel debugger @%s:%d | rite | uct cpc_cyclic.struct cpc_call
+0xfffffe000ac910d4 szA 344 szB 380 sim 0.72 IDIOM
+    delta: {'cbnz': 2, 'cmp': -1, 'stp': 2, 'adrp': 2, 'ldr': 4, 'ldrb': 3, 'tbnz': 1, 'cbz': -3, 'movk': -2, 'add': -2, 'mrs': -1, 'ldp': 1, 'b': -1, 'str': 3, 'tst': 1}
+    refs: 
+0xfffffe000ac9ba20 szA 1672 szB 1928 sim 0.92 IDIOM
+    delta: {'cmp': 1, 'stp': 1, 'ldr': 2, 'b.hi': 1, 'str': -1, 'b.eq': -1, 'tbnz': 2, 'b.ls': 1, 'ldp': 1, 'mov': -1, 'b': 2}
+    refs: 
+0xfffffe000aca4b90 szA 800 szB 868 sim 0.90 IDIOM
+    delta: {'stp': 2, 'ldrb': 1, 'add': 1, 'bl': 2, 'sub': 1, 'b.eq': 3, 'ldp': 2, 'mov': 7, 'tbz': 1, 'b.ne': -3}
+    refs: iled @%s:%d
+0xfffffe000acae998 szA 188 szB 212 sim 0.82 IDIOM
+    delta: {'cbnz': 1, 'cmp': 1, 'b.hs': 1, 'ldr': 1, 'ldrb': 1, 'cbz': -1, 'add': 1, 'sub': 1, 'mov': -1, 'str': 1}
+    refs: 
+0xfffffe000acc52c8 szA 168 szB 216 sim 0.63 IDIOM
+    delta: {'b.lo': 1, 'cmp': 1, 'ldr': 3, 'cbz': 1, 'autda': 1, 'movk': 2, 'bl': -2, 'blraa': 1, 'lsr': -1, 'ldp': 2, 'mov': 3, 'str': -2, 'tbz': 1, 'autibsp': 1}
+    refs: 
+0xfffffe000acceeac szA 332 szB 280 sim 0.84 IDIOM
+    delta: {'cmp': -1, 'ldr': -1, 'tbnz': -1, 'cbz': -1, 'movk': -1, 'add': -2, 'csel': -1, 'ldg': -1, 'mov': -1, 'str': -1, 'orr': -2}
+    refs: 
+0xfffffe000acd4d34 szA 1264 szB 1256 sim 0.99 IDIOM
+    delta: {'ldr': -2, 'ldrb': 1, 'tbnz': -1}
+    refs: C](hw_lck_ticket_s={?=Cb1b1b6(?={?=CC}S)}I)IIIII{zone_packed_virtual_address=I}{zone_packed_virtual_address=I}{zone_pack | MORY_IPC | iopl_valid_data: %p already wired @%s:%d | iopl_valid_data: %p is reusable @%s:%d | io
+0xfffffe000acd5224 szA 1120 szB 1396 sim 0.79 IDIOM
+    delta: {'ldurb': 1, 'cbnz': 1, 'cmp': 2, 'sturb': 1, 'stp': 1, 'adrp': 6, 'strb': -1, 'paciza': 1, 'ldr': 10, 'b.eq': 2, 'ldrb': -1, 'cbz': 1, 'casa': 1, 'add': 3, 'bl': 8, 'subs': 1, 'casl': 1, 'ldp': 3, 'sub': 2, 'mov': 16, 'b': 3, 'str': 5, 'orr': 1, 'b.ne': 1}
+    refs: C](hw_lck_ticket_s={?=Cb1b1b6(?={?=CC}S)}I)IIIII{zone_packed_virtual_address=I}{zone_packed_virtual_address=I}{zone_pack | _REFILL | bled()
+0xfffffe000acd64fc szA 296 szB 260 sim 0.88 IDIOM
+    delta: {'ldr': -2, 'tbnz': -1, 'cbz': -1, 'add': -1, 'ldg': -1, 'sub': -1, 'str': -1, 'orr': -1}
+    refs: 
+0xfffffe000acd8e50 szA 404 szB 440 sim 0.77 IDIOM
+    delta: {'b.lo': 1, 'cmp': 2, 'adrp': -1, 'ldr': 2, 'mul': 1, 'mov': -6, 'ret': 2, 'ldrh': 1, 'ldrb': 1, 'tbnz': 1, 'cbz': 2, 'autda': 1, 'retab': -1, 'movk': 1, 'b.ne': 1, 'autibsp': 1, 'bl': -1, 'bti': 1}
+    refs: 
+0xfffffe000ace059c szA 936 szB 928 sim 0.98 IDIOM
+    delta: {'ldr': -2, 'ldrb': 1, 'tbnz': -1}
+    refs: d_region_find_key() no key for region '%s' @%s:%d | debugger @%s:%d
+0xfffffe000ace0944 szA 1944 szB 1936 sim 0.99 IDIOM
+    delta: {'ldr': -2, 'ldrb': 1, 'tbnz': -1}
+    refs: 
+0xfffffe000ace2334 szA 728 szB 768 sim 0.92 IDIOM
+    delta: {'cmp': 2, 'adrp': 1, 'ccmp': -1, 'ldr': -1, 'b.eq': 1, 'and': 1, 'ldrb': 2, 'tbnz': -1, 'add': 1, 'mrs': 1, 'mov': 1, 'ldrh': 1, 'ldadd': 1, 'b.ne': 1}
+    refs: 
+0xfffffe000ace277c szA 1616 szB 1608 sim 0.99 IDIOM
+    delta: {'ldr': -2, 'ldrb': 1, 'tbnz': -1}
+    refs: 
+0xfffffe000ace3ed4 szA 452 szB 452 sim 0.96 IDIOM
+    delta: {'cbnz': -1, 'ldr': -1, 'ldrb': 1, 'tbnz': 1}
+    refs: 
+0xfffffe000ace4750 szA 452 szB 468 sim 0.97 IDIOM
+    delta: {'cmp': 1, 'adrp': 1, 'ldrb': 1, 'tbz': 1}
+    refs: 
+0xfffffe000ace5b54 szA 896 szB 892 sim 0.96 IDIOM
+    delta: {'cmp': 1, 'ccmp': 1, 'ldr': -2, 'and': 1, 'ldrb': 1, 'tbnz': -1, 'cbz': -1, 'tst': -1}
+    refs: 
+0xfffffe000ace73b0 szA 1412 szB 1392 sim 0.99 IDIOM
+    delta: {'cmp': -1, 'and': -1, 'ldrb': -1, 'mov': -1, 'b.ne': -1}
+    refs: debugger @%s:%d
+0xfffffe000ad023f4 szA 440 szB 424 sim 0.73 IDIOM
+    delta: {'cbnz': 1, 'cmp': 1, 'stp': -1, 'adrp': 3, 'b.hs': -1, 'strb': 1, 'ldr': -5, 'and': -4, 'ldrb': 1, 'brk': 1, 'add': 1, 'cmn': 1, 'bl': -1, 'lsr': -1, 'ldp': -1, 'sub': -1, 'mov': -2, 'retab': 1, 'str': -1, 'tbz': 1, 'b.ne': 3, 'autibsp': -1}
+    refs: 
+0xfffffe000ad4893c szA 6364 szB 6396 sim 0.88 IDIOM
+    delta: {'cbnz': 8, 'b.lo': 1, 'cmp': 4, 'adrp': 19, 'ccmp': -1, 'b.hs': 3, 'ldr': 29, 'b.eq': 1, 'mul': 1, 'and': 4, 'adds': 1, 'tbnz': 1, 'cbz': -6, 'add': 28, 'csel': -2, 'bl': 5, 'subs': 2, 'lsr': 1, 'mrs': 1, 'b.ls': 2, 'ldp': 1, 'sub': 3, 'madd': 1, 'mov': 15, 'b': -3, 'ands': 1, 'ubfx': 1, 'str': 19, 'b.ne': 2}
+    refs:  %p). |  from non-interruptible context |  not holding the gate @%s:%d | !SS_INCOMP @%s:%d | @%s:%d | NT32_MAX). | NT_LD | ST_INT_ALU | T_BRANCH_COND | _INT_ST | __PRELINK_TEXT | ategory | d never happen @%s:%d | d twice
+0xfffffe000ad63fd4 szA 440 szB 468 sim 0.57 IDIOM
+    delta: {'cbnz': 1, 'b.lo': -1, 'stp': 1, 'adrp': 7, 'strb': 2, 'ldr': 5, 'mul': -1, 'ldrb': -1, 'tbnz': -1, 'cbz': 4, 'autda': 1, 'movk': 5, 'add': -17, 'bl': -5, 'blraa': 2, 'csel': 2, 'ldp': 1, 'mov': 2, 'b': 2, 'ldrh': -1, 'b.ne': -1}
+    refs: 
+0xfffffe000ad79738 szA 15072 szB 15064 sim 0.99 IDIOM
+    delta: {'cmp': 1, 'and': 1, 'ldrb': 1, 'csel': 1, 'mrs': 1, 'msr': 1, 'orr': 1, 'tst': 1, 'b.eq': 1, 'mov': 1}
+    refs:  global to all interfaces | create, but have a vap? @%s:%d | pfs -  | requested? @%s:%d | s/xnu/bsd/net/if_loop.c | s:%d
+0xfffffe000ad9ace4 szA 5512 szB 5488 sim 0.93 IDIOM
+    delta: {'adrp': -1, 'ldr': -1, 'b.eq': 1, 'and': -1, 'tbnz': 2, 'cbz': -1, 'ldur': 1, 'mov': 1, 'b.ne': 1, 'tst': 2}
+    refs:  %u > bpfp_total_length %lu bpfp_header_length %lu pth_frame_pre_length %u pre_adjust %u in_pkt_len %u out_pkt_len %u @% |  descriptor not in list @%s:%d | .private.vfs.open-by-id | _len | asked to copy out an invalid ev
+0xfffffe000add1758 szA 4732 szB 4816 sim 0.98 IDIOM
+    delta: {'cbnz': 2, 'ldr': 2, 'add': 2, 'bl': 2, 'sub': 2, 'str': 2, 'ldp': -1, 'mov': 9, 'tbz': 1}
+    refs: detach_ifma
+0xfffffe000adde0d4 szA 960 szB 984 sim 0.97 IDIOM
+    delta: {'cbnz': -1, 'cmp': 1, 'ldrb': 1, 'cbz': 1, 'csel': 1, 'mov': 1, 'b': 1, 'tbz': 1}
+    refs: 
+0xfffffe000addfc64 szA 3056 szB 3104 sim 0.98 IDIOM
+    delta: {'cmp': 1, 'ldr': 1, 'ldrb': 1, 'cbz': -1, 'stur': -1, 'lsl': 1, 'b.hi': 1, 'tst': 1, 'b.eq': 1, 'mov': 5, 'b': 2}
+    refs: com.apple.ResourceFork | d_arp_packet | hcp_xid_output | plicate | tput
+0xfffffe000ade135c szA 380 szB 368 sim 0.72 IDIOM
+    delta: {'cmp': 3, 'stp': -2, 'adrp': -3, 'ldr': 2, 'b.eq': -1, 'ldrb': -3, 'tbnz': -1, 'cbz': -1, 'autda': -1, 'movk': -1, 'casa': 1, 'add': 2, 'mrs': 1, 'casl': 1, 'ldp': -1, 'b': -1, 'ldrh': 1, 'str': -1, 'b.ne': 3, 'tst': -1}
+    refs: 
+0xfffffe000adf9880 szA 952 szB 996 sim 0.96 IDIOM
+    delta: {'ldr': 1, 'ldrb': 1, 'tbnz': 1, 'cbz': 2, 'autda': 1, 'movk': 1, 'mov': 3, 'b': 1}
+    refs: vnode_spec_revokewait
+0xfffffe000ae07728 szA 424 szB 408 sim 0.93 IDIOM
+    delta: {'b.lo': 1, 'cmp': 1, 'ldr': -2, 'and': -1, 'b': -1, 'str': -1, 'tbz': -1}
+    refs: bpf.c | bpf_release_d
+0xfffffe000ae096b0 szA 1608 szB 1608 sim 0.97 NET IDIOM
+    delta: {'ldrb': -3, 'ldrh': 2, 'tst': 2, 'b.eq': 1, 'tbnz': -1, 'tbz': -2, 'b.ne': 1}
+    refs:  ETHER_TYPE_FLAG_ARP | 025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/netinet/ip_dummynet.c | bpfwrite | terface_supports_hw_checksum
+0xfffffe000ae0bfa4 szA 1104 szB 1108 sim 0.98 IDIOM
+    delta: {'b.eq': 1, 'ldrb': -1, 'tbnz': -1, 'ldrh': 1, 'tst': 1}
+    refs: bpf_setdlt: bpf%d bpf_attachd %s error %d | bpf_setdlt: bpf%d ifpromisc %s error %d | t of connections using companion links
+0xfffffe000ae0c3f4 szA 100 szB 120 sim 0.67 IDIOM
+    delta: {'sbfx': -1, 'b.eq': 1, 'mov': 3, 'b': 1, 'and': -1, 'ldrh': 1, 'ldrb': -1, 'strh': 1, 'tst': 1}
+    refs: BIOCSETIF
+0xfffffe000ae0cc90 szA 2764 szB 2808 sim 0.89 IDIOM
+    delta: {'stp': 2, 'ldr': -3, 'and': -2, 'ldrb': 3, 'cbz': 1, 'ldapr': 1, 'casa': 1, 'ldaddl': 1, 'add': 8, 'bl': 5, 'csel': -2, 'sub': -2, 'str': -1, 'orr': -2, 'adrp': 6, 'b.eq': 2, 'mul': -4, 'tbnz': 2, 'umull': -2, 'movk': -8, 'lsr': -2, 'eor': -6, 'mov': 8, 'b': 4, 'tbz': 1}
+    refs: %s frmlen %lu | %s) failed %d, ignoring | %s: bpf%u already attached to %s error %d | %s: d_from is closing or detached error %d | %s: d_to is closing or detaching error %d | _disable_link_heuristics: %s IFXF_LINK_HEURIS
+0xfffffe000ae0fc40 szA 744 szB 740 sim 0.78 IDIOM
+    delta: {'cbnz': 2, 'cmp': 2, 'stp': -2, 'b.hs': -3, 'ldr': -1, 'ldrb': 1, 'tbnz': -1, 'cbz': 1, 'ldapr': -1, 'stur': 1, 'casa': -1, 'ldaddl': -2, 'bl': -1, 'ldur': 1, 'ldapur': -1, 'ldp': -6, 'mov': 8, 'b': 1, 'ldadd': -1, 'b.hi': 5, 'str': 1, 'tbz': -3, 'autibsp': -1}
+    refs:  ETHER_TYPE_FLAG_ARP | %s: %s | bpfdetach | terface_supports_hw_checksum
+0xfffffe000ae46a14 szA 3836 szB 3924 sim 0.98 IDIOM
+    delta: {'cbnz': -1, 'cmp': 1, 'stp': 1, 'ldr': 2, 'and': 1, 'fmov': 2, 'umaxv': 1, 'ldur': 2, 'sub': 1, 'str': 1, 'cmeq': 1, 'adrp': 1, 'b.eq': 2, 'mvn': 1, 'mov': 3, 'b': 1, 'bics': 1, 'tbz': 1}
+    refs:  needed to wait on a busy page while holding an exclusive entry lock | GISTER | oken logic (sa_len %d < skip %d ) @%s:%d | ve_attribute
+0xfffffe000ae49c80 szA 3824 szB 3744 sim 0.86 IDIOM
+    delta: {'cbnz': -1, 'cmp': -3, 'adrp': -1, 'ldr': -7, 'ldrb': 1, 'tbnz': -1, 'cbz': -4, 'stur': 1, 'add': -6, 'cmn': -1, 'bl': -3, 'csel': -1, 'ldur': 1, 'ldp': -6, 'sub': 1, 'mov': -3, 'b': -1, 'ldrh': -1, 'retab': -1, 'b.hi': -2, 'str': 1, 'b.ne': -1}
+    refs:  needed to wait on a busy page while holding an exclusive entry lock | EFRESH | OUTE_LLENTRY_RESOLVED | ve_attribute
+0xfffffe000ae4bea8 szA 360 szB 392 sim 0.66 IDIOM
+    delta: {'cbnz': -1, 'b.lo': 1, 'cmp': -1, 'b.hs': -1, 'ccmp': -3, 'ccmn': -1, 'cset': -2, 'b.eq': 1, 'and': -3, 'ret': -1, 'ldrb': 1, 'cbz': 1, 'movk': 1, 'add': 3, 'ldrsw': 1, 'eor': 1, 'b.ls': 2, 'mov': 6, 'b': 4, 'ldrh': -1, 'b.ne': -1, 'tst': 1}
+    refs: 
+0xfffffe000ae4c010 szA 876 szB 952 sim 0.92 NET IDIOM
+    delta: {'cbnz': 1, 'b.lo': 1, 'cmp': 4, 'b.hs': 1, 'ldr': 1, 'and': 2, 'ldrb': 1, 'cbz': 1, 'b.ls': 1, 'mov': 5, 'b.ne': 1}
+    refs: (m->m_flags & M_PKTHDR) != 0 | *proto_family == PF_INET | /Library/Caches/com.apple.xbs/D9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/net/dlil_su
+0xfffffe000ae5f420 szA 2128 szB 2100 sim 0.99 NET
+    delta: {'b.lo': -1, 'cmp': -2, 'b.hs': -1, 'add': -3}
+    refs: ) error %d | _lookup_common | addresses == NULL | de-clat46 | e_addrs == 1 | ist.include-clat46 | orts_used_match_mbuf: mbuf_copydata(tcphdr) error %d | redirect_nx_sync_tx
+0xfffffe000ae662ec szA 684 szB 752 sim 0.90 IDIOM
+    delta: {'b.lo': 1, 'cmp': 3, 'ldrb': 2, 'add': 3, 'bl': 1, 'subs': 1, 'b.ls': 1, 'sub': 1, 'mov': 2, 'b.hi': 3, 'b.ne': -1}
+    refs: /Library/Caches/com.apple.xbs/D9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/net/route.c | buf != NULL && buflen >= sizeof(*ss) | buflen >= sa->sa_len
+0xfffffe000ae862bc szA 512 szB 524 sim 0.95 NET IDIOM
+    delta: {'cmp': 2, 'and': 2, 'tbnz': -1, 'b.ne': 1, 'tst': -1}
+    refs: %s net_port_info if_index %u arch %s family %s proto %s local %s:%u foreign %s:%u pid: %u epid %u | ipv4 | ipv6 | unknown
+0xfffffe000ae87edc szA 1036 szB 1132 sim 0.88 IDIOM
+    delta: {'cmp': 6, 'b.lt': 2, 'ccmp': 2, 'cset': 2, 'b.eq': 4, 'and': 4, 'b.gt': -2, 'ldrb': 2, 'cbz': 2, 'b': 2}
+    refs: %s: unexpected protocol %u for inp %p | if_ports_used_add_inpcb | ing_input | lock_rw_old.c
+0xfffffe000ae88a18 szA 1000 szB 1096 sim 0.73 NET IDIOM
+    delta: {'cmp': 6, 'b.lt': 2, 'stp': 1, 'adrp': 4, 'ccmp': 2, 'cset': 2, 'ldr': 1, 'b.eq': 4, 'and': 4, 'b.gt': -2, 'ldrb': 2, 'cbz': 2, 'add': 3, 'bl': 1, 'mov': 2, 'b': 3, 'str': 1}
+    refs: %s: ifindex %u too big | if_ports_used_add_flow_entry | implemented. @%s:%d | sw_ring_size
+0xfffffe000ae8a100 szA 952 szB 984 sim 0.93 NET IDIOM
+    delta: {'cbnz': -2, 'cmp': 2, 'bfxil': 1, 'and': 1, 'strh': 1, 'csel': 2, 'b': 1, 'ldrh': 3, 'tbz': -1}
+    refs: lck_rw_unlock_shared(): lock %p held in mode: %d @%s:%d | lock_rw_old.c | net_port_info_find_match %s check on delegated %s | net_port_info_find_match: max delegation depth %u exceeded for %s | net_port_info_match_npi | 
+0xfffffe000ae8ab30 szA 2292 szB 2492 sim 0.85 IDIOM
+    delta: {'cbnz': -2, 'cmp': 8, 'b.lt': 2, 'adrp': 1, 'ccmp': 2, 'cset': 2, 'b.eq': 4, 'and': 4, 'ldrb': 4, 'tbnz': -1, 'strh': 3, 'cbz': 2, 'add': -2, 'cmn': 2, 'mov': 15, 'b': 3, 'ldrh': 1, 'ldrsb': 2, 'str': -2, 'tbz': 1, 'b.ne': 2}
+    refs: %s: called PKT_F_WAKE_PKT not set from %s | 111111211111112222 | 222222222222222222222211222222222222222222222222111111111211111112222 | _IF_MAX_RING_COUNT | found | if_ports_used_match_pkt | if_ports_used_match_pkt: idl
+0xfffffe000ae94f80 szA 4904 szB 4932 sim 0.99 NET
+    delta: {'cbnz': 1, 'ldr': 1, 'bl': 2, 'str': 1, 'mov': 1, 'b': 1}
+    refs:  failed to encrypt packet |  necp_flow_defunct |  tag address does not match | 8@?0{stackshot_stackshotresult_s={stackshot_stackshotentry_v_s=C(?={?=^{stackshot_stackshotentry_s}Q@?}{?=*QQ}{?=^{tb_me | ain.le_next == NUL
+0xfffffe000aeb308c szA 14836 szB 14836 sim 1.00 NET
+    delta: {'add': 1, 'mov': 2, 'ldr': -4, 'cbz': 2, 'adrp': -1}
+    refs:  ", " "\b\b" " (%s:%d)" @%s:%d |  NULL |  Socket Policy <so %llx>: MATCHED SKIP POLICY (Application %d Real Application %d BoundInterface %d Proto %d) set skip_p |  register multiple agents | ,cfil_sock_stat | 1ULL | <lo
+0xfffffe000aeb6cd8 szA 9128 szB 9400 sim 0.94 NET IDIOM
+    delta: {'cbnz': -1, 'b.lo': 2, 'cmp': 3, 'b.lt': 1, 'stp': 23, 'b.hs': 1, 'ldr': 14, 'and': -2, 'fmov': -8, 'ldrb': 2, 'umaxv': -8, 'stur': -1, 'add': 10, 'bl': 4, 'sub': 2, 'b.hi': 3, 'str': 3, 'tst': 2, 'cmeq': -8, 'adrp': 7, 'ccmp': -1, 'strb': 4, 'b.eq': -1, 'rev': -2, 'tbnz': -4, 'lsr': -1, 'ldp': 13, 'mov': 9, 'b': 2, 'movi': -1, 'b.ne': -1, 'rev16': 2}
+    refs:  pre-existing un-filtered flow |  unp_connect2 @%s:%d | %d remote %d/%d> <local %s remote %s> <drop-all order %d> <BoundInterface %d> (policy id=%d session_order=%d policy_orde | %s: DATA-TRACE <%s %llx>: %s - policy id=
+0xfffffe000aebafe8 szA 11600 szB 11460 sim 0.97 NET IDIOM
+    delta: {'cbnz': -1, 'b.lo': -1, 'cmp': -5, 'stp': -1, 'b.hs': -2, 'cset': -1, 'ldrb': -1, 'cbz': 2, 'stur': -2, 'add': -1, 'bl': 1, 'ldur': 12, 'str': -2, 'adrp': -3, 'ccmp': -2, 'strb': 1, 'b.eq': -1, 'tbnz': 1, 'ldp': -3, 'mov': -29, 'b': 2, 'b.ne': 1}
+    refs:  && nai->nai_chain.le_prev == NULL |  short (%d) for IPv4 header @%s:%d |  to %u from %u |  unp_connect2 @%s:%d | %s match name %s | %s: DATA-TRACE <%s %llx>: ------ %smatching <%s> <value (%d / 0x%X) (%d / 0x%X) (%d / 0
+0xfffffe000aebe134 szA 7384 szB 7488 sim 0.98 NET IDIOM
+    delta: {'cbnz': -1, 'cmp': 1, 'ldr': 3, 'ldrb': 1, 'cbz': 5, 'bl': 5, 'ldrh': 1, 'adrp': 1, 'b.eq': 1, 'tbnz': 2, 'mov': 5, 'b': 1, 'tbz': 1}
+    refs:  <pid=%d Application %d Real Application %d BoundInterface %d> <policy_id %d skip_policy_id %d result %d> <input ifindex |  pb_type: %d @%s:%d | !NETNS_TOKEN_VALID(&nstoken) | ->rule.ptr->states != 0 | .apple.developer.m
+0xfffffe000aebff9c szA 3216 szB 3152 sim 0.97 IDIOM
+    delta: {'ldr': 2, 'ldrb': -2, 'cbz': -2, 'add': -4, 'bl': -2, 'ldrh': -1, 'orr': -1, 'adrp': -3, 'tbnz': 1, 'mov': -2, 'b': -1, 'tbz': -1}
+    refs: com.apple.developer.CaptiveNetworkPlugin | com.apple.private.necp.match
+0xfffffe000aeca868 szA 992 szB 924 sim 0.76 IDIOM
+    delta: {'cbnz': 2, 'b.lo': -1, 'cmp': -5, 'stp': 2, 'adrp': -3, 'b.hs': -4, 'strb': 1, 'ldr': -2, 'b.eq': -2, 'and': 1, 'ldrb': 1, 'tbnz': -1, 'strh': -2, 'cbz': 4, 'brk': -1, 'add': -1, 'bl': 5, 'csel': -1, 'casl': 1, 'ldp': 1, 'mov': 2, 'b': -3, 'ldrh': -1, 'ldadd': -1, 'str': -9, 'orr': -3, 'b.ne': 2, 'tbz': 2, 'casal': -1}
+    refs: 
+0xfffffe000aed53fc szA 4220 szB 4308 sim 0.97 IDIOM
+    delta: {'cbnz': 2, 'cmp': 1, 'cset': 1, 'and': 1, 'ldrb': 2, 'cbz': 2, 'add': 7, 'bl': 1, 'ldrh': -1, 'orr': 2, 'tst': -1, 'strb': 1, 'b.eq': -1, 'mov': 2, 'b': 2, 'tbz': 1}
+    refs: *(s)) | 1112221122222211121 | 22222222222 | 222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222 | 22233333333222222222222222222222222222222222222222222
+0xfffffe000aed8c24 szA 1968 szB 2228 sim 0.88 IDIOM
+    delta: {'cmp': 4, 'stp': 1, 'ldr': 14, 'cbz': 1, 'casa': 1, 'add': 10, 'bl': 6, 'str': 3, 'adrp': 2, 'tbnz': 1, 'casl': 3, 'mov': 10, 'b': 5, 'b.ne': 4}
+    refs: _stats_initialize | equested netagent for group operation is not active | necp_client_request_nexus | up operation is not active
+0xfffffe000aee7b70 szA 912 szB 956 sim 0.72 IDIOM
+    delta: {'cbnz': 2, 'cmp': 4, 'stp': -6, 'adrp': 8, 'b.hs': 1, 'strb': -1, 'ldr': -2, 'b.eq': 3, 'and': -1, 'adds': 1, 'ldrb': 2, 'tbnz': -3, 'cbz': -6, 'stur': -2, 'casa': 1, 'brk': -2, 'bl': 4, 'blraa': 1, 'ldur': -1, 'mrs': 1, 'casl': 1, 'ldp': -2, 'mov': 10, 'b': 2, 'ldrh': -1, 'movi': -1, 'ldadd': -1, 'tbz': -4, 'b.ne': 1, 'orr': 2}
+    refs: 
+0xfffffe000aef4690 szA 2052 szB 2168 sim 0.92 IDIOM
+    delta: {'cbnz': 1, 'b.lo': 2, 'cmp': 6, 'stp': 2, 'b.hs': 1, 'ldr': -3, 'and': 3, 'ldrb': 1, 'cbz': -1, 'add': 2, 'bl': 1, 'sub': -1, 'ldrh': 1, 'b.hi': 1, 'str': -1, 'adrp': 2, 'rev': 1, 'subs': 1, 'lsr': -1, 'b.ls': 1, 'ldp': 1, 'mov': 4, 'b': 1, 'b.ne': 2, 'rev16': 2}
+    refs: %s: lr=%p wraparound refcnt @%s:%d | /pf_norm.c | 1-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/net/droptap.c | 4E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/net/pf_norm.c | 89588-4191-473E-90
+0xfffffe000aefb8f0 szA 4776 szB 4856 sim 0.97 IDIOM
+    delta: {'cmp': 1, 'stp': 4, 'ldr': 1, 'and': 2, 'cbz': 2, 'add': 2, 'ldur': 1, 'sub': 5, 'str': -5, 'adrp': 1, 'b.eq': -1, 'movk': 2, 'ldurh': 1, 'b.ls': 1, 'mov': 3, 'b': -1, 'b.ne': 1}
+    refs: 222222222222222211112222222222222222222222222222222111122222222222222222222222222222221111222222222222222222222222222222 | _feedback
+0xfffffe000aeff7ec szA 15096 szB 15220 sim 0.99 IDIOM
+    delta: {'ldr': 4, 'ldrb': 1, 'str': 1, 'sturh': -3, 'strh': 2, 'mov': -1}
+    refs:  of active TCP connections | + sizeof(*nth)) | 122222111111222211111122222222211121111212222222222222222222222222222222222222222222222222222222221222222112211111111111 | _linkhdr) >= (sizeof(*ip6) + sizeof(*nth)) | _outp
+0xfffffe000af05bc8 szA 2024 szB 2236 sim 0.90 IDIOM
+    delta: {'cbnz': 1, 'cmp': 8, 'stp': 4, 'adrp': 1, 'strb': 2, 'ldr': 8, 'b.eq': 2, 'ldrb': 2, 'cbz': 1, 'stur': 2, 'add': 10, 'bl': 3, 'ldp': 1, 'b': -1, 'movi': 1, 'b.hi': 4, 'str': 2, 'b.ne': 2}
+    refs: 
+0xfffffe000af0e850 szA 5108 szB 5188 sim 0.94 IDIOM
+    delta: {'cbnz': -1, 'cmp': -6, 'stp': 4, 'ldr': 10, 'and': 2, 'ldrb': 1, 'cbz': 1, 'add': 2, 'str': -5, 'sturh': 2, 'adrp': 2, 'b.eq': -8, 'movk': 2, 'ldurh': 1, 'b.ls': 2, 'ldp': -10, 'mov': 20, 'b': 1}
+    refs: 222222222222222211112222222222222222222222222222222111122222222222222222222222222222221111222222222222222222222222222222 | _feedback | sctl
+0xfffffe000af0fd54 szA 1124 szB 1204 sim 0.93 NET
+    delta: {'cmp': 3, 'ldr': 2, 'and': 1, 'cbz': 2, 'add': 1, 'bl': 1, 'cinc': 2, 'str': 1, 'movk': 1, 'mov': 5, 'b.ne': 1}
+    refs: /Library/Caches/com.apple.xbs/D9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/netinet6/ip | m->m_flags & M_PKTHDR | pf.c
+0xfffffe000af1d874 szA 2744 szB 2792 sim 0.92 NET
+    delta: {'stp': 1, 'ldr': 2, 'mov': -2}
+    refs: 111222222222222222222222222222221122222221111111222222222222112211222221122112221111122222222222211221122222112211222111 | : UDP PER-FLOW WAIT FOR FLOW DONE | nt @%s:%d
+0xfffffe000af1e32c szA 2432 szB 2436 sim 0.99 NET
+    delta: {'cbnz': -3, 'str': 2, 'tst': 1, 'b.ne': 1}
+    refs: DETACH | DROP | L: Got flow | apply_context.total_pending < INT32_MAX | ate changed (0x%x -> 0x%x), re-evaluate flow | il_sock_udp_handle_data
+0xfffffe000af1ef24 szA 3116 szB 3092 sim 0.98 IDIOM
+    delta: {'ldurb': -1, 'cmp': -1, 'ldr': -1, 'ldrb': -1, 'add': -1, 'sub': -1, 'ldrh': -1, 'adrp': 1, 'movk': 1, 'mov': -1, 'b': 1, 'b.ne': -1}
+    refs: 
+0xfffffe000af1fba8 szA 3068 szB 3196 sim 0.94 NET
+    delta: {'stp': 1, 'ldr': 5, 'and': 1, 'b.gt': -1, 'add': 7, 'sub': 3, 'ldrh': 3, 'b.hi': 1, 'str': -2, 'tst': 1, 'b.ls': 1, 'ldp': -1, 'mov': 13, 'b.le': -2, 'b.ne': 2}
+    refs: : UDP PER-FLOW WAIT FOR FLOW DONE | DP PER-FLOW WAIT FOR FLOW TIMED OUT, FORCE DETACH
+0xfffffe000af237e8 szA 804 szB 836 sim 0.96 NET
+    delta: {'cbnz': 1, 'cbz': 1, 'bl': 1, 'mov': 5}
+    refs:  outbound TCP data dropped for pre-existing un-filtered flow | FIL: outbound TCP data dropped (0x%x -> 0x%x) | Library/Caches/com.apple.xbs/D9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/n
+0xfffffe000af2e83c szA 248 szB 292 sim 0.69 IDIOM
+    delta: {'cbnz': 1, 'cmp': 1, 'b.lt': 1, 'adrp': 1, 'cbz': -2, 'ldapr': 1, 'ldaddl': 1, 'add': 2, 'bl': 1, 'subs': 1, 'b.ls': 1, 'ldp': -1, 'sub': -2, 'mov': 3, 'b': -2, 'pacia': 1, 'ldadd': 1, 'str': 1, 'tbz': 1}
+    refs: %s: if_softc is NULL for ifp %s | pktap_tap_callback
+0xfffffe000af3044c szA 2172 szB 2368 sim 0.87 IDIOM
+    delta: {'cbnz': 1, 'cmp': 4, 'stp': 7, 'cset': 3, 'ldr': -6, 'and': 2, 'adds': 4, 'stur': -1, 'lsl': -1, 'add': 2, 'bl': 1, 'csel': -1, 'ldadd': 1, 'neg': 2, 'str': -1, 'csinc': 1, 'bfi': 1, 'adrp': 2, 'tbnz': 1, 'subs': -4, 'lsr': 2, 'mov': 25, 'b': 3, 'tbz': -1, 'b.ne': 2}
+    refs: ssq/classq_subr.c
+0xfffffe000af41f54 szA 2396 szB 2500 sim 0.95 NET IDIOM
+    delta: {'cbnz': 2, 'ldr': 3, 'ldrb': 3, 'cbz': 1, 'lsl': 1, 'add': 2, 'csel': -2, 'bl': 2, 'sub': 1, 'b.hi': 1, 'str': 1, 'orr': 1, 'tst': 2, 'adrp': 1, 'b.eq': 2, 'tbnz': 1, 'strh': 1, 'eor': -1, 'mov': 2, 'b': 2}
+    refs: - Failed to get flow stats capability for KAOP provider | 32_t)pcnt | _noop | _set_params | cfil_service_inject_queue | etup capability for provider
+0xfffffe000af5d5fc szA 792 szB 960 sim 0.82 IDIOM
+    delta: {'cbnz': 1, 'cmp': 2, 'adrp': 2, 'strb': 1, 'ldr': 4, 'ldrb': 2, 'tbnz': 1, 'casa': 1, 'add': 5, 'bl': 2, 'subs': 1, 'casl': 1, 'mov': 8, 'b': 4, 'str': 2, 'orr': 1, 'b.ne': 3, 'tbz': 1}
+    refs: %s: igmp_ifinfo not found for ifp %p(%s) @%s:%d | >imo_membership[idx] | EMPTY(&imf->imf_sources) | igi_delete | igmp.c | igmp_domifdetach
+0xfffffe000af5d914 szA 816 szB 876 sim 0.91 IDIOM
+    delta: {'cbnz': 1, 'adrp': 2, 'b.hs': 1, 'strb': 1, 'ldr': 1, 'b.eq': -1, 'adds': 1, 'ldrb': 1, 'tbnz': 1, 'cbz': -1, 'add': 2, 'bl': 1, 'mov': 2, 'b': 1, 'str': 1, 'b.ne': 1}
+    refs: %s: flushing %llx on relq ifp %s | EMPTY(&imf->imf_sources) | igmp_flush_relq | p_state != INPCB_STATE_DEAD | qcnt >= 1 | ulti_dbg
+0xfffffe000af5dc44 szA 940 szB 1124 sim 0.84 NET IDIOM
+    delta: {'cbnz': 1, 'cmp': 2, 'stp': 1, 'adrp': 2, 'strb': 1, 'ldr': 4, 'ldrb': 2, 'tbnz': 1, 'casa': 1, 'add': 5, 'bl': 2, 'subs': 1, 'casl': 1, 'ldp': 3, 'mov': 8, 'b': 4, 'str': 2, 'orr': 1, 'b.ne': 3, 'tbz': 1}
+    refs: >imo_membership[idx] | EMPTY(&imf->imf_sources) | ched record inm=%p @%s:%d | gidx < imo->imo_num_memberships | ive/missing refcnt @%s:%d | n_mcast.c | sin_family == AF_INET | voke("dummynet_event") | y == AF_INET
+0xfffffe000af5dff0 szA 1700 szB 1660 sim 0.95 IDIOM
+    delta: {'ldr': 2, 'ldrb': -1, 'cbz': 1, 'add': -4, 'bl': 1, 'ldrh': -1, 'ldadd': -4, 'adrp': -4, 'tbnz': -2, 'mov': 2}
+    refs: icited NA with O=1 | n_mcast.c
+0xfffffe000af606f0 szA 5216 szB 5384 sim 0.97 NET IDIOM
+    delta: {'cbnz': 1, 'cmp': 2, 'ldr': 4, 'ldrb': 2, 'casa': 1, 'add': 5, 'bl': 2, 'str': 2, 'orr': 1, 'adrp': 2, 'strb': 1, 'tbnz': 1, 'subs': 1, 'casl': 1, 'mov': 8, 'b': 4, 'tbz': 1, 'b.ne': 3}
+    refs: .struct sockaddr_in | igmp_v1v2_process_querier_timers | rmx.c
+0xfffffe000af69774 szA 2864 szB 2076 sim 0.62 NET IDIOM
+    delta: {'b.lo': -2, 'cmp': -6, 'stp': -2, 'adrp': 4, 'strb': -1, 'ldr': 8, 'b.eq': 4, 'and': -1, 'ldrsh': -1, 'ldrb': 2, 'tbnz': 2, 'strh': -1, 'cbz': -11, 'movk': -1, 'brk': -1, 'add': -2, 'bl': -7, 'ldrsw': 1, 'eor': -1, 'b.ls': -1, 'sub': -3, 'mov': -39, 'b': -6, 'ldrh': -1, 'ldadd': -1, 'b.hi': -7, 'str': 3, 'bics': -1, 'tbz': 3, 'tst': 1}
+    refs: -9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/netinet/ip_dummynet.c | : ipi %p already in the list @%s:%d | T_RULE_DELETE | dy in the list @%s:%d | pcb thread call @%s:%d | ruct dn_event_nwk_wq_entry
+0xfffffe000af6f50c szA 2508 szB 2732 sim 0.92 NET IDIOM
+    delta: {'cbnz': 1, 'cmp': 3, 'ldr': 4, 'ldrb': 1, 'cbz': 1, 'casa': 1, 'add': 7, 'bl': 9, 'adrp': 5, 'tbnz': 1, 'casl': 2, 'mov': 14, 'b': 4, 'b.ne': 3}
+    refs:  learned routes |  with TTL less than 255 | 6_nbr.c | 8-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/netinet/ip_input.c | == 1 | _INET | _fwd_route_copyin | e transmission of source quench packet
+0xfffffe000af825a4 szA 392 szB 288 sim 0.59 IDIOM
+    delta: {'cbnz': -1, 'b.lo': -6, 'cmp': -4, 'b.hs': -3, 'ldr': -3, 'and': -2, 'ldrb': -1, 'tbnz': -2, 'cbz': 1, 'movk': 2, 'brk': -1, 'add': -5, 'csel': 1, 'ldrsw': -1, 'eor': -1, 'b.ls': 1, 'mov': 2, 'b': -3, 'ldrh': -1, 'b.hi': 2, 'tst': -1}
+    refs: 
+0xfffffe000afa2dcc szA 480 szB 468 sim 0.84 IDIOM
+    delta: {'cbnz': -3, 'cmp': -1, 'b.hs': -1, 'ldr': -1, 'tbnz': -1, 'movk': 2, 'add': 1, 'bl': -2, 'b.ls': -1, 'mov': 6, 'b': -1, 'str': -1}
+    refs: 
+0xfffffe000afe30d4 szA 2076 szB 1912 sim 0.62 IDIOM
+    delta: {'cbnz': -1, 'cmp': -1, 'stp': 2, 'b.hs': -2, 'ldr': -1, 'and': 6, 'ldrb': -7, 'cbz': -5, 'lsl': 1, 'umaddl': 2, 'add': -7, 'csel': -1, 'bl': -6, 'umulh': 2, 'ldur': 1, 'mrs': 4, 'sub': 1, 'ldrh': -4, 'neg': 1, 'str': 3, 'orr': 2, 'csinc': 1, 'adrp': -9, 'b.eq': -1, 'mul': 1, 'tbnz': -2, 'autda': 3, 'movk': 10, 'mvn': 1, 'lsr': 2, 'ldrsw': -1, 'smull': 1, 'eor': 1, 'b.ls': 1, 'mov': -7, 'b.le': 1, 'movi': 1, 'tbz': -3}
+    refs: 
+0xfffffe000afe4abc szA 1732 szB 1736 sim 0.99 NET
+    delta: {'stp': -1, 'str': 2}
+    refs: .apple.xnu.net.mptcp | e_subflows | e_wifi_subflows | ptcpstats_get_index | remove_cell_subflows | tcp_handover_subflows_remove
+0xfffffe000afe931c szA 1192 szB 1256 sim 0.95 NET
+    delta: {'cmp': 1, 'adrp': 2, 'b.hs': 1, 'ldr': 2, 'add': 3, 'bl': 2, 'mov': 3, 'b': 1, 'str': 1}
+    refs:  == MPTSF_CONNECTING | ECTING | ow_socreate | s_socket == NULL
+0xfffffe000b002900 szA 4292 szB 4296 sim 1.00 NET IDIOM
+    delta: {'ldur': 1, 'rev': 1, 'mov': -1}
+    refs:  @%s:%d | h here @%s:%d | local version: %d > peer version %d | ointer was passed. @%s:%d | put: can't alloc mbuf | s:%d payload length %zu must be a multiple of ESP_CBC_DES_BLOCKLEN, SPI 0x%08x | ybyinterface: NULL poin
+0xfffffe000b007b68 szA 4328 szB 4144 sim 0.94 NET IDIOM
+    delta: {'cbnz': -6, 'cmp': -2, 'b.hs': -2, 'ldr': -29, 'bl': -3, 'sub': -1, 'ldadd': -1, 'str': -5, 'adrp': -2, 'tbnz': -2, 'movk': 3, 'b.ge': -1, 'b.ls': -1, 'ldp': 1, 'mov': 8, 'b': -3}
+    refs:  to %s proto %u received via %s | &net_api_stats.nas_sfltr_register_count) > 0 | cnt @%s:%d | ebug
+0xfffffe000b00f10c szA 7312 szB 7088 sim 0.92 NET IDIOM
+    delta: {'cbnz': -5, 'b.lo': 1, 'cmp': -2, 'b.hs': -3, 'ldr': -75, 'ldrb': 2, 'cbz': -1, 'add': 1, 'bl': -3, 'ldrh': 1, 'ldadd': 1, 'str': -8, 'adrp': -1, 'movk': 6, 'b.ge': -1, 'b.ls': -1, 'mov': 35, 'b': -4, 'tbz': 1}
+    refs: 1ULL | apple.xbs/D9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/netinet6/in6_proto.c | e}A^{workq_aio_s}{timeval=qi}^v^vQQ*QQQQQQQ{timeval=qi}SCBBCIiiiI{?=^{proc}^^{proc}}QQQQiiiiIIII[3AS]
+0xfffffe000b023354 szA 856 szB 724 sim 0.80 IDIOM
+    delta: {'cbnz': -6, 'adrp': -3, 'ldr': -6, 'tbnz': -2, 'cbz': -2, 'movk': 2, 'b.ge': -1, 'add': -3, 'bl': -6, 'b.ls': -3, 'mov': 2, 'b': -3, 'b.hi': 2, 'str': -4}
+    refs: 
+0xfffffe000b023fa0 szA 6320 szB 6252 sim 0.96 NET IDIOM
+    delta: {'cbnz': -3, 'ldr': -19, 'add': 2, 'bl': -3, 'str': -1, 'tbnz': -1, 'movk': 2, 'b.ls': -1, 'ldp': 2, 'mov': 10, 'b': -1}
+    refs:  needed to wait on a busy page while holding an exclusive entry lock | _LEN | aryDirectory.nLq3V8/Sources/xnu/bsd/netinet6/nd6_send.c | count | e refcnt @%s:%d | inp_sndinprog_cnt > 0 | irectory.nLq3V8/Sources/xnu/bsd/ne
+0xfffffe000b025e90 szA 2036 szB 2056 sim 0.91 IDIOM
+    delta: {'cbnz': -6, 'ldr': -2, 'add': 3, 'bl': -6, 'sub': 1, 'ldrh': 1, 'ldadd': 1, 'b.hi': -1, 'str': -2, 'autibsp': 1, 'tbnz': -1, 'movk': 4, 'b.ls': -1, 'ldp': 4, 'mov': 11, 'b': -2}
+    refs: 
+0xfffffe000b0275b0 szA 3548 szB 3500 sim 0.95 IDIOM
+    delta: {'cbnz': -6, 'ldr': -3, 'bl': -5, 'sub': 1, 'ldadd': 1, 'b.hi': 1, 'str': -3, 'adrp': -2, 'tbnz': -2, 'movk': 3, 'b.ls': -3, 'mov': 8, 'b': -3, 'tbz': 1}
+    refs: 111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
+0xfffffe000b029080 szA 2072 szB 2080 sim 0.96 IDIOM
+    delta: {'cbnz': -3, 'ldr': -1, 'add': 1, 'bl': -2, 'ldadd': 1, 'str': -1, 'tbnz': -1, 'movk': 2, 'b.ge': -1, 'mov': 7, 'b': -1, 'tbz': 1}
+    refs: 
+0xfffffe000b029898 szA 2404 szB 1916 sim 0.78 IDIOM
+    delta: {'cbnz': -15, 'b.lo': 1, 'b.hs': -1, 'ldr': -21, 'cbz': -8, 'add': -15, 'bl': -14, 'ldadd': -3, 'str': -13, 'adrp': -12, 'tbnz': -5, 'movk': 2, 'b.ge': -1, 'b.ls': -4, 'mov': 3, 'b': -17, 'tbz': 1}
+    refs: 
+0xfffffe000b02f118 szA 1980 szB 2092 sim 0.94 NET IDIOM
+    delta: {'cbnz': 1, 'ldr': 7, 'and': 1, 'add': 2, 'bl': 3, 'str': 3, 'b.eq': -1, 'tbnz': 1, 'casl': 2, 'mov': 5, 'b': 3, 'b.ne': 1}
+    refs:  @%s:%d | /Library/Caches/com.apple.xbs/D9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/netinet6/in | cannot be freed @%s:%d | ia != NULL | ifp != NULL && ifra != NULL | input_check_interfa
+0xfffffe000b039390 szA 7516 szB 7388 sim 0.97 NET IDIOM
+    delta: {'cbnz': -8, 'ldr': -7, 'cbz': -2, 'bl': -7, 'b.hi': 1, 'str': -5, 'adrp': -4, 'tbnz': -3, 'movk': 4, 'b.ge': -1, 'b.ls': -3, 'mov': 8, 'b': -5}
+    refs:  ifscope |  tagged while covering kernel-tagged | ) <= UINT16_MAX | /netinet6/nd6_prproxy.c | 111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111 | 6mm
+0xfffffe000b03fa9c szA 1152 szB 1128 sim 0.97 NET
+    delta: {'cmp': -2, 'and': -1, 'sub': -1, 'ccmp': 1, 'subs': 1, 'mov': -1, 'b': -1, 'b.ne': -1, 'rev16': -1}
+    refs: <= newmax | aused by | ken) | on-zero reqcnt in6m=%p @%s:%d | s/com.apple.xbs/D9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/netinet6/in6_pcb.c
+0xfffffe000b043efc szA 6216 szB 6264 sim 0.98 IDIOM
+    delta: {'ldurb': 1, 'cbnz': 2, 'stp': 1, 'b.hs': 1, 'cset': 1, 'and': 2, 'cbz': 3, 'add': 1, 'bl': 1, 'sub': 1, 'str': -1, 'b.eq': 2, 'tbnz': -2, 'ldp': 3, 'mov': -1, 'b': 1, 'b.ne': -4}
+    refs:  pointer is passed. @%s:%d |  router list again for interface %s, as the list seems to have changed during release-reaquire of global nd6_mutex lock. |  secpolicy * | (4) != ND6_LLINFO_PROBE | 6_useloopback | FO_PROBE | 
+0xfffffe000b04589c szA 1208 szB 1248 sim 0.95 IDIOM
+    delta: {'cset': -1, 'ldr': 1, 'and': -1, 'ldrb': 2, 'cbz': 3, 'b.eq': 2, 'tbnz': 1, 'eor': -1, 'mov': 2, 'b': 1, 'ands': 1}
+    refs: ' nd6 NS in compliance with RFC 4861. | acket_copy.c | outes
+0xfffffe000b049914 szA 2660 szB 2884 sim 0.92 NET IDIOM
+    delta: {'cbnz': 1, 'cmp': 3, 'ldr': 4, 'ldrb': 1, 'cbz': 1, 'casa': 1, 'add': 7, 'bl': 9, 'adrp': 5, 'tbnz': 1, 'casl': 2, 'mov': 14, 'b': 4, 'b.ne': 3}
+    refs: -473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/netinet6/in6_rmx.c | LOCK for RFC 4604 SSM joins/leaves | _ifp == NULL @%s:%d | arget HW address; using new llreach record | d6_na_input | dad_na_input | 
+0xfffffe000b054494 szA 4732 szB 4900 sim 0.97 NET IDIOM
+    delta: {'cbnz': 1, 'cmp': 2, 'ldr': 4, 'ldrb': 2, 'casa': 1, 'add': 5, 'bl': 2, 'str': 2, 'orr': 1, 'adrp': 2, 'strb': 1, 'tbnz': 1, 'subs': 1, 'casl': 1, 'mov': 8, 'b': 4, 'tbz': 1, 'b.ne': 3}
+    refs:  pointer is passed. @%s:%d | L pointer is passed. @%s:%d | _MAX | d mbuf passed to key_senderror @%s:%d | inter is passed. @%s:%d | key_dump: NULL pointer is passed. @%s:%d | mld_v1_process_querier_timers | nter is passe
+0xfffffe000b056990 szA 940 szB 1124 sim 0.84 IDIOM
+    delta: {'cbnz': 1, 'cmp': 2, 'stp': 1, 'adrp': 2, 'strb': 1, 'ldr': 4, 'ldrb': 2, 'tbnz': 1, 'casa': 1, 'add': 5, 'bl': 2, 'subs': 1, 'casl': 1, 'ldp': 3, 'mov': 8, 'b': 4, 'str': 2, 'orr': 1, 'b.ne': 3, 'tbz': 1}
+    refs: a_len == sizeof *sin6 | attached | maxsolstgt | mli_remref | olicited targets per prefix | targets per prefix
+0xfffffe000b0572e8 szA 832 szB 892 sim 0.92 NET IDIOM
+    delta: {'cbnz': 1, 'adrp': 2, 'b.hs': 1, 'strb': 1, 'ldr': 1, 'b.eq': -1, 'adds': 1, 'ldrb': 1, 'tbnz': 1, 'cbz': -1, 'add': 2, 'bl': 1, 'mov': 2, 'b': 1, 'str': 1, 'b.ne': 1}
+    refs: !lastref || (!(inm->in6m_debug & IFD_ATTACHED) && inm->in6m_reqcnt == 0) | /Library/Caches/com.apple.xbs/D9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/netinet6/ml | <null> | inm->in6m_in_
+0xfffffe000b058650 szA 808 szB 976 sim 0.83 IDIOM
+    delta: {'cbnz': 1, 'cmp': 2, 'adrp': 2, 'strb': 1, 'ldr': 4, 'ldrb': 2, 'tbnz': 1, 'casa': 1, 'add': 5, 'bl': 2, 'subs': 1, 'casl': 1, 'mov': 8, 'b': 4, 'str': 2, 'orr': 1, 'b.ne': 3, 'tbz': 1}
+    refs: %s: mld_ifinfo not found for ifp %p(%s) @%s:%d | a_len == sizeof *sin6 | mld6.c | mld_domifdetach | mli_delete
+0xfffffe000b058978 szA 3588 szB 3592 sim 0.98 NET IDIOM
+    delta: {'cbnz': -3, 'ldr': -1, 'add': 1, 'bl': -2, 'ldadd': 1, 'str': -1, 'tbnz': -1, 'movk': 2, 'b.ge': -1, 'mov': 7, 'b': -1}
+    refs:  @%s:%d | -9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/netinet6/nd6_send.c | ->s6_addr16[1]) == ifscope | /xnu/bsd/netinet6/nd6_send.c | T_EMPTY(&up_head) | truct icmp6_filter
+0xfffffe000b065360 szA 3448 szB 3500 sim 0.94 NET IDIOM
+    delta: {'cbnz': -2, 'cmp': 2, 'ldr': 2, 'bl': -3, 'ldur': 2, 'sub': 8, 'ldadd': 1, 'str': -1, 'orr': -2, 'autibsp': 1, 'adrp': 2, 'tbnz': -1, 'movk': 4, 'b.ge': -1, 'ldp': 6, 'mov': -6, 'b': -2, 'tbz': 1, 'b.ne': 2}
+    refs: &net_api_stats.nas_sfltr_register_count) > 0 | cnt @%s:%d | f %u
+0xfffffe000b067990 szA 5792 szB 5852 sim 0.97 IDIOM
+    delta: {'cbnz': -3, 'cmp': 2, 'ldr': -2, 'add': 8, 'bl': -3, 'ldur': 2, 'ldadd': 1, 'autibsp': 1, 'adrp': 4, 'tbnz': -1, 'movk': 2, 'b.ge': -1, 'ldp': 6, 'mov': -3, 'b': -1, 'tbz': 1, 'b.ne': 2}
+    refs: /Library/Caches/com.apple.xbs/D9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/netkey/key. | 2222 | ASSOCIATION_CUSTOM_IPSEC | TB_ASSERT: " "query->state == TB_MESSAGE_STATE_SENT" ", " "%u" 
+0xfffffe000b069030 szA 1088 szB 1200 sim 0.90 IDIOM
+    delta: {'cbnz': -1, 'tbnz': 1, 'movk': 3, 'add': 1, 'bl': 1, 'mov': 20, 'b': 2, 'tbz': 1}
+    refs: nd6_dad_na_input
+0xfffffe000b06f30c szA 1404 szB 1432 sim 0.92 IDIOM
+    delta: {'cbnz': -3, 'ldr': -1, 'add': 4, 'bl': -3, 'ldadd': 1, 'str': -1, 'tbnz': -1, 'movk': 4, 'b.ge': -1, 'mov': 9, 'b': -1}
+    refs: already configured!
+0xfffffe000b06f888 szA 6040 szB 6048 sim 0.99 IDIOM
+    delta: {'cbnz': -3, 'ldr': -1, 'add': 1, 'bl': -2, 'ldadd': 1, 'str': -1, 'orr': 1, 'tbnz': -1, 'movk': 2, 'b.ge': -1, 'mov': 6, 'b': -1, 'tbz': 1}
+    refs: .vfs.dirlseek | 1ULL | a: NULL pointer is passed. @%s:%d | addreq already installed | ations.no-tagged-receive | d/%d | le.security.developer-tools.address-sanitizer | lock_with_action | nd6_ra_input
+0xfffffe000b075a34 szA 2324 szB 2836 sim 0.84 IDIOM
+    delta: {'cmp': 2, 'stp': 2, 'b.eq': 1, 'cbz': 4, 'add': 6, 'bl': 3, 'ldur': 1, 'mov': 9, 'ldadd': 1, 'b.hi': 1, 'str': 2}
+    refs:  @%s:%d | %s:%d | ah == NULL at key_checktunnelsanity @%s:%d | alid direction is passed. @%s:%d | er is passed. @%s:%d | s:%d
+0xfffffe000b0766f8 szA 2272 szB 2232 sim 0.95 IDIOM
+    delta: {'ldurb': -1, 'stp': 2, 'ldr': -1, 'ldrb': 1, 'add': -2, 'bl': 2, 'ldrh': 2, 'str': 2, 'autibsp': -2, 'adrp': -2, 'ldp': -6, 'mov': -4, 'b': -1, 'pacia': -1, 'retab': 1}
+    refs:  enabled |  processed (i.e. the number of interrupts) |  pthread kext callbacks. @%s:%d | ULL pointer was passed. @%s:%d | ernel extension not loaded (function table is NULL). @%s:%d | kernel was built with entropy analy
+0xfffffe000b079110 szA 224 szB 244 sim 0.86 IDIOM
+    delta: {'cbnz': -1, 'stp': 1, 'ldr': 3, 'ldp': 2, 'mov': -1, 'tbz': 1}
+    refs: 
+0xfffffe000b07eac4 szA 420 szB 428 sim 0.81 IDIOM
+    delta: {'cbnz': -3, 'ldr': -1, 'tbnz': -1, 'movk': 2, 'add': 1, 'bl': -2, 'b.ls': -1, 'mov': 7, 'b': -1, 'ldadd': 1, 'str': -1, 'tbz': 1}
+    refs: 
+0xfffffe000b082334 szA 5952 szB 5960 sim 0.96 NET IDIOM
+    delta: {'cbnz': -3, 'cmp': -1, 'b.hs': -1, 'ldr': -1, 'add': 2, 'bl': -2, 'ldadd': 1, 'str': -1, 'tbnz': -1, 'movk': 2, 'b.ls': -1, 'mov': 6, 'b': -1}
+    refs: CANSIGNAL not implemented @%s:%d | count | m.apple.kauth.fileop | om.apple.kauth.process | th.fileop | xbs/D9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/netinet6/nd6_send.c
+0xfffffe000b0850b0 szA 740 szB 684 sim 0.75 IDIOM
+    delta: {'cbnz': -2, 'cmp': -2, 'b.lt': 3, 'stp': 1, 'adrp': 8, 'ccmp': 2, 'strb': 1, 'ldrb': -4, 'cbz': -1, 'casa': -1, 'brk': -1, 'add': -4, 'cmn': 1, 'csel': 2, 'mrs': -1, 'b.ls': -1, 'casl': -2, 'ldp': -2, 'mov': -1, 'b': -3, 'b.hi': -5, 'str': -2}
+    refs: 
+0xfffffe000b08b824 szA 956 szB 872 sim 0.74 IDIOM
+    delta: {'cbnz': -7, 'cmp': -1, 'stp': -1, 'adrp': 2, 'b.hs': -1, 'b.eq': -3, 'ldr': -7, 'adds': -1, 'ldrb': -4, 'tbnz': 1, 'cbz': -6, 'casa': 2, 'brk': 1, 'add': -1, 'blraa': -1, 'bl': -6, 'ldrsw': 1, 'mrs': -1, 'casl': -1, 'mov': 6, 'ldrh': 2, 'dup': 1, 'b.hi': 4, 'str': 3, 'orr': -2, 'b.ne': -2, 'tbz': 1}
+    refs:  Multicast Listener Discovery | %s:%d | i-layer packet logging enabled
+0xfffffe000b09c580 szA 872 szB 960 sim 0.72 IDIOM
+    delta: {'b.lo': 1, 'cmp': -1, 'stp': 5, 'b.hs': 4, 'cset': 1, 'and': 1, 'ldrb': -1, 'cbz': 2, 'stur': 1, 'casa': -3, 'add': 2, 'bl': 2, 'csel': 1, 'ldur': 1, 'ldrh': -1, 'dup': -1, 'ldadd': 2, 'b.hi': -3, 'str': 11, 'orr': 1, 'tst': 1, 'adrp': 5, 'ccmp': 2, 'bfxil': 1, 'ldrsw': -1, 'casl': -2, 'b.ls': 1, 'ldp': 1, 'b': -8, 'pacia': 1, 'movi': 1, 'b.ne': -5}
+    refs: 
+0xfffffe000b0a56ac szA 340 szB 300 sim 0.57 IDIOM
+    delta: {'b.lo': 1, 'cmp': 2, 'stp': -2, 'b.hs': -1, 'adrp': 3, 'cset': -1, 'ldr': 1, 'and': 2, 'ret': 2, 'add': -6, 'bl': -1, 'csel': 3, 'lsr': -2, 'bti': 1, 'ldp': -3, 'b': -1, 'ldrh': -2, 'ubfx': -1, 'retab': -1, 'b.hi': -1, 'str': -4, 'b.ne': 1, 'tbz': -1, 'bfi': 1}
+    refs: 
+0xfffffe000b0a5800 szA 300 szB 304 sim 0.51 IDIOM
+    delta: {'cbnz': -5, 'b.lo': -1, 'cmp': -2, 'adrp': -1, 'ccmp': 1, 'b.hs': 2, 'mul': 1, 'and': 1, 'ret': -2, 'fmov': -1, 'ldrb': -1, 'strh': 1, 'tbnz': 1, 'lsl': 1, 'dmb': 1, 'add': -1, 'bl': 3, 'csel': -3, 'subs': 1, 'bti': -1, 'addv': -1, 'mrs': 1, 'ldp': 3, 'mov': 1, 'b': 1, 'retab': 1, 'ushll': -1, 'str': 3, 'stlr': 1, 'orr': -1, 'b.ne': 1, 'csinc': -1, 'tst': -1, 'bfi': -1}
+    refs: lock_ticket.c
+0xfffffe000b0b1c28 szA 292 szB 260 sim 0.70 IDIOM
+    delta: {'cbnz': -1, 'b.lt': -1, 'adrp': 3, 'bfxil': 1, 'strb': 1, 'ldr': -1, 'ldrb': 1, 'cbz': -3, 'ldapr': -1, 'stur': 1, 'ldaddl': -1, 'subs': -1, 'ldur': 1, 'mov': -2, 'b': -2, 'str': -3}
+    refs: 
+0xfffffe000b0b85e8 szA 164 szB 160 sim 0.65 IDIOM
+    delta: {'ldp': 3, 'ldr': -1, 'ret': -2, 'ldrb': -1, 'ubfx': -1, 'cbz': -2, 'autda': -1, 'retab': 1, 'str': 4, 'bti': -1}
+    refs: 
+0xfffffe000b0b9160 szA 160 szB 152 sim 0.73 IDIOM
+    delta: {'sub': 1, 'ldr': 2, 'mov': -1, 'tbnz': -1, 'autda': -1, 'movk': -1, 'str': -3, 'add': 2}
+    refs: 
+0xfffffe000b0c8ef8 szA 532 szB 476 sim 0.69 IDIOM
+    delta: {'pacda': 1, 'cmp': -2, 'stp': 5, 'adrp': 2, 'ccmp': -1, 'ldr': -5, 'and': -3, 'tbnz': -1, 'cbz': -2, 'asr': -1, 'autda': -1, 'add': 2, 'ldg': -1, 'eor': -1, 'mov': -3, 'b': -4, 'pacia': 1, 'ldrh': -2, 'movi': 1, 'ldset': -1, 'str': 4, 'b.ne': -2}
+    refs: thread_call.c | thread_call_enter_delayed_with_leeway
+0xfffffe000b0c9458 szA 476 szB 512 sim 0.68 IDIOM
+    delta: {'pacda': -1, 'cbnz': 2, 'cmp': 2, 'stp': 1, 'b.eq': 2, 'and': -2, 'fmov': -1, 'strh': -1, 'tbnz': 1, 'cbz': 2, 'autda': -1, 'movk': -2, 'stur': 2, 'casa': 1, 'add': -1, 'bl': 2, 'csel': -2, 'ldur': 1, 'mrs': -1, 'b.ls': -1, 'casl': 1, 'ldp': 3, 'mov': 4, 'b': 1, 'pacia': -1, 'b.hi': -1, 'orr': -2, 'tbz': 1, 'b.ne': 2, 'tst': -2}
+    refs: thread_call.c | thread_call_enter_delayed_with_leeway
+0xfffffe000b0ebd14 szA 2648 szB 2680 sim 0.98 IDIOM
+    delta: {'ldr': 1, 'and': 1, 'cbz': 1, 'add': 1, 'strb': 1, 'mov': 1, 'ldset': 1, 'tbz': 1}
+    refs: 
+0xfffffe000b0f8688 szA 3504 szB 3588 sim 0.85 IDIOM
+    delta: {'cbnz': 7, 'cmp': -2, 'stp': 2, 'b.hs': 3, 'ldr': 14, 'and': 1, 'ldrb': 2, 'cbz': 8, 'stur': -3, 'lsl': 1, 'casa': -3, 'add': -18, 'bl': -21, 'mrs': -3, 'sub': 1, 'ldrh': 1, 'b.hi': 1, 'str': 2, 'orr': 1, 'csinc': 3, 'tst': 3, 'adrp': 3, 'mul': 1, 'tbnz': 3, 'strh': 2, 'movk': 2, 'lsr': 1, 'eor': 3, 'casl': -6, 'mov': 10, 'tbz': 8, 'b.ne': -6}
+    refs: 
+0xfffffe000b118f00 szA 424 szB 472 sim 0.90 IDIOM
+    delta: {'adrp': 2, 'ldr': 1, 'ldrb': 1, 'tbnz': 1, 'add': 2, 'bl': 2, 'mov': 1, 'str': 1, 'ubfiz': 1}
+    refs: 
+0xfffffe000b1226a0 szA 284 szB 208 sim 0.73 IDIOM
+    delta: {'adrp': -5, 'ldr': -3, 'cbz': -1, 'add': -2, 'bl': -1, 'mov': -3, 'b': -2, 'orr': -1, 'tbz': -1}
+    refs: com.apple.private.memorystatus
+0xfffffe000b1239d8 szA 204 szB 204 sim 0.85 IDIOM
+    delta: {'ldr': 1, 'sxtb': 1, 'mov': -3, 'ldrb': 1, 'cbz': 1, 'bl': -1}
+    refs: 
+0xfffffe000b12d374 szA 96 szB 120 sim 0.74 IDIOM
+    delta: {'b.lo': -1, 'mov': 2, 'ret': 1, 'ldrh': 1, 'tbnz': 2, 'b.hi': 1}
+    refs: 
+0xfffffe000b145c9c szA 1912 szB 1388 sim 0.64 IDIOM
+    delta: {'cbnz': -4, 'b.lo': 1, 'cmp': -3, 'sbfx': 1, 'stp': -1, 'b.hs': 1, 'ldr': -1, 'and': -5, 'adds': 1, 'ldrb': 3, 'cbz': 4, 'asr': 1, 'casa': 1, 'umaddl': -2, 'add': 4, 'umulh': -2, 'ldur': -1, 'mrs': -3, 'sub': 2, 'cinc': 1, 'neg': -1, 'str': 3, 'orr': -2, 'csinc': -1, 'tst': -2, 'bfi': 1, 'adrp': -2, 'b.eq': -3, 'mul': -1, 'tbnz': 1, 'autda': 2, 'movk': -6, 'mvn': 1, 'cmn': 1, 'lsr': -2, 'smull': -1, 'ldrsw': 1, 'eor': 1, 'casl': 4, 'ldp': 2, 'mov': -9, 'b': 1, 'b.le': -1, 'movi': -1, 'tbz': 1, 'b.ne': -1, 'bic': 1}
+    refs: 
+0xfffffe000b150174 szA 1688 szB 1688 sim 0.94 IDIOM
+    delta: {'ldr': -5, 'ldrb': -3, 'ldrh': 8, 'str': -6, 'strh': 6}
+    refs: 
+0xfffffe000b150f94 szA 192 szB 180 sim 0.63 IDIOM
+    delta: {'eor': -2, 'cbnz': 1, 'cmp': 1, 'ldr': 1, 'mov': 1, 'b': 1, 'and': -2, 'ldrb': -2, 'cbz': 1, 'ldrsb': -2, 'movk': 2, 'orr': -2, 'b.ne': 1, 'bfi': -2}
+    refs: 
+0xfffffe000b1511bc szA 208 szB 192 sim 0.61 IDIOM
+    delta: {'eor': -2, 'cmp': 2, 'adrp': 1, 'and': -2, 'csel': 2, 'ldrb': -2, 'cbz': 3, 'ldrsb': -2, 'autda': -2, 'blraa': 1, 'orr': -2, 'add': 1, 'bfi': -2}
+    refs: 
+0xfffffe000b15128c szA 104 szB 72 sim 0.52 IDIOM
+    delta: {'eor': -1, 'cbnz': 1, 'adrp': 1, 'mov': -2, 'b': 1, 'and': -1, 'ldrh': -1, 'strh': -1, 'ldrsb': -1, 'autda': -1, 'orr': -2, 'tbz': -1}
+    refs: 
+0xfffffe000b1512f4 szA 256 szB 224 sim 0.62 IDIOM
+    delta: {'stp': -2, 'adrp': -1, 'ldr': 1, 'b.eq': -1, 'and': -1, 'ret': 2, 'ldrb': -2, 'cbz': 1, 'autda': -1, 'stur': 1, 'casa': 1, 'cmn': -1, 'bti': 1, 'eor': -1, 'mrs': 2, 'casl': 1, 'mov': -2, 'b': -1, 'ldrsb': -2, 'str': -1, 'orr': -1, 'bfi': -1}
+    refs: tty_ptmx.c
+0xfffffe000b1519ac szA 1152 szB 1152 sim 0.97 NET
+    delta: {'ldr': -2, 'strh': 2, 'ldrh': 2, 'str': -2}
+    refs: for an mbuf-class
+0xfffffe000b152144 szA 552 szB 568 sim 0.93 IDIOM
+    delta: {'cmp': -1, 'and': 1, 'ldrb': -1, 'cbz': 1, 'cmn': 1, 'sxtb': -1, 'mov': 2, 'b': 1, 'ldrsb': 1}
+    refs: tty_ptmx.c
+0xfffffe000b154d64 szA 260 szB 288 sim 0.80 IDIOM
+    delta: {'cmp': 1, 'sbfx': -1, 'and': -1, 'lsl': -1, 'csinc': 2, 'tst': 1, 'bfi': 1, 'bfxil': -1, 'tbnz': 1, 'lsr': 1, 'mov': 2, 'b': 1, 'ubfx': 1}
+    refs: ZE)failed: %llu/%u @%s:%d
+0xfffffe000b166da8 szA 144 szB 148 sim 0.92 NET
+    delta: {'b.lo': -1, 'mov': 1, 'b.hi': 1}
+    refs: m_sum16 | uipc_mbuf2.c
+0xfffffe000b181118 szA 3332 szB 3420 sim 0.96 NET
+    delta: {'pacda': 1, 'stp': 1, 'ldr': 5, 'add': 2, 'b.hi': -1, 'str': -1, 'adrp': 5, 'autda': 1, 'movk': 2, 'b.ls': 1, 'ldp': -2, 'mov': 7, 'b': 1}
+    refs: cally_max | fg_insertuipc | iled to get data address @%s:%d | ng entry - IDLE TO | rottle_cnt
+0xfffffe000b185334 szA 1388 szB 1508 sim 0.90 NET IDIOM
+    delta: {'cbnz': 1, 'cmp': -1, 'stp': 1, 'ldr': 3, 'cbz': 2, 'add': 3, 'ldrh': 1, 'b.hi': -1, 'str': -1, 'b.eq': 1, 'autda': 4, 'movk': 2, 'mov': 10, 'b': 5, 'tbz': 1, 'b.ne': -1}
+    refs: fg_removeuipc
+0xfffffe000b18ee74 szA 1388 szB 916 sim 0.65 IDIOM
+    delta: {'cbnz': 3, 'b.lo': -1, 'sbfx': -1, 'stp': -1, 'adrp': 3, 'ldr': 10, 'and': 1, 'ldrb': -3, 'tbnz': -3, 'cbz': -1, 'asr': -1, 'autda': -1, 'movk': 5, 'lsl': -1, 'mvn': -2, 'add': -2, 'cmn': -1, 'bl': 5, 'blraa': 3, 'subs': 2, 'csel': 1, 'ldrsw': -1, 'eor': -2, 'b.ls': -1, 'casl': -2, 'sub': -3, 'cinc': -1, 'mov': 18, 'b': 1, 'ldrh': 2, 'str': -2, 'tbz': -3, 'b.ne': 3, 'orr': 1, 'bic': -1, 'bfi': -1}
+    refs: 
+0xfffffe000b1a3184 szA 684 szB 732 sim 0.69 IDIOM
+    delta: {'pacda': 4, 'cbnz': -2, 'b.lo': 1, 'b.lt': -3, 'adrp': -6, 'ccmp': -2, 'b.hs': 2, 'strb': -1, 'ldr': 3, 'b.eq': -1, 'and': 1, 'ldrb': -1, 'movk': 4, 'stur': -1, 'casa': 2, 'brk': 1, 'add': -1, 'cmn': -1, 'csel': -2, 'bl': -3, 'cas': 1, 'ldur': -1, 'mrs': 1, 'casl': 3, 'ldp': 1, 'mov': 6, 'b': -2, 'pacia': 2, 'str': 5, 'b.ne': 2}
+    refs: Failed to copy metadata | Lookup entry | Retry lookup with v4 | is not | lock_rw_old.c | tracker_lookup
+0xfffffe000b1a863c szA 136 szB 148 sim 0.58 IDIOM
+    delta: {'cmp': -1, 'sturb': 1, 'stp': 2, 'adrp': 2, 'b.hs': 1, 'ldp': 1, 'sub': -1, 'and': -1, 'csel': -3, 'movk': 1, 'bl': 2, 'add': 1, 'lsr': -2}
+    refs: 
+0xfffffe000b1bc6f4 szA 732 szB 712 sim 0.70 IDIOM
+    delta: {'cbnz': -1, 'b.lo': -1, 'cmp': -6, 'stp': -1, 'b.hs': -2, 'adrp': -4, 'ldr': 12, 'b.eq': 1, 'and': -1, 'ldrb': 1, 'cbz': -1, 'autda': 1, 'movk': 4, 'casa': -1, 'brk': -1, 'add': -2, 'bl': -7, 'blraa': 3, 'cas': -1, 'mov': -1, 'b': 2, 'pacia': 1, 'str': 1, 'tbz': 3, 'b.ne': -4}
+    refs: 
+0xfffffe000b1cde44 szA 3824 szB 4288 sim 0.89 IDIOM
+    delta: {'b.lo': 1, 'cmp': 5, 'stp': 8, 'b.hs': 1, 'ldr': 6, 'cbz': 4, 'add': 20, 'bl': 8, 'csel': 2, 'sub': 1, 'ldrh': 4, 'str': 1, 'tst': 1, 'adrp': 20, 'ccmp': -1, 'b.eq': 1, 'tbnz': -1, 'b.ls': 1, 'ldp': 1, 'mov': 21, 'b': 8, 'ands': 1, 'tbz': 1, 'b.ne': 2}
+    refs:  failed to get bufctl for %p @%s:%d | &sz) == 0 | 222222222122111212112121111212121222222212222111121222112222211112222220000000200000002222222222220000222222222221122222 | KBFT | __channel_sync | f_def | lots %u/%u/%u/%
+0xfffffe000b1d133c szA 260 szB 284 sim 0.72 NET IDIOM
+    delta: {'cmp': -2, 'adrp': 4, 'bfxil': -1, 'b.eq': -1, 'tbnz': 1, 'add': 1, 'b.ls': -1, 'ldp': 2, 'mov': 5, 'pacia': 1, 'ldadd': -2, 'tbz': -1}
+    refs: net_filter_event
+0xfffffe000b1d3ad0 szA 960 szB 744 sim 0.77 IDIOM
+    delta: {'cmp': -4, 'stp': -4, 'adrp': -1, 'b.hs': -2, 'ldr': -3, 'cbz': -1, 'stur': -1, 'add': -7, 'bl': -5, 'ldur': -1, 'ldp': -1, 'mov': -19, 'b': 1, 'pacia': -1, 'movi': -1, 'b.hi': -1, 'str': -2, 'b.ne': -1}
+    refs: %s.%s.%s | em_slab_alloc_locked | loc_locked | necp
+0xfffffe000b1d3e90 szA 744 szB 728 sim 0.79 IDIOM
+    delta: {'cbnz': 1, 'b.lo': -1, 'cmp': -2, 'stp': 5, 'adrp': -5, 'ccmp': -2, 'cset': -1, 'b.hs': -1, 'ldr': 1, 'b.eq': 1, 'ldrb': 1, 'cbz': 1, 'stur': 3, 'casa': -1, 'add': 2, 'bl': -1, 'casl': -1, 'mov': -5, 'b': -1, 'movi': 2, 'str': -3, 'orr': 3}
+    refs: ((uint32_t)boff <= (SKMEM_SLAB_BACKOFF_THRES * 2)) | ach_common | skm_bufalign) | skmem_arena_create_for_system
+0xfffffe000b1e039c szA 728 szB 644 sim 0.76 IDIOM
+    delta: {'cbnz': -1, 'cmp': -2, 'stp': -2, 'adrp': -5, 'b.hs': -1, 'bfxil': -1, 'ldr': 2, 'b.eq': 1, 'cbz': -1, 'stur': -3, 'brk': -1, 'add': 1, 'blraa': 1, 'subs': 1, 'b.ls': -1, 'mov': 3, 'b': 2, 'ldrh': 2, 'movi': -2, 'ldadd': -2, 'str': -8, 'tbz': -1, 'orr': -3}
+    refs: nxctl_create
+0xfffffe000b1f20c8 szA 512 szB 412 sim 0.70 IDIOM
+    delta: {'cbnz': -2, 'stp': -3, 'adrp': 2, 'ldr': 1, 'b.eq': 1, 'strh': -2, 'tbnz': -2, 'cbz': -1, 'stur': 3, 'ldp': -3, 'sub': 1, 'mov': -6, 'b': -1, 'ldrh': -2, 'str': -6, 'tbz': -2, 'orr': -2, 'b.ne': -1}
+    refs: 
+0xfffffe000b1f283c szA 224 szB 160 sim 0.71 IDIOM
+    delta: {'cmp': -2, 'adrp': -1, 'ldr': -4, 'b.eq': -2, 'ret': -1, 'stur': -1, 'ldur': -1, 'mrs': -1, 'sub': -1, 'str': -2}
+    refs: 
+0xfffffe000b1f2fd4 szA 392 szB 352 sim 0.77 IDIOM
+    delta: {'b.lo': -1, 'cmp': -2, 'stp': -1, 'adrp': -1, 'ldr': -2, 'b.eq': -1, 'stur': -1, 'casa': -1, 'add': -1, 'bl': 5, 'lsr': -1, 'ldur': -1, 'mrs': -1, 'casl': -1, 'ldp': -1, 'mov': -1, 'b': 1, 'ldrh': 1}
+    refs: /Library/Caches/com.apple.xbs/D9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Binaries/xnu/install/TempCo | arg_len <= UINT32_MAX
+0xfffffe000b1f465c szA 1596 szB 1624 sim 0.98 NET
+    delta: {'ldr': 2, 'str': 1, 'orr': 1, 'autda': 1, 'movk': 1, 'mov': 1}
+    refs: 91-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/skywalk/nexus/flowswitch/fsw_vp.c | f_def
+0xfffffe000b200b50 szA 284 szB 276 sim 0.65 NET IDIOM
+    delta: {'stp': 5, 'adrp': -7, 'strb': -1, 'cbz': 1, 'stur': 1, 'add': -3, 'bl': 1, 'mrs': 1, 'ldp': 1, 'mov': -2, 'b': 2, 'pacia': -2, 'ldrh': 1, 'movi': 1, 'str': -1}
+    refs: fsw_use_dual_sized_pool | ifnet_event | protoctl_event
+0xfffffe000b20b900 szA 872 szB 1116 sim 0.78 NET
+    delta: {'cmp': 3, 'stp': 3, 'adrp': 8, 'ldr': 6, 'movk': 1, 'add': 12, 'bl': 2, 'mrs': 1, 'ldp': 1, 'mov': 7, 'b': 3, 'ldrh': 2, 'b.le': 1, 'str': 9, 'b.ne': 2}
+    refs: wner_flowadv_index_alloc
+0xfffffe000b23396c szA 3044 szB 3020 sim 0.76 IDIOM
+    delta: {'stp': -1, 'ldr': 1, 'stur': -9, 'add': 2, 'ldur': -1, 'sub': -2, 'str': 11}
+    refs:  %s %p has corrupted the registry. @%s:%d |  cpus per package | 5-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/skywalk/nexus/netif/nx_netif_llink.c | KBFT | ave %s v%s. | connect | evsw_lock | exts | ress_size 
+0xfffffe000b23562c szA 5264 szB 5264 sim 0.99 IDIOM
+    delta: {'b.lo': -1, 'b.hs': 1, 'ldr': 2, 'cbz': 2, 'str': 1, 'tbnz': -1, 'mov': -3, 'b': -2, 'tbz': 1}
+    refs: <key> | OSDictionary | T8_MAX | d storage type %u @%s:%d | etif_mit_init | lmnopqrstuvwxyz0123456789+/ | netif_mit.c | netif_poll_thread_exit | nx_netif_compat_na_activate | ocessor}^{processor}^{processor}QQQQ^?IIIIIIII
+0xfffffe000b237530 szA 2968 szB 2804 sim 0.94 IDIOM
+    delta: {'cbnz': -2, 'b.lo': -2, 'cmp': -4, 'stp': -1, 'b.hs': -2, 'ldr': -11, 'stur': -3, 'add': -4, 'ldur': -2, 'str': 2, 'tbnz': -1, 'mov': -11, 'b': -1, 'tbz': 1}
+    refs: KBFT | _params != NULL | dapter | exts | ink->nll_default_qset == NULL | tif_llink_ext_init_queues
+0xfffffe000b23f294 szA 1176 szB 1176 sim 0.90 IDIOM
+    delta: {'cbnz': -1, 'b.lo': -1, 'stp': -1, 'b.hs': -3, 'ldr': 1, 'and': 1, 'ldrb': 1, 'tbnz': -1, 'cbz': -1, 'add': -4, 'bl': -1, 'csel': 1, 'mrs': -1, 'b.ls': 1, 'mov': 1, 'ldrh': -2, 'b.le': 1, 'str': 5, 'tbz': 1, 'b.ne': 2, 'tst': 1}
+    refs: /Library/Caches/com.apple.xbs/D9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/skywalk/nex | 9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/skywalk/nexus/netif
+0xfffffe000b23f95c szA 748 szB 636 sim 0.81 IDIOM
+    delta: {'cbnz': -1, 'b.lo': -6, 'cmp': -11, 'stp': -1, 'b.hs': -5, 'add': -7, 'ldp': -1, 'mov': 1, 'b': 1, 'str': 1, 'tbz': 1}
+    refs: 
+0xfffffe000b2411c4 szA 644 szB 708 sim 0.70 NET IDIOM
+    delta: {'cbnz': 2, 'b.lo': 2, 'cmp': 3, 'stp': -4, 'adrp': 5, 'ccmp': 2, 'ldr': -4, 'and': -1, 'ldrb': -1, 'tbnz': -1, 'cbz': -1, 'movk': 2, 'brk': 1, 'csel': 1, 'bl': -3, 'blraa': -1, 'subs': -1, 'eor': 2, 'ldp': -2, 'cinc': 2, 'mov': 4, 'b': -3, 'ldrh': 3, 'str': 5, 'orr': 3, 'tst': 1}
+    refs: %s: %llu | netif flowstats (%s): if %s, nx_port %d, ethertype 0x%x, src %s, dst %s | nx_netif_flow_remove | remove
+0xfffffe000b242a58 szA 1736 szB 1728 sim 0.99 IDIOM
+    delta: {'tbnz': -1, 'mov': -1, 'b': -1, 'tbz': 1}
+    refs: /com.apple.xbs/D9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/skywalk/nexus/upipe/nx_use | 4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/skywalk/nexus/upipe/nx_user
+0xfffffe000b243490 szA 972 szB 840 sim 0.84 IDIOM
+    delta: {'b.lo': -5, 'cmp': -10, 'stp': -1, 'b.hs': -5, 'ldr': -8, 'add': -7, 'mov': 1, 'str': 1, 'tbz': 1}
+    refs: irectory.nLq3V8/Sources/xnu/bsd/skywalk/nexus/upipe/nx_user_pipe.c | ot have a DextUniqueIdentifier
+0xfffffe000b244c24 szA 224 szB 236 sim 0.62 IDIOM
+    delta: {'b.lo': -1, 'b.hs': -1, 'cset': 2, 'b.eq': -1, 'and': -2, 'ldrb': 1, 'brk': -1, 'add': -4, 'csel': 1, 'eor': 1, 'ldp': -1, 'mov': 8, 'b': -1, 'tbz': 2}
+    refs: (flags & (NETIF_CONVERT_TX | NETIF_CONVERT_RX)) != (NETIF_CONVERT_TX | NETIF_CONVERT_RX) | (flags & (NETIF_CONVERT_TX | NETIF_CONVERT_RX)) != 0 | /Library/Caches/com.apple.xbs/D9089588-4191-473E-9025-574E023945ED/Tempora
+0xfffffe000b25def0 szA 708 szB 648 sim 0.65 IDIOM
+    delta: {'pacda': 2, 'cbnz': -2, 'b.hs': 4, 'and': 3, 'adds': 1, 'cbz': 1, 'brk': -1, 'bl': -4, 'csel': -1, 'mrs': 1, 'cinc': -2, 'ldrh': -6, 'str': -4, 'orr': -3, 'tst': 1, 'adrp': -5, 'ccmp': -1, 'b.eq': 2, 'tbnz': 1, 'movk': 1, 'blraa': 3, 'subs': 1, 'eor': -1, 'ldp': 2, 'mov': -11, 'b': 2, 'pacia': 1, 'tbz': 2, 'b.ne': -2}
+    refs: pp_init_upp | pp_init_upp_bft_locked | pp_init_upp_locked
+0xfffffe000b2605e0 szA 236 szB 240 sim 0.68 IDIOM
+    delta: {'eor': -1, 'cmp': -3, 'stp': 1, 'adrp': 1, 'b.hs': 1, 'cset': -2, 'ldr': 3, 'mov': 2, 'and': 1, 'adds': 1, 'ldrb': -1, 'cbz': -1, 'str': -1, 'tbz': -2, 'bl': 1, 'tst': 1}
+    refs: (seg != NULL) == (idx != NULL) | /Library/Caches/com.apple.xbs/D9089588-4191-473E-9025-574E023945ED/TemporaryDirectory.nLq3V8/Sources/xnu/bsd/skywalk/pac | pp != NULL && baddr != NULL
+0xfffffe000b2647a8 szA 224 szB 264 sim 0.74 IDIOM
+    delta: {'cmp': -1, 'adrp': -1, 'b.hs': -1, 'ldp': -1, 'ldr': 3, 'mov': 2, 'b': 2, 'ldrb': 1, 'cbz': 2, 'movk': 3, 'tbz': 1}
+    refs: 
+0xfffffe000b273bfc szA 468 szB 456 sim 0.66 IDIOM
+    delta: {'cbnz': 2, 'adrp': -3, 'strb': -2, 'ldr': 9, 'ret': -2, 'cbz': -3, 'brk': 1, 'add': -9, 'csel': -1, 'bl': 4, 'sub': 1, 'mov': -3, 'b': -1, 'retab': 1, 'str': 2, 'orr': 1, 'b.ne': 1, 'autibsp': -1}
+    refs:  %s missing/invalid type. | arm64 | ctionary
+0xfffffe000b299c98 szA 648 szB 680 sim 0.64 IDIOM
+    delta: {'pacda': -2, 'b.lo': -2, 'cmp': 3, 'stp': 2, 'b.hs': -4, 'ccmp': -1, 'ldr': 1, 'b.eq': -1, 'adds': -1, 'ldrb': 1, 'tbnz': 3, 'cbz': -3, 'movk': -2, 'brk': 1, 'add': -8, 'bl': 5, 'subs': -1, 'blraa': -3, 'lsr': 1, 'eor': -1, 'mrs': -1, 'casl': 1, 'ldp': -1, 'mov': 6, 'b': 3, 'pacia': -1, 'str': 3, 'tbz': 3, 'b.ne': 7, 'orr': 1, 'tst': -1}
+    refs:  %p @%s:%d | ZE)failed: %llu/%u @%s:%d
+0xfffffe000b2bf070 szA 148 szB 140 sim 0.71 IDIOM
+    delta: {'cmp': 1, 'sturb': -1, 'ldp': 1, 'sub': -2, 'ldr': 1, 'mov': -1, 'blraa': 1, 'movk': -1, 'b.hi': 1, 'add': -1, 'bl': -1}
+    refs: aes_decrypt_key | corecrypto_aes.c
+0xfffffe000b2d5294 szA 316 szB 280 sim 0.67 IDIOM
+    delta: {'cbnz': 2, 'cmp': 1, 'braa': -1, 'ldr': -2, 'mov': -9, 'ldrb': 2, 'tbnz': 1, 'cbz': 1, 'autda': -1, 'movk': -2, 'retab': 1, 'str': -1, 'casa': -1, 'b.ne': 1, 'add': -1, 'autibsp': -1, 'bl': 1}
+    refs: 
+0xfffffe000b343530 szA 916 szB 880 sim 0.77 IDIOM
+    delta: {'pacda': 2, 'cbnz': -3, 'cmp': -2, 'adrp': 2, 'b.hs': -1, 'ldr': -3, 'b.eq': -1, 'and': -2, 'adds': -1, 'ldrb': 2, 'cbz': -4, 'movk': 3, 'add': 8, 'csel': 2, 'bl': -1, 'blraa': 1, 'subs': -2, 'ldp': -3, 'mov': -1, 'b': -1, 'pacia': 2, 'ldrh': -2, 'str': -2, 'orr': -1, 'b.ne': -4, 'tbz': 2, 'tst': 1}
+    refs: ZE)failed: %llu/%u @%s:%d
+0xfffffe000b3439d0 szA 320 szB 348 sim 0.80 IDIOM
+    delta: {'cbnz': 1, 'cmp': 1, 'stp': 1, 'adrp': 1, 'ldrb': -1, 'tbnz': -1, 'cbz': -3, 'autda': 1, 'movk': 3, 'blraa': 1, 'csel': 1, 'ldp': 1, 'mov': 2, 'b': -1}
+    refs: 
+0xfffffe000b34967c szA 2512 szB 2536 sim 0.99 NET
+    delta: {'stp': 1, 'bl': 1, 'ubfiz': -1, 'sbfiz': 1, 'mov': 3}
+    refs: IOMemoryDescriptor.cpp | _dmaReferences overflow @%s:%d | ecurity.nvram.fmm | essageAppSuspended | oken-FMM-BridgeHasAccount | warning
+0xfffffe000b34d858 szA 268 szB 260 sim 0.61 IDIOM
+    delta: {'b.lo': -2, 'cmp': 2, 'stp': -1, 'adrp': 1, 'strb': 1, 'ldr': -2, 'b.eq': -1, 'and': -2, 'adds': -2, 'ldrb': 1, 'cbz': -2, 'movk': 1, 'lsl': 1, 'bl': -2, 'blraa': 1, 'csel': 2, 'eor': -1, 'ldp': -1, 'sub': 1, 'madd': 1, 'mov': 1, 'str': 1, 'orr': 1, 'tst': -1}
+    refs: vm_param.h
+0xfffffe000b352fdc szA 240 szB 288 sim 0.69 IDIOM
+    delta: {'cmp': 1, 'stp': 2, 'b.hs': -1, 'adrp': 2, 'ldr': -2, 'adds': -1, 'ldrb': 1, 'tbnz': 1, 'cbz': 2, 'movk': 1, 'lsl': 2, 'add': 1, 'csel': -1, 'mrs': 1, 'b': 1, 'ldrh': 1, 'orr': 1, 'b.ne': 1, 'tst': -1}
+    refs: vm_param.h
+0xfffffe000b36edd4 szA 216 szB 264 sim 0.54 IDIOM
+    delta: {'cmp': 2, 'stp': 1, 'adrp': 5, 'ccmp': 2, 'cset': 1, 'b.hs': 2, 'ldr': -1, 'and': 1, 'tbnz': 1, 'cbz': -1, 'autda': -1, 'movk': -2, 'add': 2, 'csel': 1, 'blraa': -1, 'bl': 2, 'ldp': -1, 'mov': -2, 'b.hi': -1, 'str': 2, 'orr': 1, 'tbz': -1, 'autibsp': -1, 'tst': 1}
+    refs: 
+0xfffffe000b37c164 szA 332 szB 336 sim 0.94 IDIOM
+    delta: {'stp': 1, 'ldr': -1, 'stur': 1, 'ldur': 1, 'str': -1}
+    refs: 
+0xfffffe000b37c2b0 szA 336 szB 312 sim 0.74 IDIOM
+    delta: {'pacda': 2, 'cmp': -2, 'ldr': -3, 'ldrb': 1, 'tbnz': 1, 'cbz': -1, 'autda': 1, 'movk': 1, 'add': 1, 'csel': -1, 'bl': -1, 'b.ls': -1, 'ldp': -1, 'sub': -1, 'mov': -3, 'str': 2, 'ubfiz': -1}
+    refs: 
+0xfffffe000b385f4c szA 372 szB 356 sim 0.61 IDIOM
+    delta: {'stlur': -1, 'cbnz': -2, 'b.lo': -1, 'cmp': -3, 'sbfx': 2, 'stp': -1, 'ccmp': 3, 'strb': 2, 'ldr': -2, 'b.eq': -1, 'and': 2, 'ret': -2, 'ldrb': 2, 'cbz': -1, 'cmn': -1, 'bl': -1, 'csel': -1, 'blraa': 1, 'bti': -1, 'ldp': -1, 'sub': 1, 'mov': 1, 'b': 1, 'retab': 1, 'b.hi': -3, 'str': -1, 'stlr': 1, 'orr': 1, 'b.ne': 2, 'autibsp': -1}
+    refs: 
+0xfffffe000b39b000 szA 356 szB 436 sim 0.54 IDIOM
+    delta: {'stlur': 1, 'b.lo': 1, 'cmp': 4, 'sbfx': -1, 'stp': 2, 'b.hs': 2, 'ccmp': -5, 'b.eq': 1, 'ldrb': -2, 'cbz': -2, 'ldapr': 1, 'mvn': -1, 'add': -2, 'cmn': -1, 'blraa': 2, 'ldapur': -1, 'b.ls': 2, 'ldp': 2, 'sub': 4, 'mov': 13, 'b': 1, 'b.hi': -2, 'str': 4, 'stlr': -1, 'orr': -1, 'b.ne': -1}
+    refs: 
+0xfffffe000b39b250 szA 436 szB 292 sim 0.58 IDIOM
+    delta: {'stlur': -1, 'cbnz': 2, 'cmp': -5, 'sbfx': -1, 'b.hs': -1, 'ccmp': -2, 'strb': -2, 'ldr': -1, 'and': -1, 'cbz': 1, 'ldapr': -1, 'movk': -1, 'mvn': -1, 'dmb': -1, 'add': -1, 'cmn': -1, 'blraa': -3, 'bl': 3, 'b.ls': -4, 'sub': -3, 'mov': -6, 'b': -4, 'str': -1, 'b.ne': -1}
+    refs: 
+0xfffffe000b3a74c8 szA 820 szB 740 sim 0.77 IDIOM
+    delta: {'pacda': -2, 'cmp': -4, 'stp': 1, 'adrp': -4, 'ldr': 5, 'b.eq': -1, 'ldrb': 1, 'tbnz': 1, 'cbz': 3, 'autda': 1, 'movk': -1, 'add': -5, 'cmn': 1, 'blraa': 1, 'bl': -1, 'csel': -3, 'mov': -8, 'b': 2, 'pacia': -2, 'str': -4, 'tst': -1}
+    refs: 
+0xfffffe000b3a77fc szA 640 szB 724 sim 0.74 IDIOM
+    delta: {'b.lo': 1, 'cmp': 3, 'stp': 4, 'adrp': -1, 'ldr': 5, 'cbz': -3, 'autda': 3, 'movk': 5, 'lsl': 1, 'add': 4, 'bl': 1, 'blraa': 1, 'csel': 2, 'casl': -1, 'ldp': 1, 'mov': -5, 'b': -2, 'pacia': -1, 'str': 4, 'tbz': -2, 'bfi': 1}
+    refs: 
+0xfffffe000b3aa30c szA 740 szB 656 sim 0.86 IDIOM
+    delta: {'cbnz': 1, 'stp': -1, 'b.eq': 1, 'ldrb': -1, 'tbnz': -2, 'cbz': 1, 'autda': -1, 'movk': -2, 'add': -1, 'blraa': -1, 'ldp': -1, 'mov': -12, 'b': -1, 'b.ne': -1}
+    refs: NO-NAME
+0xfffffe000b3aa5f0 szA 656 szB 656 sim 0.81 IDIOM
+    delta: {'cmp': 1, 'stp': -1, 'adrp': -3, 'ldr': -6, 'ldrb': -1, 'tbnz': 1, 'cbz': 1, 'autda': 1, 'movk': 4, 'add': -3, 'cmn': -1, 'blraa': 1, 'ldp': 2, 'mov': 6, 'b': -1, 'tbz': -1}
+    refs: NO-NAME
+0xfffffe000b3ace20 szA 720 szB 648 sim 0.72 IDIOM
+    delta: {'pacda': -2, 'cbnz': 1, 'sturb': 1, 'adrp': -2, 'ldr': -6, 'ldrb': 2, 'cbz': 4, 'autda': -2, 'movk': -6, 'stur': 1, 'add': -3, 'blraa': -2, 'bl': 3, 'ldur': 1, 'ldp': -1, 'sub': 3, 'mov': -6, 'b': 1, 'pacia': -1, 'str': -6, 'tbz': 2}
+    refs: 
+0xfffffe000b3ae028 szA 584 szB 720 sim 0.80 IDIOM
+    delta: {'cbnz': 3, 'cmp': 1, 'strb': 1, 'ldr': 6, 'ldrb': 1, 'autda': 2, 'movk': 3, 'add': 1, 'cmn': 1, 'blraa': 2, 'bl': -1, 'sub': 1, 'mov': 8, 'b': 2, 'b.hi': 1, 'tbz': 1, 'b.ne': 1}
+    refs: 
+0xfffffe000b3b5e2c szA 260 szB 260 sim 0.65 IDIOM
+    delta: {'stp': -1, 'b.hs': -2, 'adrp': -3, 'and': 1, 'ldrb': -1, 'cbz': -1, 'movk': 4, 'add': 4, 'csel': 2, 'bl': 1, 'blraa': 1, 'ldp': 1, 'sub': -1, 'madd': -1, 'b': -1, 'str': -2, 'orr': -1}
+    refs: base
+0xfffffe000b3be6f4 szA 176 szB 180 sim 0.89 IDIOM
+    delta: {'adrp': 2, 'strb': 1, 'mov': -1, 'cbz': -1}
+    refs: 
+0xfffffe000b3c0f60 szA 648 szB 532 sim 0.67 IDIOM
+    delta: {'pacda': -1, 'b.lo': -1, 'sturb': -1, 'stp': -7, 'adrp': -3, 'b.eq': 2, 'ldrb': -2, 'tbnz': -1, 'cbz': -1, 'autda': 1, 'movk': 1, 'stur': -1, 'lsl': -1, 'add': -9, 'bl': -2, 'csel': -2, 'blraa': 2, 'subs': 1, 'ldur': -1, 'casl': 2, 'b.ls': 1, 'ldp': -2, 'sub': -3, 'b': 3, 'pacia': -1, 'str': -2, 'tbz': -2, 'b.ne': 1, 'ubfiz': 1, 'bfi': -1}
+    refs: exclaveTimerFired
+0xfffffe000b3c1568 szA 256 szB 296 sim 0.82 IDIOM
+    delta: {'cmp': 1, 'ldp': 2, 'strb': -1, 'ldr': 2, 'b.eq': 1, 'mov': 1, 'b': 1, 'b.gt': 1, 'b.le': -1, 'cbz': 1, 'str': 1, 'blraa': 1}
+    refs: 
+0xfffffe000b3c1ef0 szA 912 szB 924 sim 0.99 IDIOM
+    delta: {'ldrb': 1, 'csel': 1, 'tst': 1}
+    refs: %llu | IOMemoryUnloadThreadFunc
+0xfffffe000b3c5580 szA 264 szB 300 sim 0.72 IDIOM
+    delta: {'cmp': 3, 'stp': 1, 'ccmp': 1, 'cset': 1, 'ldr': 2, 'cbz': -1, 'stur': 1, 'ldur': 1, 'ldp': 1, 'mov': -5, 'b': 2, 'movi': 1, 'tbz': -1, 'b.ne': 2}
+    refs: IOUnifiedAddressTranslator.cpp | removeClientContextID
+0xfffffe000b3cb140 szA 680 szB 640 sim 0.63 IDIOM
+    delta: {'b.lo': 1, 'cmp': -3, 'stp': 1, 'adrp': -1, 'b.hs': 3, 'ldr': -1, 'b.eq': -1, 'and': -1, 'ldrb': 6, 'cbz': 2, 'ldaddh': 1, 'casa': -1, 'brk': -1, 'add': -1, 'bl': -6, 'lsr': -1, 'mrs': -1, 'casl': -2, 'b.ls': 1, 'ldp': 8, 'cinc': 2, 'mov': -10, 'b': -1, 'str': 2, 'orr': 4, 'b.ne': -8, 'tbz': -4, 'autibsp': 1, 'ubfiz': 1}
+    refs: 0x%x (UNDEFINED) | kPMMinutesToDim | kPMMinutesToSleep
+0xfffffe000b3da1b8 szA 300 szB 212 sim 0.68 IDIOM
+    delta: {'cbnz': -1, 'cmp': -2, 'stp': -3, 'adrp': -2, 'cset': -1, 'ldr': -1, 'stur': -1, 'add': -3, 'bl': -3, 'ldur': -1, 'ldp': -1, 'mov': -2, 'movi': -1, 'str': 1, 'b.ne': -1}
+    refs: 
+0xfffffe000b3da2e4 szA 212 szB 220 sim 0.74 IDIOM
+    delta: {'cmp': 1, 'stp': 1, 'adrp': 2, 'ccmp': -1, 'ldp': 1, 'sub': -1, 'ldr': -1, 'b.ls': 2, 'b': 1, 'ldrb': -1, 'str': -1, 'b.ne': -1, 'add': 1, 'blraa': -1}
+    refs: 
+0xfffffe000b3e092c szA 180 szB 168 sim 0.74 IDIOM
+    delta: {'cmp': 1, 'adrp': -2, 'strb': -1, 'ldr': -1, 'mov': -2, 'and': 1, 'csel': 1, 'str': 1, 'orr': 1, 'add': -1, 'bl': -1}
+    refs: 
+0xfffffe000b3e2d48 szA 656 szB 856 sim 0.73 IDIOM
+    delta: {'pacda': 2, 'cbnz': -1, 'cmp': -1, 'adrp': 5, 'ldr': 9, 'b.eq': -1, 'cbz': 1, 'autda': 5, 'movk': 10, 'add': 3, 'bl': 1, 'blraa': 5, 'ldp': -1, 'mov': 8, 'pacia': 1, 'str': 3, 'tbz': 1}
+    refs: 
+0xfffffe000b3e3bcc szA 720 szB 576 sim 0.60 IDIOM
+    delta: {'cbnz': -2, 'stp': 1, 'adrp': 8, 'ldr': -16, 'b.eq': 2, 'tbnz': -1, 'cbz': 2, 'autda': -4, 'movk': -8, 'add': 3, 'cmn': -1, 'blraa': -4, 'casl': -1, 'ldp': 5, 'sub': -1, 'mov': -14, 'b': -2, 'b.hi': -1, 'tbz': -1, 'b.ne': -2, 'autibsp': 1}
+    refs: base-frequency
+0xfffffe000b3e4588 szA 640 szB 660 sim 0.63 IDIOM
+    delta: {'cbnz': -1, 'udiv': 1, 'cmp': -2, 'stp': -1, 'adrp': -4, 'b.hs': -2, 'ldr': 3, 'b.eq': 3, 'and': -2, 'ldrb': -6, 'tbnz': -1, 'ldaddh': -1, 'movk': 5, 'stur': 1, 'lsl': 1, 'add': 6, 'csel': 1, 'bl': 1, 'lsr': 1, 'eor': 5, 'ldp': -5, 'sub': 1, 'cinc': -2, 'mov': -4, 'str': 2, 'bics': 2, 'orr': -1, 'b.ne': 3, 'autibsp': -1, 'tst': 3, 'ubfiz': -1}
+    refs: 0x%x (UNDEFINED)
+0xfffffe000b3e62b0 szA 512 szB 488 sim 0.68 IDIOM
+    delta: {'cmp': -3, 'stp': 6, 'adrp': -2, 'strb': 1, 'ldr': -4, 'b.eq': -2, 'autda': 1, 'movk': 2, 'stur': 1, 'casa': -1, 'add': -4, 'blraa': 1, 'mrs': -1, 'braa': -1, 'casl': -1, 'ldp': -4, 'mov': 3, 'b': 1, 'ldadd': 1, 'str': 3, 'orr': -2, 'b.ne': -1, 'tbz': 1, 'autibsp': -1}
+    refs: IOPMAOTAllow
+0xfffffe000b3e6edc szA 488 szB 404 sim 0.66 IDIOM
+    delta: {'cmp': 1, 'stp': -9, 'strb': -1, 'ldr': 3, 'b.eq': 1, 'autda': 1, 'movk': 4, 'stur': -1, 'add': -1, 'bl': -1, 'blraa': 2, 'ldp': -3, 'mov': -8, 'b': -2, 'ldadd': -1, 'str': -4, 'tbz': -1, 'orr': -1}
+    refs: 
+0xfffffe000b3e8fdc szA 308 szB 260 sim 0.84 IDIOM
+    delta: {'ldr': -2, 'mov': -1, 'b': -1, 'cbz': -2, 'str': -1, 'bl': -1, 'tbz': -1, 'add': -3}
+    refs: 
+0xfffffe000b3e951c szA 168 szB 224 sim 0.66 IDIOM
+    delta: {'stp': -1, 'adrp': 2, 'ldr': 1, 'ldrb': 1, 'tbnz': 1, 'cbz': 2, 'add': 3, 'ldp': -2, 'sub': 1, 'stlrb': 1, 'mov': 4, 'str': 1}
+    refs: 
+0xfffffe000b3e95c4 szA 224 szB 208 sim 0.64 IDIOM
+    delta: {'cmp': 2, 'stp': 1, 'cset': 1, 'ldrb': -1, 'tbnz': -1, 'cbz': -2, 'casa': -1, 'add': -1, 'bl': 2, 'mrs': -1, 'casl': -1, 'b.ls': 1, 'ldp': -1, 'sub': 1, 'stlrb': -1, 'mov': -3, 'str': 2, 'autibsp': -1}
+    refs: 
+0xfffffe000b3e96a4 szA 576 szB 544 sim 0.59 IDIOM
+    delta: {'ldurb': 1, 'pacda': 2, 'cbnz': 1, 'cmp': -1, 'sturb': 1, 'stp': 3, 'adrp': -3, 'strb': -1, 'ldr': 4, 'b.eq': -1, 'ldrb': -1, 'tbnz': 1, 'cbz': -1, 'autda': -7, 'movk': -12, 'casa': -1, 'add': 2, 'bl': 3, 'blraa': -2, 'bti': 1, 'mrs': -1, 'casl': -1, 'ldp': -1, 'sub': 2, 'mov': -5, 'b': -1, 'pacia': 1, 'str': 10, 'autibsp': -1}
+    refs: IOPMShutdownTime
+0xfffffe000b3ecff0 szA 44 szB 24 sim 0.55 IDIOM
+    delta: {'ldrb': -1, 'tbnz': -1, 'adrp': -1, 'xpaci': -1, 'ret': -1}
+    refs: 
+0xfffffe000b406360 szA 216 szB 264 sim 0.62 IDIOM
+    delta: {'cbnz': 2, 'cmp': 1, 'stp': 2, 'adrp': 3, 'strb': 1, 'ldr': 3, 'cbz': -1, 'sbfiz': -1, 'add': 1, 'cmn': -1, 'bl': -1, 'csel': 1, 'lsr': 2, 'mov': -2, 'b': 1, 'ands': 2, 'stlr': -1, 'csinc': 1, 'csinv': -1}
+    refs: 
+0xfffffe000b4081d4 szA 312 szB 264 sim 0.82 IDIOM
+    delta: {'cbnz': -1, 'stp': -1, 'ldrb': -1, 'tbnz': -1, 'autda': -1, 'movk': -1, 'add': -4, 'bl': -1, 'sub': 1, 'mov': -1, 'b': -1}
+    refs: 
+0xfffffe000b40830c szA 264 szB 248 sim 0.71 IDIOM
+    delta: {'ldur': -1, 'cmp': -1, 'adrp': 2, 'sub': -1, 'ldr': -3, 'strb': 1, 'mov': -3, 'pacia': 1, 'cbz': 1, 'movi': -1, 'stur': -1, 'str': -1, 'tbz': 1, 'b.ne': -1, 'add': 1, 'bl': 1, 'bti': 1}
+    refs: 
+0xfffffe000b414530 szA 608 szB 748 sim 0.78 IDIOM
+    delta: {'stp': 3, 'adrp': -2, 'ldr': 4, 'cbz': 2, 'add': 3, 'bl': 2, 'blraa': 2, 'ldur': -1, 'ldp': 3, 'sub': 1, 'mov': 14, 'b': 2, 'str': 2}
+    refs: 
+0xfffffe000b419c10 szA 356 szB 444 sim 0.67 IDIOM
+    delta: {'cbnz': -1, 'cmp': 1, 'adrp': 1, 'b.eq': 1, 'and': 2, 'cbz': -1, 'brk': 1, 'add': 9, 'csel': -2, 'bl': 3, 'blraa': -3, 'mrs': 1, 'ldp': 2, 'mov': -2, 'b': 2, 'ldrh': 1, 'b.le': 1, 'str': 5, 'tbz': 1}
+    refs: 
+0xfffffe000b41e254 szA 248 szB 228 sim 0.80 IDIOM
+    delta: {'stp': -2, 'strb': -1, 'ldp': -1, 'mov': -4, 'pacia': 1, 'str': 1, 'tbz': -1, 'add': 2}
+    refs: 
+0xfffffe000b41f4a8 szA 228 szB 224 sim 0.71 IDIOM
+    delta: {'cmp': 1, 'ldp': -1, 'ldr': 4, 'strb': 1, 'mov': -1, 'and': 1, 'csel': 1, 'pacia': -1, 'cbz': -1, 'blraa': 1, 'str': -1, 'add': -1, 'bl': -3, 'bti': -1}
+    refs: 
+0xfffffe000b41f784 szA 64 szB 92 sim 0.70 IDIOM
+    delta: {'stp': 1, 'strb': 1, 'mov': 1, 'cbz': 1, 'str': 3}
+    refs: 
+0xfffffe000b421658 szA 76 szB 60 sim 0.62 IDIOM
+    delta: {'stp': -1, 'strb': -1, 'and': 1, 'ldrb': 1, 'str': -3, 'bti': -1}
+    refs: 
+0xfffffe000b422184 szA 544 szB 452 sim 0.59 IDIOM
+    delta: {'ldurb': -1, 'pacda': -2, 'cbnz': -3, 'b.lo': 1, 'sturb': -1, 'cmp': 2, 'adrp': 5, 'b.hs': 1, 'ldr': -9, 'and': 2, 'cbz': -2, 'movk': -2, 'brk': 1, 'add': 3, 'bl': -1, 'blraa': -5, 'bti': -1, 'mrs': 1, 'ldp': -1, 'sub': -1, 'mov': -13, 'b': 1, 'pacia': -1, 'ldrh': 1, 'b.le': 1, 'str': 1, 'tbz': 1, 'b.ne': -1}
+    refs: 
+0xfffffe000b425118 szA 264 szB 376 sim 0.54 IDIOM
+    delta: {'cbnz': 1, 'b.lo': -1, 'ccmp': -2, 'cset': -1, 'b.hs': -2, 'ldr': 4, 'mul': 2, 'b.eq': 1, 'and': 1, 'tbnz': -1, 'cbz': 2, 'movk': 7, 'add': 3, 'bl': 1, 'lsr': 2, 'eor': 3, 'ldp': -1, 'sub': 2, 'mov': 4, 'b': 1, 'ldrh': 1, 'b.hi': 1, 'orr': -1, 'b.ne': 1, 'tst': -1, 'ubfiz': 1}
+    refs: 
+0xfffffe000b426ff0 szA 660 szB 496 sim 0.57 IDIOM
+    delta: {'udiv': -1, 'cmp': -4, 'b.lt': 1, 'stp': 2, 'adrp': 3, 'b.hs': -1, 'ldr': -5, 'b.eq': -3, 'ldrb': 1, 'tbnz': -1, 'cbz': 3, 'movk': -4, 'stur': -1, 'lsl': -1, 'brk': 1, 'add': -3, 'csel': -1, 'bl': -1, 'subs': 1, 'lsr': -1, 'ldrsw': 1, 'eor': -5, 'mrs': 2, 'b.ls': -1, 'ldp': -1, 'sub': -1, 'mov': -1, 'ldrh': 3, 'b.hi': 1, 'str': -11, 'orr': -4, 'b.ne': -4, 'tbz': -1, 'tst': -4}
+    refs: kalloc.c | kalloc_type_view(%s) from kext(%s) hasn't been rebuilt with required xnu headers @%s:%d
+0xfffffe000b42efd8 szA 228 szB 228 sim 0.82 IDIOM
+    delta: {'ldr': 1, 'ldrb': -1, 'cbz': 1, 'tbz': -1}
+    refs: 
+0xfffffe000b43848c szA 300 szB 272 sim 0.66 IDIOM
+    delta: {'cmp': -1, 'stp': 10, 'adrp': -4, 'ldr': -1, 'ldrb': -1, 'tbnz': -1, 'stur': -1, 'add': -3, 'csel': -1, 'ldp': -3, 'b': -1, 'ldrh': -1, 'str': 1}
+    refs:  (skipped) | nx_fsw_na_find_log
+0xfffffe000b43a5e8 szA 312 szB 260 sim 0.61 IDIOM
+    delta: {'cmp': -1, 'stp': -1, 'adrp': -2, 'ldr': -3, 'and': -1, 'cbz': -1, 'movk': 1, 'add': 1, 'csel': -1, 'bl': -1, 'lsr': -1, 'mrs': -1, 'b.ls': 1, 'ldp': -2, 'sub': -1, 'mov': 3, 'b': -3, 'ldrh': -1, 'b.le': -1, 'movi': 1, 'ldadd': 2, 'str': 1, 'orr': -1, 'b.ne': -1, 'tbz': 1, 'tst': -1}
+    refs: nx_netif_compat_receive_log2
+0xfffffe000b43a720 szA 424 szB 468 sim 0.54 NET IDIOM
+    delta: {'cmp': 5, 'b.lt': -1, 'stp': -1, 'adrp': 5, 'ccmp': 1, 'strb': 1, 'ldr': 2, 'and': 1, 'ldrb': -2, 'tbnz': -2, 'cbz': -3, 'movk': -1, 'mvn': -2, 'brk': 2, 'casa': 1, 'add': -6, 'bl': 4, 'ldrsw': -1, 'mrs': -1, 'casl': 2, 'ldp': 5, 'mov': 2, 'b': -2, 'ldrh': -3, 'b.hi': -1, 'str': 3, 'b.ne': 5, 'tst': -2}
+    refs: nx_netif_mbuf_to_kpkt_log
+0xfffffe000b43ab98 szA 260 szB 324 sim 0.59 IDIOM
+    delta: {'cmp': 1, 'stp': 2, 'adrp': -5, 'b.hs': 1, 'ldr': 1, 'ldrb': -1, 'tbnz': -1, 'movk': 2, 'stur': 1, 'add': 7, 'bl': 7, 'ldur': 1, 'b.ls': -1, 'sub': 2, 'mov': 1, 'ldadd': -2, 'tbz': -1, 'b.ne': 1}
+    refs: 

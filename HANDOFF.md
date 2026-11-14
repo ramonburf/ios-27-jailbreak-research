@@ -95,6 +95,35 @@ Two implementation details mattered and must be preserved:
 2. The detector must be positive. A datagram arriving at the oracle can only come from the
    reclaimed socket, because nothing in the harness ever sends on a datagram socket.
 
+## The 27.2 fix hunt says this is *not* the CVE-2026-112514 bug (2026-11-14)
+
+Exact function boundaries for the kernel member were recovered from `LC_FUNCTION_STARTS`
+(21,793 starts; see `analysis/kernelcache-funcstarts-exact-diff-2026-11-14.md`), then every
+function in the socket region was compared against its 27.2 counterpart with relocation- and
+line-number-normalised instruction streams. Result:
+
+* `soclose`, `soreceive`, `sosend`, `sosend_list`, `socreate_common`, `sofreelastref`,
+  `sblock`/`sbunlock` candidates are **semantically identical** between 24A446 and 24B119.
+* The "27.2 de-inlined the `sb*` helpers into 17 new functions" hypothesis is **refuted** —
+  there is no hidden inlining shift; the helper set did not change.
+* The only semantic changes nearby are the four 32→64-bit length-arithmetic sites in
+  `uipc_mbuf2.c` (`m_sum16` validator and chain-walk helper) and a halfword-width change in an
+  mbuf-class stats function. Real but unrelated changes exist in `fg_insertuipc` /
+  `fg_removeuipc` / `unp_*` (flow control / AF_UNIX).
+
+The reproduced race is therefore **very unlikely to be the bug Apple fixed as
+CVE-2026-112514**: that advisory is `AV:N` and local app-thread loopback racing is not. Either
+the real fix is elsewhere in the network path, or our stale write is a different (possibly
+still-live) defect. The conversion blocker is unchanged either way — no field differential.
+
+### Allocator: `struct socket` is type-isolated
+
+`socreate` allocates through a view-based `kalloc_type`-family call (`0xac42a30`) using a
+per-type global view pair. All 3,113 call sites share that shape. Together with the device
+results (every freed slot taken by another socket regardless of spray size/volume), cross-type
+reclaim of the socket slot is structurally blocked. Stage 4 needs a second primitive above the
+heap/type wall, not better grooming of this one.
+
 ## New static lead: `uipc_mbuf2.c` length arithmetic (2026-11-14)
 
 A boundary-free comparison against 27.2 found four sites where the mbuf-chain length
@@ -191,14 +220,17 @@ CPU but wake immediately, preserving the simultaneous-fire behaviour the race de
 
 ## Immediate next step
 
-Convert the cross-type collision into a controlled primitive. Concretely:
+The socket-UAF conversion is blocked by type isolation and by the absence of any changed BSD
+socket code in 27.2, so further grooming of this one bug has bounded value. In priority order:
 
-1. Diff the 27.0.1 vs 27.2 socket-buffer helpers (`sblock` / `sbunlock` and their callers) to
-   name the field the stale writer corrupts on the reclaimed object.
-2. Extend `--sockmix` to read back the state of the hammer-created datagram sockets after a
-   hit, so the corrupted field becomes observable without relying on transmission.
-3. Only then look for a leak (KASLR slide + heap address) to shape a fake object.
-
-The `struct socket` allocation size question is no longer blocking: the cross-zone sweep
-showed the outcome does not depend on it, and the cross-type variant wins without any
-spray-size tuning.
+1. **Re-rank the leads above the heap/type wall.** The live candidates are the
+   IOSurface-backed external-object path (CVE-2026-112576's fix region, still untested through
+   `IOSurface`), page-replacement/CoW races, and the mbuf length-arithmetic sites — not more
+   socket spraying.
+2. **Localise CVE-2026-112514 properly.** Enumerate 27.0.1→27.2-changed functions whose string
+   refs touch netinet (`ip_input`, `tcp_*`, `udp_*`, `mbuf`) and inspect their deltas; the
+   advisory is network-reachable (`AV:N`), which our local loopback race is not.
+3. **Use the new exact-diff tooling** (`tools/opencode-temp/kc_fstarts.py`,
+   `kc_norm_diff.py`, `kc_align_region.py`) for all future binary comparison. It replaces
+   string-xref-delta heuristics: unchanged functions compare exactly equal, and real fix sites
+   stand out with no relocation noise.
