@@ -10,13 +10,14 @@ not "probability it will work". 100 % means done and verified on hardware.
 | # | Stage | Component | Status | % |
 |---|-------|-----------|--------|---|
 | 1 | Target acquisition | Firmware / kernelcache / dyld shared cache for build 24A446 (target) plus a 27.2 reference build | Complete | **100%** |
-| 2 | Reachability map | Sandbox-app reachability of AGX / IOHID / IOSurface / WebKit daemons | Complete (AGX sweep, iokit enumeration, crash corpus) | **95%** |
+| 2 | Reachability map | Sandbox-app reachability of AGX / IOHID / IOSurface / WebKit daemons / network socket families | Complete (AGX sweep, iokit enumeration, crash corpus, `--rawsock` both devices) | **96%** |
 | 3 | Vulnerability ID | Whole-kernelcache diff 27.0.1 → 27.2 (91 kexts, 542 changed kernel functions) mapped to CVEs | Complete | **90%** |
 | 4 | Kernel r/w primitive | **CVE-2026-112514 socket-buffer UAF** (CVSS 9.1, network-reachable, no entitlements) | **Race won on hardware**, and as of 2026-11-14 the freed slot can be forced into a `SOCK_DGRAM` object (`--sockmix`: 335 datagrams on the 13 Pro, 14 on the 17 Pro). Exact function diffing shows the whole BSD socket core is **semantically unchanged** in 27.2, so this is probably not the CVE-2026-112514 fix site; and `struct socket` is allocated through a view-based typed allocator, so cross-type reclaim is structurally blocked. Still not kR/W | **83%** |
 | 4b | Kernel r/w primitive | IOSurface notify UAF family (CVE-2026-112517 / -112516 / -112477) | Identified; PAC / type-confusion constraints unresolved | **25%** |
 | 4c | Kernel r/w primitive | IOHIDFamily OOB r/w (CVE-2026-112507) | Patch confirmed in the diff; no sandbox-openable HID class found | **20%** |
 | 4d | Kernel r/w primitive | Other diff-derived kernel UAF candidates | Triage list produced; unconfirmed | **15%** |
-| 4e | Kernel r/w primitive | `uipc_mbuf2.c` mbuf-chain length arithmetic (four 32→64-bit sites, confirmed changed in 27.2) | Exact-diff tooling localised the changed functions to `0xb166b5c` and `0xb166da8`; the panic message `%d`→`%u` change is confirmed. Caller audit and reachability outstanding | **20%** |
+| 4e | Kernel r/w primitive | `uipc_mbuf2.c` mbuf-chain length arithmetic (`m_sum16` / `m_adj_sum16`, four 32→64-bit sites confirmed changed in 27.2) | Functions identified and fully caller-mapped; several callers pass underflow-capable header-field differences. Raw sockets are denied to apps on both devices, so the path is **remote-only (`AV:N`), not app-reachable**. Keep as a bounty candidate | **30%** |
+| 4f | Kernel r/w primitive | `PF_ROUTE` raw route socket from the app sandbox | Measured reachable on both devices (`--rawsock`); read/write capability and the 27.0.1→27.2 route-handler diff untested | **10%** |
 | 5 | Build / deploy pipeline | macOS + Xcode → signed `.app` → `devicectl` install → launch on device | Working end-to-end | **100%** |
 | 6 | EL1 code exec past PAC/CTRR/SPTM (TXM trustcache) | Required after kernel r/w before any persistent code runs | Not started | **5%** |
 | 7 | Credential patch + rootless bootstrap (package manager) | Final stage | Not started | **5%** |
@@ -55,16 +56,18 @@ substitute your own.
 
 ## Immediate next step
 
-The socket UAF is re-scoped: exact function diffing shows no BSD socket code changed in 27.2,
-and the allocator is type-isolated, so this bug cannot be groomed into kernel read/write.
+The socket UAF remains blocked by type isolation; the mbuf checksum lead is now closed as
+app-reachable work (raw sockets are denied). Priorities:
 
-1. Re-rank the leads above the heap/type wall — the IOSurface-backed external-object path,
-   page-replacement/CoW races, physical-page primitives.
-2. Localise CVE-2026-112514 properly from the netinet-side changed functions (`ip_dummynet.c`,
-   `nd6_send.c`, `necp`, `net_filter_event` are already flagged in the triage output).
-3. Use `tools/opencode-temp/kc_fstarts.py` + `kc_norm_diff.py` + `kc_align_region.py` for all
-   future 27.0.1↔27.2 comparisons; the method is exact and removes relocation noise.
+1. **Characterise `PF_ROUTE`** — measured reachable from the app sandbox on both devices.
+   Read-only route messages first, then invalid-argument writes, then the 27.0.1→27.2
+   route-handler diff (`analysis/krw-leads/network-surface-reachability-2026-11-14.md`).
+2. **Identify the CVE-2026-112576 guard helper** `0xfffffe000acbabd8` and the setter of
+   `[obj+0x75]` bit 1 before any further CoW device work.
+3. **Use `tools/opencode-temp/kc_fstarts.py` + `kc_norm_diff.py` + `kc_align_region.py` for
+   all future 27.0.1↔27.2 comparisons**; the method is exact and removes relocation noise.
 
 Evidence: `analysis/kernelcache-funcstarts-exact-diff-2026-11-14.md`,
 `analysis/socket-uaf-crosstype-2026-11-14.md`, `analysis/socket-uaf-stale-write-2026-11-13.md`,
-and `HANDOFF.md`.
+`analysis/krw-leads/network-surface-reachability-2026-11-14.md`,
+`analysis/krw-leads/msum16-checksum-callers-2026-11-14.md`, and `HANDOFF.md`.

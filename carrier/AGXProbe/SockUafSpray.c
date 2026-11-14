@@ -348,3 +348,124 @@ int cow_probe_run(int rounds, int size_kb, int *stages)
     }
     return first_kr;
 }
+
+    // ---- Network-surface reachability probe (2026-11-14) -----------------------
+    // Reports, from inside the app sandbox, which kernel-facing socket families an
+    // unsigned app may actually create. This bounds every network-path lead
+    // (raw-packet injection, the m_sum16/m_adj_sum16 checksum callers, PF_ROUTE /
+    // PF_NDRV surfaces): if raw sockets are denied here, none of those paths is
+    // reachable from an app-carried exploit on this build.
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <errno.h>
+    #include <stdarg.h>
+    #include <stdio.h>
+
+    extern void log_from_c(const char *msg);
+
+    #ifndef PF_NDRV
+    #define PF_NDRV 27
+    #endif
+    #ifndef PF_ROUTE
+    #define PF_ROUTE 17
+    #endif
+    #ifndef AF_SYSTEM
+    #define AF_SYSTEM 32
+    #endif
+    #ifndef SYSPROTO_CONTROL
+    #define SYSPROTO_CONTROL 2
+    #endif
+
+    static void nsp_log(const char *fmt, ...)
+    {
+        char buf[320];
+        va_list ap;
+        va_start(ap, fmt);
+        vsnprintf(buf, sizeof(buf), fmt, ap);
+        va_end(ap);
+        log_from_c(buf);
+        /* Also mirror to stdout: devicectl --console captures stdout, whereas
+           log_from_c only reaches the app's own session file. */
+        fputs(buf, stdout);
+        fputc('\n', stdout);
+        fflush(stdout);
+    }
+
+    int network_surface_probe(void)
+    {
+        struct { const char *name; int dom; int type; int proto; } tab[] = {
+            { "AF_INET/SOCK_RAW/ICMP",     AF_INET,   SOCK_RAW,  IPPROTO_ICMP },
+            { "AF_INET/SOCK_RAW/UDP",      AF_INET,   SOCK_RAW,  IPPROTO_UDP },
+            { "AF_INET/SOCK_RAW/TCP",      AF_INET,   SOCK_RAW,  IPPROTO_TCP },
+            { "AF_INET/SOCK_RAW/RAW",      AF_INET,   SOCK_RAW,  IPPROTO_RAW },
+            { "AF_INET/SOCK_DGRAM/IGMP",   AF_INET,   SOCK_DGRAM, IPPROTO_IGMP },
+            { "AF_INET6/SOCK_RAW/ICMPV6",  AF_INET6,  SOCK_RAW,  IPPROTO_ICMPV6 },
+            { "AF_INET6/SOCK_RAW/RAW",     AF_INET6,  SOCK_RAW,  IPPROTO_RAW },
+            { "PF_NDRV/SOCK_RAW/0",        PF_NDRV,   SOCK_RAW,  0 },
+            { "PF_ROUTE/SOCK_RAW/INET",    PF_ROUTE,  SOCK_RAW,  AF_INET },
+            { "AF_SYSTEM/SOCK_DGRAM/CTRL", AF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL },
+            { "AF_INET/SOCK_STREAM/TCP",   AF_INET,   SOCK_STREAM, IPPROTO_TCP },
+            { "AF_UNIX/SOCK_DGRAM/0",      AF_UNIX,   SOCK_DGRAM, 0 },
+        };
+        int n = (int)(sizeof(tab) / sizeof(tab[0]));
+        int ok = 0;
+        nsp_log("[*] rawsock: probing %d socket families (network-surface reachability)", n);
+        for (int i = 0; i < n; i++) {
+            errno = 0;
+            int fd = socket(tab[i].dom, tab[i].type, tab[i].proto);
+            int e = errno;
+            if (fd >= 0) {
+                ok++;
+                nsp_log("[+] %-28s OK fd=%d", tab[i].name, fd);
+                close(fd);
+            } else {
+                nsp_log("[-] %-28s ERR errno=%d (%s)", tab[i].name, e, strerror(e));
+            }
+        }
+        int bpf = open("/dev/bpf0", O_RDWR | O_NONBLOCK);
+        nsp_log("%s /dev/bpf0 open errno=%d (%s)", bpf >= 0 ? "[+]" : "[-]",
+                errno, strerror(errno));
+        if (bpf >= 0) close(bpf);
+
+        // Only meaningful when a raw IPv4 socket exists: can we craft and inject a
+        // packet to our own loopback, and does it come back out of the input path?
+        int raw = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+        if (raw >= 0) {
+            int one = 1;
+            int r = setsockopt(raw, IPPROTO_IP, IP_HDRINCL, &one, sizeof(one));
+            nsp_log("[*] rawsock: IP_HDRINCL on ICMP raw -> %d errno=%d", r, errno);
+
+            struct sockaddr_in dst;
+            memset(&dst, 0, sizeof(dst));
+            dst.sin_family = AF_INET;
+            dst.sin_len = sizeof(dst);
+            dst.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+            unsigned char pkt[40];
+            memset(pkt, 0, sizeof(pkt));
+            pkt[0] = 0x45;
+            pkt[2] = 0; pkt[3] = sizeof(pkt);       /* total length */
+            pkt[8] = 64;                             /* ttl */
+            pkt[9] = IPPROTO_ICMP;
+            pkt[12] = 127; pkt[13] = 0; pkt[14] = 0; pkt[15] = 1;
+            pkt[16] = 127; pkt[17] = 0; pkt[18] = 0; pkt[19] = 1;
+            pkt[20] = 8; pkt[21] = 0;                /* echo request */
+            errno = 0;
+            ssize_t s = sendto(raw, pkt, sizeof(pkt), 0, (struct sockaddr *)&dst, sizeof(dst));
+            nsp_log("[*] rawsock: raw ICMP sendto(127.0.0.1) -> %zd errno=%d", s, errno);
+
+            for (int k = 0; k < 8; k++) {
+                unsigned char rb[512];
+                ssize_t g = recvfrom(raw, rb, sizeof(rb), MSG_DONTWAIT, NULL, NULL);
+                if (g > 0) {
+                    nsp_log("[+] rawsock: self-injected loopback packet received, %zd bytes", g);
+                    break;
+                }
+            }
+            close(raw);
+        } else {
+            nsp_log("[-] rawsock: no raw IPv4 socket available for injection test");
+        }
+
+        nsp_log("[*] rawsock: %d/%d socket families opened", ok, n);
+        return ok;
+    }

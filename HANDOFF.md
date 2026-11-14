@@ -218,19 +218,45 @@ CPU but wake immediately, preserving the simultaneous-fire behaviour the race de
   reasons `per-process-limit` / `fc-thrashing` / `highwater`. Not caused by this harness.
 - No kernel panic and no device reboot occurred in any run.
 
+## Network-surface reachability measured (2026-11-14)
+
+`--rawsock` was built into the carrier and run on **both devices** (identical output): raw
+IPv4/IPv6 sockets, `PF_NDRV` and `/dev/bpf*` are all refused with `EPERM`, while
+`PF_ROUTE/SOCK_RAW/INET` and `AF_SYSTEM/SOCK_DGRAM/SYSPROTO_CONTROL` **open successfully**.
+Consequences: no app-carried packet injection exists, so every network-input lead
+(`m_sum16`/`m_adj_sum16`, `inet_cksum`, `nd6_send`, `igmp`, `net_filter_event`) is remote-only;
+and `PF_ROUTE` is a newly measured, sandbox-reachable kernel control interface. Full table and
+next steps: `analysis/krw-leads/network-surface-reachability-2026-11-14.md`.
+
+## The changed mbuf functions are identified: `m_sum16` / `m_adj_sum16`
+
+The four 32→64-bit sites live in **`m_sum16`** (`0xfffffe000b166da8`) and **`m_adj_sum16`**
+(`0xfffffe000b166b5c`), plus the SIMD ones-complement checksum core at
+`0xfffffe000ab4b600`. Their callers are input-path checksum routines; several pass a
+difference of header fields straight into the length argument, which is how `len` can
+underflow into a huge `u_int` and make `off+len` wrap modulo 2^32. Because raw sockets are
+denied to apps, the defect is reachable only by a network peer: **remote `AV:N`, not
+app-reachable**. Evidence: `analysis/krw-leads/msum16-checksum-callers-2026-11-14.md`.
+
+## CoW guard recovered (2026-11-14)
+
+Exact function boundaries show the "External objects are not implemented for CoW" assertion is
+the tail of the fault-path function starting at `0xfffffe000ac86c10`, reached only from
+`0xfffffe000ac88dd4` when `[obj+0x75]` bit 1 is set **and** the helper at
+`0xfffffe000acbabd8` returns something other than `3`. A generic IOSurface CoW storm is
+therefore unlikely to hit it; the helper and the object layout must be identified first.
+Details appended to `analysis/krw-leads/CVE-2026-112576-cow.md`.
+
 ## Immediate next step
 
-The socket-UAF conversion is blocked by type isolation and by the absence of any changed BSD
-socket code in 27.2, so further grooming of this one bug has bounded value. In priority order:
-
-1. **Re-rank the leads above the heap/type wall.** The live candidates are the
-   IOSurface-backed external-object path (CVE-2026-112576's fix region, still untested through
-   `IOSurface`), page-replacement/CoW races, and the mbuf length-arithmetic sites — not more
-   socket spraying.
-2. **Localise CVE-2026-112514 properly.** Enumerate 27.0.1→27.2-changed functions whose string
-   refs touch netinet (`ip_input`, `tcp_*`, `udp_*`, `mbuf`) and inspect their deltas; the
-   advisory is network-reachable (`AV:N`), which our local loopback race is not.
-3. **Use the new exact-diff tooling** (`tools/opencode-temp/kc_fstarts.py`,
-   `kc_norm_diff.py`, `kc_align_region.py`) for all future binary comparison. It replaces
-   string-xref-delta heuristics: unchanged functions compare exactly equal, and real fix sites
-   stand out with no relocation noise.
+1. **Characterise `PF_ROUTE`.** It is the newly measured sandbox-reachable kernel interface.
+   Test read-only route messages (`RTM_IFINFO`, `RTM_GET`) first, then an `RTM_ADD` with
+   deliberately invalid arguments; diff the 27.0.1→27.2 route handlers afterwards. See
+   `analysis/krw-leads/network-surface-reachability-2026-11-14.md`.
+2. **Stop spending device runs on untargeted CoW storms.** Identify `0xfffffe000acbabd8` and
+   the setter of `[obj+0x75]` bit 1 before designing any CVE-2026-112576 trigger.
+3. **The mbuf length-arithmetic lead is closed as app-reachable work** (remote only, keep as a
+   bounty candidate). Do not rebuild probes around it.
+4. **Use the exact-diff tooling** (`tools/opencode-temp/kc_fstarts.py`, `kc_norm_diff.py`,
+   `kc_align_region.py`) for all future binary comparison; unchanged functions compare equal
+   and real fix sites stand out with no relocation noise.

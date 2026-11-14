@@ -146,7 +146,7 @@ final class ReachViewModel: ObservableObject {
             || args.contains("--cowprobe")
             || args.contains("--cowfile")
             || args.contains("--apfsrace")
-            || args.contains("--socklowbuf") { Task.detached { await self.runSocketUafMode() }; return }
+            || args.contains("--socklowbuf") || args.contains("--rawsock") { Task.detached { await self.runSocketUafMode() }; return }
         if args.contains("--autorun") { emit("AGXProbe v123 ready (use --webscan)") }
     }
 
@@ -717,6 +717,12 @@ func runFuzzMode() async {
         apfs_race_probe(96, 4096, dir, &st)
         emitBg("[*] apfsrace: open=\(st[0]) mmap=\(st[1]) thread=\(st[2])")
         emitBg("=== apfsrace done ===")
+    }
+
+    nonisolated func networkSurfaceProbe() {
+        emitBg("[*] rawsock start (network-surface reachability)")
+        let opened = network_surface_probe()
+        emitBg("=== rawsock done: \(opened) families opened ===")
     }
 
     nonisolated func sockUafPeerBytes(_ precPort: Int, _ peers: inout [Int32],
@@ -1314,6 +1320,7 @@ func runFuzzMode() async {
         if ProcessInfo.processInfo.arguments.contains("--cowprobe") { cowProbe(); return }
         if ProcessInfo.processInfo.arguments.contains("--cowfile") { cowFileProbe(); return }
         if ProcessInfo.processInfo.arguments.contains("--apfsrace") { apfsRaceProbe(); return }
+        if ProcessInfo.processInfo.arguments.contains("--rawsock") { networkSurfaceProbe(); return }
         let solo = oolOnly || xzOnly || gcOnly || udpOnly || precOnly || mixOnly || lowBufOnly
         var hits = 0
         var xtypeHits = 0
