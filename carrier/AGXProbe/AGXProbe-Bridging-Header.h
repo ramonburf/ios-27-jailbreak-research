@@ -31,3 +31,6 @@ int apfs_race_probe(int rounds, int size_kb, const char *dir, int *stages);
 
 // Network-surface reachability probe (SockUafSpray.c).
 int network_surface_probe(void);
+
+// Route-socket (PF_ROUTE) characterisation probe (SockUafSpray.c).
+int route_socket_probe(int *stages);

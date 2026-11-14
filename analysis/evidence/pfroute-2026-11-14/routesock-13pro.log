@@ -1,0 +1,88 @@
+=== CVE-2026-112514 socket UAF trigger (17 Pro, hammer build) ===
+[*] oracle tcpinfo: idle r=0 len=112 load r=0 len=112 diffs: 24:f8->08 25:7d->7e 56:00->01 64:00->10
+[*] UDP datagram oracle listening on 127.0.0.1:8090
+[*] timer pool: 64 sockets with armed retransmit timers
+[*] routesock start (PF_ROUTE bidirectionality + malformed sockaddr)
+[*] routesock start (PF_ROUTE bidirectionality + malformed-sockaddr probe)
+[*] routesock layout: sizeof(hdr)=92 version_off=2 addrs_off=12
+[+] PF_ROUTE/SOCK_RAW/AF_INET -> fd=135 errno=0 (Undefined error: 0)
+[*] routesock S0 unsolicited read -> 0 bytes
+[*] routesock S1 GET @0x54 dst=192.0.2.1 msglen=100 -> 100 errno=0
+[*] routesock S1 reply -> 128 bytes
+S1 0000: 80 00 05 04 13 00 00 00 43 08 01 40 07 00 00 00
+S1 0010: 44 1e 00 00 01 00 00 00 00 00 00 00 00 00 00 00
+S1 0020: 00 00 00 00 00 00 00 00 dc 05 00 00 00 00 00 00
+S1 0030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+S1 0040: 00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00
+S1 0050: 00 00 00 00 00 00 00 00 00 00 00 00 10 02 00 00
+S1 0060: 00 00 00 00 00 00 00 00 00 00 00 00 10 02 00 00
+S1 0070: c0 a8 01 01 13 00 00 00 00 00 00 00 00 00 00 00
+S1 hdr: msglen=128 version=5 type=4 index=19 flags=0x40010843 addrs=0x7 pid=7748 seq=1 errno=0
+S1 sa0 @0x5c len=16 family=2
+S1 sa1 @0x6c len=16 family=2
+S1 sa2 @0x7c len=0 family=0
+[*] routesock S2 GET @0x5c dst=192.0.2.1 msglen=108 -> 108 errno=0
+[*] routesock S2 reply -> 128 bytes
+S2 0000: 80 00 05 04 13 00 00 00 43 08 01 40 07 00 00 00
+S2 0010: 44 1e 00 00 02 00 00 00 00 00 00 00 00 00 00 00
+S2 0020: 00 00 00 00 00 00 00 00 dc 05 00 00 00 00 00 00
+S2 0030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+S2 0040: 00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00
+S2 0050: 00 00 00 00 00 00 00 00 00 00 00 00 10 02 00 00
+S2 0060: 00 00 00 00 00 00 00 00 00 00 00 00 10 02 00 00
+S2 0070: c0 a8 01 01 13 00 00 00 00 00 00 00 00 00 00 00
+S2 hdr: msglen=128 version=5 type=4 index=19 flags=0x40010843 addrs=0x7 pid=7748 seq=2 errno=0
+S2 sa0 @0x5c len=16 family=2
+S2 sa1 @0x6c len=16 family=2
+S2 sa2 @0x7c len=0 family=0
+[*] routesock S3 GET dst=127.0.0.1 msglen=108 -> 108 errno=0
+[*] routesock S3 reply -> 124 bytes
+S3 0000: 7c 00 05 04 01 00 00 00 45 00 20 00 03 00 00 00
+S3 0010: 44 1e 00 00 03 00 00 00 00 00 00 00 00 00 00 00
+S3 0020: 00 00 00 00 00 00 00 00 00 40 00 00 00 00 00 00
+S3 0030: 00 00 00 00 00 c0 00 00 00 c0 00 00 00 00 00 00
+S3 0040: 0a 34 00 00 0e 61 00 00 13 a5 4f 02 d8 3f 00 00
+S3 0050: 00 00 00 00 00 00 00 00 00 00 00 00 10 02 00 00
+S3 0060: 7f 00 00 01 00 00 00 00 00 00 00 00 10 02 00 00
+S3 0070: 7f 00 00 01 00 00 00 00 00 00 00 00            
+S3 hdr: msglen=124 version=5 type=4 index=1 flags=0x200045 addrs=0x3 pid=7748 seq=3 errno=0
+S3 sa0 @0x5c len=16 family=2
+S3 sa1 @0x6c len=16 family=2
+[*] routesock S4 GET sa_len=0xff msglen=108 -> -1 errno=22
+[*] routesock S4 reply -> 0 bytes
+[*] routesock S5 en0 IPv4 = 192.168.1.48
+[*] routesock S5 RTM_ADD 198.51.100.0/24 msglen=140 -> -1 errno=1
+[*] routesock S5 reply -> 0 bytes
+[*] routesock S6 GET 198.51.100.0 -> 108 errno=0
+[*] routesock S6 reply -> 128 bytes
+S6 0000: 80 00 05 04 13 00 00 00 43 08 01 40 07 00 00 00
+S6 0010: 44 1e 00 00 06 00 00 00 00 00 00 00 00 00 00 00
+S6 0020: 00 00 00 00 00 00 00 00 dc 05 00 00 00 00 00 00
+S6 0030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+S6 0040: 00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00
+S6 0050: 00 00 00 00 00 00 00 00 00 00 00 00 10 02 00 00
+S6 0060: 00 00 00 00 00 00 00 00 00 00 00 00 10 02 00 00
+S6 0070: c0 a8 01 01 13 00 00 00 00 00 00 00 00 00 00 00
+S6 hdr: msglen=128 version=5 type=4 index=19 flags=0x40010843 addrs=0x7 pid=7748 seq=6 errno=0
+S6 sa0 @0x5c len=16 family=2
+S6 sa1 @0x6c len=16 family=2
+S6 sa2 @0x7c len=0 family=0
+[*] routesock S7 RTM_DELETE 198.51.100.0/24 msglen=124 -> -1 errno=1
+[*] routesock S7 reply -> 0 bytes
+[*] routesock S8 GET 198.51.100.0 after delete -> 108 errno=0
+[*] routesock S8 reply -> 128 bytes
+S8 0000: 80 00 05 04 13 00 00 00 43 08 01 40 07 00 00 00
+S8 0010: 44 1e 00 00 08 00 00 00 00 00 00 00 00 00 00 00
+S8 0020: 00 00 00 00 00 00 00 00 dc 05 00 00 00 00 00 00
+S8 0030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+S8 0040: 00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00
+S8 0050: 00 00 00 00 00 00 00 00 00 00 00 00 10 02 00 00
+S8 0060: 00 00 00 00 00 00 00 00 00 00 00 00 10 02 00 00
+S8 0070: c0 a8 01 01 13 00 00 00 00 00 00 00 00 00 00 00
+S8 hdr: msglen=128 version=5 type=4 index=19 flags=0x40010843 addrs=0x7 pid=7748 seq=8 errno=0
+S8 sa0 @0x5c len=16 family=2
+S8 sa1 @0x6c len=16 family=2
+S8 sa2 @0x7c len=0 family=0
+[*] routesock done: stages(failures) = 0 0 0 0 1 1 0 1 0, first_err=0
+[*] routesock stages(failures)=0 0 0 0 1 1 0 1 0 firstErr=0
+=== routesock done ===

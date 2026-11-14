@@ -247,18 +247,38 @@ the tail of the fault-path function starting at `0xfffffe000ac86c10`, reached on
 therefore unlikely to hit it; the helper and the object layout must be identified first.
 Details appended to `analysis/krw-leads/CVE-2026-112576-cow.md`.
 
+## PF_ROUTE characterised: read-only from the sandbox (2026-11-14)
+
+`--routesock` ran on the 13 Pro and settled the interface:
+
+* **Reads work.** `RTM_GET` returns real `rt_msghdr` records (`version=5`,
+  `errno=0`) with sockaddr arrays; the app can enumerate routes and interfaces.
+* **Writes are refused.** `RTM_ADD` and `RTM_DELETE` both return
+  `send() == -1, errno = EPERM`. No state mutation is possible.
+* **Malformed `sa_len` is rejected** with `EINVAL`; no panic, no partial parse.
+* `struct rt_msghdr` on iOS 27 is **0x5c**, not the published 0x54 — the first
+  reply sockaddr sits at `0x5c`, confirmed by a loopback query returning
+  `127.0.0.1` exactly. Placing sockaddrs at 0x54 silently produces a
+  default-route lookup that looks plausible.
+
+Verdict: an information channel only, **not** a path to kernel read/write. The
+route.c fix-site lead is closed — statically the changed helper is encode-side
+(called only from two notification encoders fed by ifnet/ifa state), and the
+device run shows the parser validates lengths before any encoding.
+Evidence: `analysis/krw-leads/pfroute-characterisation-2026-11-14.md`.
+
+One open anomaly, unconfirmed: the default-route reply declares
+`rtm_msglen = 128` while three advertised sockaddrs would need `0x8c`; the
+third entry starts with bytes `13 00 00 00`. Recorded, not claimed.
+
 ## Immediate next step
 
-1. **Characterise `PF_ROUTE`.** It is the newly measured sandbox-reachable kernel interface.
-   A changed `bsd/net/route.c` helper is already localised (27.0.1 panics on any
-   `sdl_alen` mismatch; 27.2 only on an over-long value) — build a route-socket probe for the
-   13 Pro that starts with well-formed `RTM_IFINFO`/`RTM_GET` and then tries mismatched
-   `sa_len`/`sdl_alen`. See
-   `analysis/krw-leads/network-surface-reachability-2026-11-14.md`.
-2. **Stop spending device runs on untargeted CoW storms.** Identify `0xfffffe000acbabd8` and
-   the setter of `[obj+0x75]` bit 1 before designing any CVE-2026-112576 trigger.
-3. **The mbuf length-arithmetic lead is closed as app-reachable work** (remote only, keep as a
-   bounty candidate). Do not rebuild probes around it.
-4. **Use the exact-diff tooling** (`tools/opencode-temp/kc_fstarts.py`, `kc_norm_diff.py`,
-   `kc_align_region.py`) for all future binary comparison; unchanged functions compare equal
-   and real fix sites stand out with no relocation noise.
+1. **Identify `0xfffffe000acbabd8`** (the CVE-2026-112576 CoW guard helper) and
+   the setter of `[obj+0x75]` bit 1. Pure static analysis, explicitly queued in
+   HANDOFF; do this before any further CoW device work.
+2. **`PF_ROUTE` is now closed as exploit surface** — read-only, writes `EPERM`.
+   Do not build more route probes except as an oracle.
+3. **The mbuf length-arithmetic lead stays closed** as app-reachable work
+   (raw sockets are denied); keep it as a bounty candidate.
+4. **Use the exact-diff tooling** (`tools/opencode-temp/kc_fstarts.py`,
+   `kc_norm_diff.py`, `kc_align_region.py`) for all future binary comparison.

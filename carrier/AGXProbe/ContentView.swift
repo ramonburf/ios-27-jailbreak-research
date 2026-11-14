@@ -146,7 +146,8 @@ final class ReachViewModel: ObservableObject {
             || args.contains("--cowprobe")
             || args.contains("--cowfile")
             || args.contains("--apfsrace")
-            || args.contains("--socklowbuf") || args.contains("--rawsock") { Task.detached { await self.runSocketUafMode() }; return }
+            || args.contains("--socklowbuf") || args.contains("--rawsock")
+            || args.contains("--routesock") { Task.detached { await self.runSocketUafMode() }; return }
         if args.contains("--autorun") { emit("AGXProbe v123 ready (use --webscan)") }
     }
 
@@ -723,6 +724,14 @@ func runFuzzMode() async {
         emitBg("[*] rawsock start (network-surface reachability)")
         let opened = network_surface_probe()
         emitBg("=== rawsock done: \(opened) families opened ===")
+    }
+
+    nonisolated func routeSocketProbe() {
+        emitBg("[*] routesock start (PF_ROUTE bidirectionality + malformed sockaddr)")
+        var st = [Int32](repeating: 0, count: 9)
+        let err = route_socket_probe(&st)
+        emitBg("[*] routesock stages(failures)=\(st[0]) \(st[1]) \(st[2]) \(st[3]) \(st[4]) \(st[5]) \(st[6]) \(st[7]) \(st[8]) firstErr=\(err)")
+        emitBg("=== routesock done ===")
     }
 
     nonisolated func sockUafPeerBytes(_ precPort: Int, _ peers: inout [Int32],
@@ -1321,6 +1330,7 @@ func runFuzzMode() async {
         if ProcessInfo.processInfo.arguments.contains("--cowfile") { cowFileProbe(); return }
         if ProcessInfo.processInfo.arguments.contains("--apfsrace") { apfsRaceProbe(); return }
         if ProcessInfo.processInfo.arguments.contains("--rawsock") { networkSurfaceProbe(); return }
+        if ProcessInfo.processInfo.arguments.contains("--routesock") { routeSocketProbe(); return }
         let solo = oolOnly || xzOnly || gcOnly || udpOnly || precOnly || mixOnly || lowBufOnly
         var hits = 0
         var xtypeHits = 0

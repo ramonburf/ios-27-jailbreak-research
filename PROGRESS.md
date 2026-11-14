@@ -17,7 +17,7 @@ not "probability it will work". 100 % means done and verified on hardware.
 | 4c | Kernel r/w primitive | IOHIDFamily OOB r/w (CVE-2026-112507) | Patch confirmed in the diff; no sandbox-openable HID class found | **20%** |
 | 4d | Kernel r/w primitive | Other diff-derived kernel UAF candidates | Triage list produced; unconfirmed | **15%** |
 | 4e | Kernel r/w primitive | `uipc_mbuf2.c` mbuf-chain length arithmetic (`m_sum16` / `m_adj_sum16`, four 32→64-bit sites confirmed changed in 27.2) | Functions identified and fully caller-mapped; several callers pass underflow-capable header-field differences. Raw sockets are denied to apps on both devices, so the path is **remote-only (`AV:N`), not app-reachable**. Keep as a bounty candidate | **30%** |
-| 4f | Kernel r/w primitive | `PF_ROUTE` raw route socket from the app sandbox | Measured reachable on both devices (`--rawsock`). One changed `bsd/net/route.c` function localised (`0xae662ec`→`0xaeb9588`, +`0x44`): 27.0.1 panics (`VERIFY`) on *any* `sdl_alen` mismatch while 27.2 only panics when parsed > declared. Reachability unproven — trigger not yet designed | **15%** |
+| 4f | Kernel r/w primitive | `PF_ROUTE` raw route socket from the app sandbox | **Characterised (2026-11-14): reads work, writes are `EPERM`.** `RTM_GET` returns real `rt_msghdr` records with sockaddr arrays; `RTM_ADD`/`RTM_DELETE` both fail with `EPERM`; malformed `sa_len` is rejected with `EINVAL`. iOS 27's `struct rt_msghdr` is **0x5c**, not the published 0x54. The changed `bsd/net/route.c` helper is encode-side only (called from two notification encoders fed by ifnet/ifa state), so its 27.0.1 `VERIFY` cannot be driven by message contents. Information channel, **not** a kR/W path | **35%** |
 | 5 | Build / deploy pipeline | macOS + Xcode → signed `.app` → `devicectl` install → launch on device | Working end-to-end | **100%** |
 | 6 | EL1 code exec past PAC/CTRR/SPTM (TXM trustcache) | Required after kernel r/w before any persistent code runs | Not started | **5%** |
 | 7 | Credential patch + rootless bootstrap (package manager) | Final stage | Not started | **5%** |
@@ -56,18 +56,19 @@ substitute your own.
 
 ## Immediate next step
 
-The socket UAF remains blocked by type isolation; the mbuf checksum lead is now closed as
-app-reachable work (raw sockets are denied). Priorities:
+The socket UAF remains blocked by type isolation; the mbuf checksum lead is closed as
+app-reachable work (raw sockets are denied); and `PF_ROUTE` is now characterised as a
+**read-only** interface (`RTM_GET` works, `RTM_ADD`/`RTM_DELETE` return `EPERM`) — an
+information channel, not a primitive. Priorities:
 
-1. **Characterise `PF_ROUTE`** — measured reachable from the app sandbox on both devices.
-   Read-only route messages first, then invalid-argument writes, then the 27.0.1→27.2
-   route-handler diff (`analysis/krw-leads/network-surface-reachability-2026-11-14.md`).
-2. **Identify the CVE-2026-112576 guard helper** `0xfffffe000acbabd8` and the setter of
+1. **Identify the CVE-2026-112576 guard helper** `0xfffffe000acbabd8` and the setter of
    `[obj+0x75]` bit 1 before any further CoW device work.
-3. **Use `tools/opencode-temp/kc_fstarts.py` + `kc_norm_diff.py` + `kc_align_region.py` for
+2. **Use `tools/opencode-temp/kc_fstarts.py` + `kc_norm_diff.py` + `kc_align_region.py for
    all future 27.0.1↔27.2 comparisons**; the method is exact and removes relocation noise.
+3. **Re-examine leads above the type-isolation wall** (VM/VFS page-replacement,
+   IOSurface-backed external objects) rather than grooming the socket slot further.
 
 Evidence: `analysis/kernelcache-funcstarts-exact-diff-2026-11-14.md`,
 `analysis/socket-uaf-crosstype-2026-11-14.md`, `analysis/socket-uaf-stale-write-2026-11-13.md`,
 `analysis/krw-leads/network-surface-reachability-2026-11-14.md`,
-`analysis/krw-leads/msum16-checksum-callers-2026-11-14.md`, and `HANDOFF.md`.
+`analysis/krw-leads/pfroute-characterisation-2026-11-14.md`, and `HANDOFF.md`.
