@@ -116,6 +116,26 @@ At 4096 bytes the outcome is identical to 832. Whatever size the out-of-line pay
 the freed slot is still taken by another socket — so the size of the allocation class is not
 the limiting factor, and the `sizeof(struct socket)` question no longer blocks this path.
 
+## Why socket-zone exhaustion cannot work
+
+The zone-page probe shows freeing sockets reclaims almost nothing, so page return would
+need sustained allocation pressure well beyond the zone's resident set. But pressure can
+only be created by allocating more sockets, and **the file-descriptor limit caps that**:
+
+- Raising `RLIMIT_NOFILE` allowed holding 3,963 sockets in testing (`--sockool` logs),
+  i.e. roughly 3.3 MB of socket objects.
+- Returning a zone page needs *all* objects on it to be freed while the allocator is under
+  pressure to grow — a few megabytes of churn inside a zone that already has pages will not
+  trigger it, and zone GC is lazy besides.
+- The reference exploit's `ZONE_EXHAUST_COUNT` of 4,096 (about 3.4 MB) is therefore far too
+  small to create real page pressure either. Its strategy B was likely never exercised
+  against a device.
+
+So cross-zone reclaim of the freed socket slot is not merely hard with this harness — it is
+structurally out of reach via socket exhaustion alone. Any further attempt along those lines
+would first need a way to allocate many more socket-sized objects than the fd limit permits,
+which means a different object type entirely.
+
 ## Variant I (UDP type confusion) — tested, no effect
 
 `--sockudp` ran the full 40,000 iterations on both devices in ~180 s without being killed by
