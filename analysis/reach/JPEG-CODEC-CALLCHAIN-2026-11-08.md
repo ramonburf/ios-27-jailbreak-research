@@ -98,3 +98,58 @@ remains **open**, and that analysis should be treated as unverified.
 
 Revalidation path: locate the actual call instruction inside `clientClosedGated`, recover its
 real target, and determine what the branch that skips `release()` actually tests.
+
+
+## Revalidation (2026-11-14): the real `clientClosedGated` call chain
+
+Re-disassembled `clientClosedGated` at `0xfffffe000900985c` from the entry point:
+
+```
+0xfffffe000900985c  pacibsp
+0xfffffe0009009870  mov  x20, x1            ; x20 = userClient
+0xfffffe0009009874  mov  x19, x0            ; x19 = driver
+0xfffffe0009009878  cbz  x1, 0x...98c8      ; NULL check
+0xfffffe0009009880  mov  x0, x20
+0xfffffe0009009880  bl   0xfffffe000902fea8  ; <-- the "unidentified stub"
+0xfffffe0009009884  tbnz w0, #0, 0x...98bc  ; if bit0 set -> skip release entirely
+0xfffffe000900988c  bl   0xfffffe000900990c  ; iterate driver+0xe0 array (2 entries)
+0xfffffe0009009890  ldr  x16, [x20]         ; userClient vtable
+0xfffffe000900989c  autda x16, x17
+0xfffffe00090098a4  add  x16, x16, #0x2f0
+0xfffffe00090098a8  ldr  x8, [x16]
+0xfffffe00090098b8  blraa x8                ; virtual release()
+```
+
+The "stub" at `0xfffffe000902fea8` is a **PLT-style trampoline**:
+`adrp x17, <page>; add x17, x17, #0x680; ldr x16, [x17]; braa x16, x17`.
+
+Resolving the pointer it loads — `__DATA_CONST` at `0xfffffe00080e1680`, a chained fixup
+(auth=1, key IA) — gives **`0xfffffe000b2ffac0`** in `__TEXT_EXEC`.
+
+### What that function does
+
+```
+0xfffffe000b2ffac0  pacibsp
+0xfffffe000b2ffacc  ldr  x16, [x0]        ; object vtable
+0xfffffe000b2ffadc  autda x16, x17
+0xfffffe000b2ffaec  mov  x17, #0x298
+0xfffffe000b2ffb??  add  x16, x16, #0x298 ; vtable + 0x298
+0xfffffe000b2ffae4  ldr  x8, [x16]
+0xfffffe000b2ffaec  blraa x8              ; virtual call, x0 = object
+0xfffffe000b2ffaf0  and  w0, w0, #1       ; return result & 1
+0xfffffe000b2ffaf8  retab
+```
+
+It is a **boolean virtual-call wrapper**: call the method at vtable offset `+0x298` and return
+its low bit. So whether `clientClosedGated` skips its release does **not** depend on a kernel
+refcount comparison — it depends on what the *user client subclass* answers through its
+`+0x298` method.
+
+### Consequence
+The dangling-pointer question now has a precise form: if the driver stores the userClient
+pointer at `driver+0xe0` and releases it only when `+0x298` returns zero, then the pointer is
+dangling exactly when that method keeps returning non-zero after `IOServiceClose`. The remaining
+unknown is the user client's own `+0x298` implementation, recoverable from the JPEG user
+client's vtable in the kext's `__DATA_CONST`.
+
+This replaces the earlier speculative analysis; the `0xb8a2fc4` claim is withdrawn.
