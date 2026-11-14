@@ -153,3 +153,31 @@ unknown is the user client's own `+0x298` implementation, recoverable from the J
 client's vtable in the kext's `__DATA_CONST`.
 
 This replaces the earlier speculative analysis; the `0xb8a2fc4` claim is withdrawn.
+
+
+## Vtable identification attempt (2026-11-14)
+
+To resolve what `+0x298` actually does, both candidate vtables were tested by decoding their
+entries as chained fixups and checking how many land inside JPEG kext text
+(`0xfffffe0009000000`–`0xfffffe0009040000`):
+
+| candidate | entries into JPEG text | verdict |
+|---|---|---|
+| `0xfffffe00080dd320` (earlier session's "user client vtable") | 5 / 96 | **not a vtable** — claim withdrawn |
+| `0xfffffe00080dbc80` (found by scanning `__DATA_CONST`/`__DATA` for contiguous runs of pointers into kext text) | 96 / 96 | a genuine function-pointer table, but its entry at `+0x298` decodes to `0xfffffe0106003…`, outside JPEG text |
+
+So neither address is confirmed as the user client vtable:
+
+- The `+0x298` slot of the 96-entry table does not resolve into the kext, which means either the
+  table is something else (a dispatch or codec method table), or the vtable base assumed by the
+  earlier analysis (`+0x298` from the object's vptr) is offset differently than assumed.
+- C++ vtables are referenced through `__DATA_CONST` slots rather than `ADRP` code references, so
+  a code-side xref scan for `0xfffffe00080dbc80` finds nothing — identification has to come
+  from the object-creation path instead.
+
+### Status of the UAF question
+Still open, but narrowed: the release decision is made by a virtual call at vtable offset
+`+0x298` (via wrapper `0xfffffe000b2ffac0`). Whether the pointer at `driver+0xe0` dangles
+depends entirely on that method's behaviour after `IOServiceClose`. Identifying it requires
+tracing `newUserClient` (`0xfffffe0009015df8`) to the allocation site and reading which
+`OSMetaClass` vtable is installed on the new object.
