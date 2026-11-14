@@ -1,0 +1,56 @@
+0xfffffe000ac89180  ldr      x3, [x23]
+0xfffffe000ac89184  adrp     x1, #0xfffffe000b720000
+0xfffffe000ac89188  add      x1, x1, #0x858
+0xfffffe000ac8918c  mov      w2, #7
+0xfffffe000ac89190  bl       #0xfffffe000ac85074
+0xfffffe000ac89194  b        #0xfffffe000ac889cc
+0xfffffe000ac89198  adrp     x0, #0xfffffe000b775000
+0xfffffe000ac8919c  add      x0, x0, #0x480
+0xfffffe000ac891a0  mov      x1, x19
+0xfffffe000ac891a4  bl       #0xfffffe000abd3fa0
+0xfffffe000ac891a8  b        #0xfffffe000ac88f6c
+0xfffffe000ac891ac  adrp     x0, #0xfffffe000b775000
+0xfffffe000ac891b0  add      x0, x0, #0x480
+0xfffffe000ac891b4  mov      x1, x19
+0xfffffe000ac891b8  bl       #0xfffffe000abd3fa0
+0xfffffe000ac891bc  b        #0xfffffe000ac88e08
+0xfffffe000ac891c0  b        #0xfffffe000ac89070
+0xfffffe000ac891c4  adrp     x0, #0xfffffe000b775000
+0xfffffe000ac891c8  add      x0, x0, #0x480
+0xfffffe000ac891cc  mov      x1, x19
+0xfffffe000ac891d0  bl       #0xfffffe000abd3fa0
+0xfffffe000ac891d4  b        #0xfffffe000ac890d4
+0xfffffe000ac891d8  b        #0xfffffe000ac89070
+0xfffffe000ac891dc  b        #0xfffffe000ac89070
+0xfffffe000ac891e0  b        #0xfffffe000ac89050
+0xfffffe000ac891e4  mov      w8, #0x7d9
+0xfffffe000ac891e8  adrp     x9, #0xfffffe000705b000
+0xfffffe000ac891ec  add      x9, x9, #0xc9e
+0xfffffe000ac891f0  stp      x9, x8, [sp, #8]
+0xfffffe000ac891f4  str      x24, [sp]
+0xfffffe000ac891f8  adrp     x0, #0xfffffe000705b000
+0xfffffe000ac891fc  add      x0, x0, #0xca9
+0xfffffe000ac89200  bl       #0xfffffe000b424a74
+0xfffffe000ac89204  ldr      w8, [x21, #0x74]
+0xfffffe000ac89208  ubfx     w8, w8, #0xc, #1
+0xfffffe000ac8920c  ldr      w9, [x20, #0x74]
+0xfffffe000ac89210  ubfx     w9, w9, #0xc, #1
+0xfffffe000ac89214  mov      w10, #0xa5e
+0xfffffe000ac89218  str      x10, [sp, #0x30]
+0xfffffe000ac8921c  adrp     x10, #0xfffffe000705b000
+0xfffffe000ac89220  add      x10, x10, #0xc9e
+0xfffffe000ac89224  stp      x22, x10, [sp, #0x20]
+0xfffffe000ac89228  ldur     x10, [x29, #-0xa8]
+0xfffffe000ac8922c  stp      x9, x10, [sp, #0x10]
+0xfffffe000ac89230  adrp     x0, #0xfffffe000705b000 <<< CoW assertion
+0xfffffe000ac89234  add      x0, x0, #0xcf5
+0xfffffe000ac89238  stp      x20, x8, [sp]
+0xfffffe000ac8923c  bl       #0xfffffe000b424a74
+0xfffffe000ac89240  pacibsp  
+0xfffffe000ac89244  sub      sp, sp, #0x50
+0xfffffe000ac89248  stp      x22, x21, [sp, #0x20]
+0xfffffe000ac8924c  stp      x20, x19, [sp, #0x30]
+0xfffffe000ac89250  stp      x29, x30, [sp, #0x40]
+0xfffffe000ac89254  add      x29, sp, #0x40
+0xfffffe000ac89258  mov      x19, x0
+0xfffffe000ac8925c  cbz      x1, #0xfffffe000ac89274
