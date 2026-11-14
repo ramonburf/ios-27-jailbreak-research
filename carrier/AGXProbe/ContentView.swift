@@ -145,6 +145,7 @@ final class ReachViewModel: ObservableObject {
             || args.contains("--zoneprobe")
             || args.contains("--cowprobe")
             || args.contains("--cowfile")
+            || args.contains("--apfsrace")
             || args.contains("--socklowbuf") { Task.detached { await self.runSocketUafMode() }; return }
         if args.contains("--autorun") { emit("AGXProbe v123 ready (use --webscan)") }
     }
@@ -709,6 +710,15 @@ func runFuzzMode() async {
         emitBg("=== cowfile done ===")
     }
 
+    nonisolated func apfsRaceProbe() {
+        emitBg("[*] apfsrace start (APFS msync/invalidate stress)")
+        let dir = NSTemporaryDirectory()
+        var st = [Int32](repeating: 0, count: 3)
+        apfs_race_probe(96, 4096, dir, &st)
+        emitBg("[*] apfsrace: open=\(st[0]) mmap=\(st[1]) thread=\(st[2])")
+        emitBg("=== apfsrace done ===")
+    }
+
     nonisolated func sockUafPeerBytes(_ precPort: Int, _ peers: inout [Int32],
                                       _ peerLock: NSLock) -> Int {
         let probe = sockUafSprayConnected(48, precPort)
@@ -1240,6 +1250,7 @@ func runFuzzMode() async {
         if ProcessInfo.processInfo.arguments.contains("--zoneprobe") { sockUafZoneProbe(); return }
         if ProcessInfo.processInfo.arguments.contains("--cowprobe") { cowProbe(); return }
         if ProcessInfo.processInfo.arguments.contains("--cowfile") { cowFileProbe(); return }
+        if ProcessInfo.processInfo.arguments.contains("--apfsrace") { apfsRaceProbe(); return }
         let solo = oolOnly || xzOnly || gcOnly || udpOnly || precOnly || mixOnly || lowBufOnly
         var hits = 0
         let t0 = Date()

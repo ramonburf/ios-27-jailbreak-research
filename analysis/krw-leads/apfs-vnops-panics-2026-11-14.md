@@ -64,3 +64,37 @@ selector-flagged APFS primitive, plausibly journal/invalidation related.
    replaced by error propagation.
 3. Extend `--cowfile` to race `msync`/`msync`+`munmap` and file truncation against concurrent
    faults, then watch crash logs on both devices for `apfs_vnops.c` frames.
+
+
+## Device test (2026-11-14): APFS race stress runs clean
+
+Built `--apfsrace` into the carrier (`SockUafSpray.c`, `ContentView.swift`, bridging header;
+`BUILD_EXIT=0`) and ran it on **both devices**.
+
+Per round: create a 4 MB file in the app container, map it `MAP_SHARED`, dirty every page, then
+run two concurrent threads — one faulting random pages continuously, the other issuing
+`msync(MS_SYNC|MS_ASYNC)`, `madvise(MADV_DONTNEED)` and `fsync`. After unmapping, each round
+performs an invalidation cycle of `ftruncate(0)` / restore / `fsync` x8.
+
+Result on both the 17 Pro and 13 Pro:
+
+```
+[*] apfsrace: open=0 mmap=0 thread=0
+=== apfsrace done ===
+```
+
+All stage counters zero, probe completed its full 96-round schedule, process remained alive,
+and neither device produced a panic. Under this workload the APFS invalidation path did not
+return the error that triggers the `apfs_vnops.c` panics.
+
+### Note on an earlier revision
+The first version truncated the file while the writer thread still had live accesses, which
+killed the app with `SIGBUS` (signal 10) on both devices. That was a probe-design fault, not a
+kernel fault — the devices stayed responsive and no panic log appeared. Truncation now happens
+only after `munmap`.
+
+### Interpretation
+The APFS panics are error-propagation paths; ordinary msync/invalidate stress does not make
+them fail. Reaching them likely requires conditions apps cannot induce on a healthy volume
+(media-level errors, specific corrupted-image states). Treat as low-reachability unless a
+specific trigger for `0xfffffe000aa7a624` failing can be identified.
