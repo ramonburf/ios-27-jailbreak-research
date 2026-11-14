@@ -17,7 +17,7 @@ not "probability it will work". 100 % means done and verified on hardware.
 | 4c | Kernel r/w primitive | IOHIDFamily OOB r/w (CVE-2026-112507) | Patch confirmed in the diff; no sandbox-openable HID class found | **20%** |
 | 4d | Kernel r/w primitive | Other diff-derived kernel UAF candidates | Triage list produced; unconfirmed | **15%** |
 | 4e | Kernel r/w primitive | `uipc_mbuf2.c` mbuf-chain length arithmetic (`m_sum16` / `m_adj_sum16`, four 32→64-bit sites confirmed changed in 27.2) | Functions identified and fully caller-mapped; several callers pass underflow-capable header-field differences. Raw sockets are denied to apps on both devices, so the path is **remote-only (`AV:N`), not app-reachable**. Keep as a bounty candidate | **30%** |
-| 4f | Kernel r/w primitive | `PF_ROUTE` raw route socket from the app sandbox | Measured reachable on both devices (`--rawsock`); read/write capability and the 27.0.1→27.2 route-handler diff untested | **10%** |
+| 4f | Kernel r/w primitive | `PF_ROUTE` raw route socket from the app sandbox | Measured reachable on both devices (`--rawsock`). One changed `bsd/net/route.c` function localised (`0xae662ec`→`0xaeb9588`, +`0x44`): 27.0.1 panics (`VERIFY`) on *any* `sdl_alen` mismatch while 27.2 only panics when parsed > declared. Reachability unproven — trigger not yet designed | **15%** |
 | 5 | Build / deploy pipeline | macOS + Xcode → signed `.app` → `devicectl` install → launch on device | Working end-to-end | **100%** |
 | 6 | EL1 code exec past PAC/CTRR/SPTM (TXM trustcache) | Required after kernel r/w before any persistent code runs | Not started | **5%** |
 | 7 | Credential patch + rootless bootstrap (package manager) | Final stage | Not started | **5%** |

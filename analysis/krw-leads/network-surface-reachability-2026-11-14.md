@@ -69,9 +69,51 @@ Characterise read vs write before treating it as an exploit surface:
    invalid address family or an unsatisfiable mask should fail without changing state;
    only then consider whether a valid `RTM_ADD`/`RTM_DELETE` is possible from the sandbox.
    Do not add a live route on either device without planning the rollback.
-3. Compare the 27.0.1 and 27.2 route-socket handlers (`route_output`, `rtrequest`,
-   `rt_xaddrs`...) with the exact-diff tooling; the changed netinet functions above are the
-   starting set.
+3. Compare the 27.0.1 and 27.2 route-socket handlers with the exact-diff tooling; the changed
+   netinet functions above are the starting set.
+
+## Static first pass on the route-socket path (same day)
+
+One changed function in `bsd/net/route.c` is already localised:
+
+| | 24A446 (27.0.1) | 24B119 (27.2) |
+|---|---|---|
+| address / size | `0xfffffe000ae662ec`, `0x2ac` | `0xfffffe000aeb9588`, `0x2f0` |
+| growth | — | +`0x44` |
+
+Its source-file references are `bsd/net/route.c` lines `0x30f` (783), `0x367` (871) and
+`0x36c` (876), and it validates AF_LINK/`AF_INET`/`AF_INET6` sockaddrs
+(`family` at `+1` compared against `0x12`/`0x1e`/`2`; `nlen`/`alen` at `+5`/`+6`; data at
+`+8` — the `sockaddr_dl` layout). It is called with `buflen = 0x100` from
+`0xfffffe000ae72138` and `0xfffffe000ae7507c`.
+
+The semantic difference is in one check:
+
+```
+24A446:   cmp   x2, w9          ; x2 = parsed length, w9 = dest->alen
+          b.ne  <VERIFY panic>  ; any mismatch panics ("buflen >= sa->sa_len")
+
+24B119:   cmp   x20, w9
+          b.hi  <VERIFY panic>  ; only > panics
+          ...                   ; plus a whole extra copy/validate block for the
+                                ; shorter-than-declared case (subs/adds/bl)
+```
+
+So 27.0.1 treats *any* length mismatch between the parsed value and `sockaddr_dl.sdl_alen`
+as a fatal `VERIFY` (kernel `brk #0x5519`), while 27.2 only panics when the parsed value is
+larger and otherwise handles the remainder explicitly. Two possibilities, unseparated so far:
+
+1. Apple fixed an app-triggerable kernel panic reached through the route socket — worth a
+   controlled test on the secondary device.
+2. The check is over kernel-internal structures that user input cannot make inconsistent,
+   and the change is a refactor.
+
+**Do not claim either without a trigger.** The next step is to drive the route socket with
+crafted `RTM_*` messages on the 13 Pro only, starting with well-formed `RTM_IFINFO`/`RTM_GET`,
+then deliberately mismatched `sa_len`/`sdl_alen` values, watching for a `brk` panic in the
+crash log. Per the standing rule, stop immediately on any panic/reboot and pull the report
+first. Tooling used: `scratch/route_fn.py`, `route_b.py`, `route_pair.py`, `route_dis.py`,
+`route_callers.py`.
 
 ## Reproduce
 

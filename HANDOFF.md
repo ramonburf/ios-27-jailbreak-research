@@ -250,8 +250,10 @@ Details appended to `analysis/krw-leads/CVE-2026-112576-cow.md`.
 ## Immediate next step
 
 1. **Characterise `PF_ROUTE`.** It is the newly measured sandbox-reachable kernel interface.
-   Test read-only route messages (`RTM_IFINFO`, `RTM_GET`) first, then an `RTM_ADD` with
-   deliberately invalid arguments; diff the 27.0.1→27.2 route handlers afterwards. See
+   A changed `bsd/net/route.c` helper is already localised (27.0.1 panics on any
+   `sdl_alen` mismatch; 27.2 only on an over-long value) — build a route-socket probe for the
+   13 Pro that starts with well-formed `RTM_IFINFO`/`RTM_GET` and then tries mismatched
+   `sa_len`/`sdl_alen`. See
    `analysis/krw-leads/network-surface-reachability-2026-11-14.md`.
 2. **Stop spending device runs on untargeted CoW storms.** Identify `0xfffffe000acbabd8` and
    the setter of `[obj+0x75]` bit 1 before designing any CVE-2026-112576 trigger.
