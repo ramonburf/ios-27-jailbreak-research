@@ -73,3 +73,28 @@ Total struct size for selector 6 / 7 (2024): `0xda0` (3488).
 
 Map the three structs field-by-field and find which fields are validated in
 `RequestHandling::*Validation` vs. only used in HW setup.
+
+
+## Correction (2026-11-14): the "unidentified kernel stub" address is not code
+
+Re-resolving `0xfffffe000b8a2fc4` against build 24A446:
+
+| | |
+|---|---|
+| containing segment | `__DATA` |
+| file offset | `0x489efc4` |
+| raw bytes | `00 00 a0 00 73 6b 5f 63 68 5f 61 6c 6c 6f 63 5f 6c 6f 63 6b` |
+
+The bytes are ASCII — **`***`, with `sk_ch_evq_lo…` following nearby. Disassembly of
+the address produces garbage (`udf`, SIMD register ops), confirming data rather than code.
+`sk_*` strings are Skywalk channel/policy names spread across the image (252 matches,
+file `0x4210a`–`0x49f9bd8`), not a kernel symbol table.
+
+**Consequence:** the earlier claim that `clientClosedGated`
+(`0xfffffe000900985c`) "calls stub `0xfffffe000b8a2fc4` on userClient" cannot be correct as
+written. Either the call is indirect through a pointer held elsewhere, or the target was
+misread. The refcount question that decides whether the dangling-pointer UAF is triggerable
+remains **open**, and that analysis should be treated as unverified.
+
+Revalidation path: locate the actual call instruction inside `clientClosedGated`, recover its
+real target, and determine what the branch that skips `release()` actually tests.
