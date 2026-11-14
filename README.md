@@ -1,4 +1,4 @@
-# iOS 27 jailbreak research
+# Tims Cooked — iOS 27 jailbreak research
 
 Research toward a **semi-untethered jailbreak** on iOS 27.0 / 27.0.1 (arm64e).
 

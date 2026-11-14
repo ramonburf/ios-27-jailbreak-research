@@ -1,4 +1,4 @@
-# AGXProbe carrier
+# Tims Cooked — carrier
 
 A SwiftUI app used as the on-device harness. It has **no entitlements** and runs in an
 ordinary app sandbox, which is what makes its findings meaningful — anything it can reach,
