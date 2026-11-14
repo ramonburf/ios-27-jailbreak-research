@@ -370,7 +370,14 @@ final class FilesViewController: UITableViewController {
     private func report(_ title: String, detail: String) {
         let alert = UIAlertController(title: title, message: detail, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            if let current = self.presentedViewController as? UIAlertController {
+                current.dismiss(animated: false) { self.present(alert, animated: true) }
+            } else if self.presentedViewController == nil {
+                self.present(alert, animated: true)
+            }
+        }
     }
 }
 
@@ -590,6 +597,7 @@ final class FilePreviewController: UIViewController {
         textView.isEditable = true
         textView.becomeFirstResponder()
         navigationItem.rightBarButtonItems?.first(where: { $0.title == "Edit" })?.title = "Save"
+        setNonSaveActionsEnabled(false)
     }
 
     @discardableResult
@@ -601,9 +609,17 @@ final class FilePreviewController: UIViewController {
         }
         editable = false
         textView.isEditable = false
+        textView.resignFirstResponder()
         navigationItem.rightBarButtonItems?.first(where: { $0.title == "Save" })?.title = "Edit"
+        setNonSaveActionsEnabled(true)
         report("Saved", detail: "\(updated.count) bytes written")
         return true
+    }
+
+    private func setNonSaveActionsEnabled(_ enabled: Bool) {
+        for item in navigationItem.rightBarButtonItems ?? [] where item.title != "Save" {
+            item.isEnabled = enabled
+        }
     }
 
     @objc private func onPlist() {
@@ -688,7 +704,14 @@ final class FilePreviewController: UIViewController {
     private func report(_ title: String, detail: String) {
         let alert = UIAlertController(title: title, message: detail, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            if let current = self.presentedViewController as? UIAlertController {
+                current.dismiss(animated: false) { self.present(alert, animated: true) }
+            } else if self.presentedViewController == nil {
+                self.present(alert, animated: true)
+            }
+        }
     }
 }
 

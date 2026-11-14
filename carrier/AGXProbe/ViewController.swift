@@ -185,7 +185,9 @@ final class Logger {
                 linesSinceSync = 0
             }
         }
-        if inTest && !message.isEmpty { testLines.append(message) }
+        if inTest && !message.isEmpty && !message.hasPrefix("--- TEST ") {
+            testLines.append(message)
+        }
         guard toScreen else { return }
         DispatchQueue.main.async { [weak self] in self?.sink?(line) }
     }
@@ -671,7 +673,11 @@ final class ViewController: UIViewController {
             var okCount = 0, failCount = 0, skipCount = 0
 
             for (index, id) in article.probes.enumerated() {
-                guard let probe = self.probes[id] else { continue }
+                guard let probe = self.probes[id] else {
+                    skipCount += 1
+                    Logger.shared.note("[NO] missing probe \(id)")
+                    continue
+                }
                 DispatchQueue.main.async {
                     card.setStatus("running \(index + 1)/\(article.probes.count)", color: Theme.greenSoft)
                 }

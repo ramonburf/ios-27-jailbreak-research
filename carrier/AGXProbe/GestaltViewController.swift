@@ -171,20 +171,48 @@ final class GestaltViewController: UIViewController, UITextFieldDelegate {
         dismissKeyboard()
         let name = nameField.text ?? ""
         let number = numberField.text ?? ""
+        guard !name.isEmpty || !number.isEmpty else {
+            statusLabel.text = "nothing to apply"
+            return
+        }
         let backed = Escape.backupCache()
+        guard backed else {
+            statusLabel.text = "backup failed; no values were changed"
+            Logger.shared.note("gestalt: apply aborted because backup failed")
+            return
+        }
         var done: [String] = []
+        var failures: [String] = []
 
         if !name.isEmpty {
             let n = Escape.setModelName(name)
             if n > 0 { done.append("Model Name ??? \(name)") }
+            else { failures.append("Model Name") }
         }
-        if !number.isEmpty, Escape.setModelNumber(number) {
-            done.append("Model Number ??? \(number)")
+        if !number.isEmpty {
+            if Escape.setModelNumber(number) {
+                done.append("Model Number ??? \(number)")
+            } else {
+                failures.append("Model Number")
+            }
+        }
+
+        if !failures.isEmpty {
+            let restored = Escape.restoreCache()
+            if restored {
+                nameField.text = Escape.modelName() ?? "<unreadable>"
+                numberField.text = Escape.modelNumber() ?? "<unreadable>"
+            }
+            statusLabel.text = restored
+                ? "apply failed for \(failures.joined(separator: ", ")); original cache restored"
+                : "apply failed for \(failures.joined(separator: ", ")); partial values may remain; restore backup"
+            Logger.shared.note("gestalt: partial apply rolled back=\(restored), failures=\(failures.joined(separator: ", "))")
+            return
         }
 
         statusLabel.text = done.isEmpty
-            ? "nothing written ??? check the App Group and the cache path"
-            : (done.joined(separator: " ?? ") + (backed ? "\nbackup saved" : "\nbackup failed"))
+            ? "nothing written ??? check the App Group and the cache path\nbackup saved"
+            : (done.joined(separator: " ?? ") + "\nbackup saved")
         Logger.shared.note("gestalt: apply \(done.joined(separator: " | ")) backup=\(backed)")
     }
 

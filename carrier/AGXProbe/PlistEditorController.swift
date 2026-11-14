@@ -274,7 +274,14 @@ final class PlistEditorController: UITableViewController {
     private func report(_ title: String, detail: String) {
         let alert = UIAlertController(title: title, message: detail, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            if let current = self.presentedViewController as? UIAlertController {
+                current.dismiss(animated: false) { self.present(alert, animated: true) }
+            } else if self.presentedViewController == nil {
+                self.present(alert, animated: true)
+            }
+        }
     }
 }
 

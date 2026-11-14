@@ -63,6 +63,7 @@ final class MatrixBackdrop: UIView {
 
     private let grid = CAShapeLayer()
     private let glow = CAGradientLayer()
+    private var lastGridSize: CGSize = .zero
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -88,6 +89,9 @@ final class MatrixBackdrop: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         glow.frame = bounds
+        grid.frame = bounds
+        guard bounds.size != lastGridSize else { return }
+        lastGridSize = bounds.size
 
         let step: CGFloat = 28
         let path = UIBezierPath()
@@ -104,7 +108,6 @@ final class MatrixBackdrop: UIView {
             y += step
         }
         grid.path = path.cgPath
-        grid.frame = bounds
     }
 }
 
