@@ -14,6 +14,37 @@ XNU **13432.2.10**. Apple does not publish that tag publicly, so source-level co
 matching XNU sources is not possible — no `bsd/sys/socketvar.h` or `uipc_socket.c` exists for
 this exact version.
 
+## Correction: chained fixups ARE present
+
+The earlier claim that this kernelcache has no `LC_DYLD_CHAINED_FIXUPS` was wrong — the
+check compared the load-command value against `0x34`, but the real constant is
+**`0x80000034`** (it carries the `LC_REQ_DYLD` flag). The blob is at file offset
+`0x4a80000`, size `0x576`; header version 0, exports trie absent.
+
+A decoder was written (`kc_chain_decode.py`) using the layouts from Apple's
+`include/mach-o/fixup-chains.h`. Results:
+
+- 9 segments carry fixups; `__DATA_CONST` (format 8, 0x4000 pages, 414 pages),
+  `__DATA_SPTM`, and `__DATA` were walked.
+- **20,859 chained pointers resolved**, and the decoded values land inside `__TEXT_EXEC`
+  (`0xfffffe0008498000`–`0xfffffe000b448000`) exactly as expected — the decoder is sound.
+- Pointer formats present: unauthenticated rebases and **authenticated rebases**
+  (`auth=1`, key=IA/IB style). Authenticated entries decode as
+  `target = image_base + (raw & 0xFFFFFFFF)`, with `image_base = __TEXT vmaddr`.
+- `__DATA_CONST` contains a long run of 2,721 consecutive text pointers at segment offset
+  `0x4b0000` (VM `0xfffffe0008284000`), with mixed 8- and 16-byte deltas.
+
+This supersedes the "static confirmation blocked" verdict: static work is now possible
+without symbols. The remaining task is locating `socreate` by anchoring disassembly on
+string cross-references (e.g. `"soclose: so=%p refcount=0 @%s:%d"` at file `0xa2fbd`),
+then reading the allocation call to determine whether `struct socket` comes from a
+dedicated zone or a type-isolated region.
+
+Caveat: the `bsd_syscall_table` address carried over from an older symbol dump
+(`0xfffffe0007eaee90`) does **not** resolve correctly in this build — the pointers there
+decode into `__PRELINK_TEXT`, i.e. the kext region, so that address belongs to a different
+kernelcache. Symbol addresses must be re-derived for this build rather than reused.
+
 ## Segments (from the Mach-O header)
 
 | Segment | vmaddr | vmsize | fileoff |
