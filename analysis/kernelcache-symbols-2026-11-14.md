@@ -45,6 +45,32 @@ Caveat: the `bsd_syscall_table` address carried over from an older symbol dump
 decode into `__PRELINK_TEXT`, i.e. the kext region, so that address belongs to a different
 kernelcache. Symbol addresses must be re-derived for this build rather than reused.
 
+## Anchored disassembly: the socket close path
+
+The plaintext state of `__TEXT_EXEC` was verified directly rather than assumed:
+
+- sampled windows decode **2048/2048** words into valid AArch64 instructions;
+- byte entropy is **6.82 bits/byte**, not the ~8.0 expected for ciphertext;
+- real C strings, parseable load commands and resolvable chained fixups all present.
+
+So `kernelcache.release.macho` is the *decompressed, unencrypted* image — no decryption
+step exists or is needed. (`kernelcache.release.v53` is the IM4P container it came from.)
+
+A cross-reference search for the `"soclose: so=%p refcount=0 @%s:%d"` panic format string
+(file `0xa2fbd`) returns exactly **one** site:
+
+```
+0xfffffe000b16b478   adrp x0, #0xfffffe00070a6000      ; file string page
+0xfffffe000b16b47c   add  x0, x0, #0xfbd              ; the soclose format string
+0xfffffe000b16b480   bl   0xfffffe000b424a74          ; panic/assert helper
+```
+
+Around it sit further VERIFY blocks pushing a source-file pointer plus line numbers
+(0x462 = 1122, 0x523 = 1315, 0x1cb5 = 7349), and a new function begins immediately after at
+`0xfffffe000b16b4cc` (`pacibsp; sub sp, sp, #0x40`). This anchors the socket teardown /
+verification region — precisely the code the 27.2 fix modified — and gives a reliable base
+for walking to the allocation site. Tools: `tools/opencode-temp/kc_soclose_xref.py`.
+
 ## Segments (from the Mach-O header)
 
 | Segment | vmaddr | vmsize | fileoff |
