@@ -22,3 +22,6 @@ int64_t wq_token(const char *identifier, uint64_t cls, uint64_t part, uint64_t f
 
 // CoW / external-object fault storm (SockUafSpray.c).
 int cow_probe_run(int rounds, int size_kb, int *stages);
+
+// File-backed CoW storm (SockUafSpray.c).
+int cow_file_probe(int rounds, int size_kb, const char *dir, int *stages);

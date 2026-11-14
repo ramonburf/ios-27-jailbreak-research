@@ -80,7 +80,11 @@ int sockuaf_ool_spray(size_t size, int count, uint64_t fill)
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
 
 typedef struct {
     uint8_t *base;
@@ -97,6 +101,74 @@ static void *cow_writer(void *p)
         a->base[i * 4096] ^= (uint8_t)(i & 0xff);
     }
     return NULL;
+}
+
+
+/* File-backed MAP_PRIVATE CoW storm: exercises the same vm_fault_page() CoW branch
+   but through an interface the iOS sandbox permits. */
+typedef struct {
+    uint8_t *priv;
+    uint8_t *shr;
+    uint64_t size;
+    volatile int go;
+} cowf_arg_t;
+
+static void *cowf_writer(void *p)
+{
+    cowf_arg_t *a = (cowf_arg_t *)p;
+    while (!a->go) { }
+    uint64_t pages = (a->size + 4095) / 4096;
+    for (uint64_t i = 0; i < pages; i++) {
+        a->priv[i * 4096] ^= (uint8_t)(i & 0xff);
+        if (a->shr) {
+            a->shr[i * 4096] += 1;
+        }
+    }
+    return NULL;
+}
+
+/* stages: [0]=open/ftruncate [1]=mmap_private [2]=mmap_shared [3]=threads */
+int cow_file_probe(int rounds, int size_kb, const char *dir, int *stages)
+{
+    int first_err = 0;
+    char path[512];
+
+    for (int r = 0; r < rounds; r++) {
+        uint64_t size = (uint64_t)size_kb * (1u + (uint32_t)(r % 4)) * 1024u;
+        snprintf(path, sizeof(path), "%s/cowprobe_%d.bin", dir, r);
+        int fd = open(path, O_CREAT | O_TRUNC | O_RDWR, 0600);
+        if (fd < 0 || ftruncate(fd, (off_t)size) != 0) {
+            stages[0]++;
+            if (fd >= 0) close(fd);
+            continue;
+        }
+
+        uint8_t *priv = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+        if (priv == MAP_FAILED) {
+            stages[1]++;
+            close(fd);
+            continue;
+        }
+
+        uint8_t *shr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+        cowf_arg_t t1 = { priv, shr, size, 0 };
+        cowf_arg_t t2 = { priv, NULL, size, 0 };
+        pthread_t th1, th2;
+        if (pthread_create(&th1, NULL, cowf_writer, &t1) == 0 &&
+            pthread_create(&th2, NULL, cowf_writer, &t2) == 0) {
+            t1.go = 1; t2.go = 1;
+            pthread_join(th1, NULL); pthread_join(th2, NULL);
+        } else {
+            stages[3]++;
+        }
+
+        if (shr && shr != MAP_FAILED) munmap(shr, size);
+        munmap(priv, size);
+        close(fd);
+        unlink(path);
+    }
+    return first_err;
 }
 
 /* stages: [0]=make_entry [1]=map1 [2]=map2 [3]=allocate [4]=copy [5]=thread */
