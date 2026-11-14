@@ -9,6 +9,7 @@
 //
 
 import UIKit
+import Darwin
 
 final class FilesViewController: UITableViewController {
 
@@ -300,7 +301,7 @@ final class FilesViewController: UITableViewController {
             field.autocorrectionType = .no
         }
         alert.addAction(UIAlertAction(title: "Create", style: .default) { [weak self, weak alert] _ in
-            guard let self, let name = alert?.textFields?.first?.text, !name.isEmpty else { return }
+            guard let self, let name = alert?.textFields?.first?.text else { return }
             self.create(kind: kind, name: name)
         })
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
@@ -308,6 +309,13 @@ final class FilesViewController: UITableViewController {
     }
 
     private func create(kind: Kind, name: String) {
+        guard !name.isEmpty, name != ".", name != "..",
+              !name.contains("/"), !name.contains("\0"),
+              !name.unicodeScalars.contains(where: CharacterSet.controlCharacters.contains) else {
+            report("Invalid name", detail: "enter a single file or folder name")
+            return
+        }
+
         let handle = Escape.grant(path)
         guard handle >= 0 else {
             report("No write access here", detail: "the grant was refused")
@@ -317,18 +325,45 @@ final class FilesViewController: UITableViewController {
 
         let full = (path as NSString).appendingPathComponent(name)
         var ok = false
+        var failure = "could not create the item"
         switch kind {
         case .file:
-            ok = FileManager.default.createFile(atPath: full, contents: Data("bench27\n".utf8))
+            let fd = Darwin.open(full, O_WRONLY | O_CREAT | O_EXCL,
+                                 mode_t(S_IRUSR | S_IWUSR))
+            if fd >= 0 {
+                let bytes = Array("bench27\n".utf8)
+                var written = 0
+                let complete = bytes.withUnsafeBytes { raw -> Bool in
+                    guard let base = raw.baseAddress else { return false }
+                    while written < raw.count {
+                        let count = Darwin.write(fd, base.advanced(by: written), raw.count - written)
+                        guard count > 0 else { return false }
+                        written += count
+                    }
+                    return true
+                }
+                _ = Darwin.close(fd)
+                ok = complete
+                if !complete { _ = Darwin.unlink(full) }
+            } else if errno == EEXIST {
+                failure = "a file or folder with that name already exists"
+            } else {
+                failure = String(cString: strerror(errno))
+            }
         case .folder:
-            ok = (try? FileManager.default.createDirectory(atPath: full,
-                                                           withIntermediateDirectories: false)) != nil
+            do {
+                try FileManager.default.createDirectory(atPath: full,
+                                                        withIntermediateDirectories: false)
+                ok = true
+            } catch {
+                failure = error.localizedDescription
+            }
         }
         Logger.shared.note("files: create \(kind == .file ? "file" : "folder") \(name) ??? \(ok)")
         if ok {
             load()
         } else {
-            report("Could not create", detail: "errno \(errno)")
+            report("Could not create", detail: failure)
         }
     }
 
@@ -479,7 +514,10 @@ final class FilePreviewController: UIViewController {
     // MARK: render
 
     @objc private func onMode() {
-        if editable { toggleEdit() }
+        if editable && !saveEdits() {
+            mode.selectedSegmentIndex = 0
+            return
+        }
         render()
     }
 
@@ -530,7 +568,7 @@ final class FilePreviewController: UIViewController {
     // MARK: edit
 
     @objc private func toggleEdit() {
-        guard var data else { return }
+        guard data != nil else { return }
         guard mode.selectedSegmentIndex == 0 else {
             // Byte editing goes through Patch, the text view stays read-only here.
             report("Hex is read-only", detail: "use Patch to change bytes at an offset")
@@ -542,14 +580,8 @@ final class FilePreviewController: UIViewController {
         }
 
         if editable {
-            // Finish: take the text as the new content.
-            let text = textView.text ?? ""
-            data = Data(text.utf8)
-            if save(data) {
+            if saveEdits() {
                 render()
-                report("Saved", detail: "\(data.count) bytes written")
-            } else {
-                report("Write failed", detail: "the file was not changed")
             }
             return
         }
@@ -558,6 +590,20 @@ final class FilePreviewController: UIViewController {
         textView.isEditable = true
         textView.becomeFirstResponder()
         navigationItem.rightBarButtonItems?.first(where: { $0.title == "Edit" })?.title = "Save"
+    }
+
+    @discardableResult
+    private func saveEdits() -> Bool {
+        let updated = Data((textView.text ?? "").utf8)
+        guard save(updated) else {
+            report("Write failed", detail: "the file was not changed; your edits are still open")
+            return false
+        }
+        editable = false
+        textView.isEditable = false
+        navigationItem.rightBarButtonItems?.first(where: { $0.title == "Save" })?.title = "Edit"
+        report("Saved", detail: "\(updated.count) bytes written")
+        return true
     }
 
     @objc private func onPlist() {

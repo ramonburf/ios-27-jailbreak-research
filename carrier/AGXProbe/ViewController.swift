@@ -89,13 +89,14 @@ final class Logger {
 
     private var testLines: [String] = []
     private var inTest = false
+    private var linesSinceSync = 0
 
     private init() {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
 
         let f = DateFormatter()
-        f.dateFormat = "yyyyMMdd-HHmmss"
-        let name = "session-\(f.string(from: Date())).log"
+        f.dateFormat = "yyyyMMdd-HHmmss-SSS"
+        let name = "session-\(f.string(from: Date()))-\(UUID().uuidString.prefix(8)).log"
         logURL = docs.appendingPathComponent(name)
 
         stamp = DateFormatter()
@@ -161,6 +162,8 @@ final class Logger {
         let produced = !testLines.isEmpty
         let result = !produced ? "skipped" : (failed ? "fail" : "ok")
         append("--- TEST \(id) END    result: \(result)   \(String(format: "%.2f", elapsed)) s")
+        handle?.synchronizeFile()
+        linesSinceSync = 0
         inTest = false
         return result
     }
@@ -176,7 +179,11 @@ final class Logger {
         if let data = (line + "\n").data(using: .utf8) {
             handle?.seekToEndOfFile()
             handle?.write(data)
-            handle?.synchronizeFile()
+            linesSinceSync += 1
+            if linesSinceSync >= 100 {
+                handle?.synchronizeFile()
+                linesSinceSync = 0
+            }
         }
         if inTest && !message.isEmpty { testLines.append(message) }
         guard toScreen else { return }
@@ -316,6 +323,7 @@ final class ArticleCard: UIView {
 final class ViewController: UIViewController {
 
     private let logView = UITextView()
+    private let maxVisibleLogCharacters = 250_000
     private let spinner = UIActivityIndicatorView(style: .medium)
     private let caption = UILabel()
     private let scroll = UIScrollView()
@@ -605,7 +613,6 @@ final class ViewController: UIViewController {
     // MARK: log
 
     private func appendLog(_ line: String) {
-        let text = NSMutableAttributedString(attributedString: logView.attributedText ?? NSAttributedString())
         let colour: UIColor
         let font: UIFont
         let payload = line.hasPrefix("[") && line.contains("] ")
@@ -627,11 +634,19 @@ final class ViewController: UIViewController {
             font = Theme.mono(10)
         }
 
-        text.append(NSAttributedString(string: line + "\n",
-                                       attributes: [.foregroundColor: colour, .font: font]))
-        logView.attributedText = text
-        if text.length > 0 {
-            logView.scrollRangeToVisible(NSRange(location: text.length - 1, length: 1))
+        let storage = logView.textStorage
+        storage.append(NSAttributedString(string: line + "\n",
+                                          attributes: [.foregroundColor: colour, .font: font]))
+        let overflow = storage.length - maxVisibleLogCharacters
+        if overflow > 0 {
+            let string = storage.string as NSString
+            let newline = string.range(of: "\n", range: NSRange(location: overflow,
+                                                                  length: storage.length - overflow))
+            let trimLength = newline.location == NSNotFound ? overflow : NSMaxRange(newline)
+            storage.deleteCharacters(in: NSRange(location: 0, length: trimLength))
+        }
+        if storage.length > 0 {
+            logView.scrollRangeToVisible(NSRange(location: storage.length - 1, length: 1))
         }
     }
 
