@@ -247,6 +247,30 @@ the tail of the fault-path function starting at `0xfffffe000ac86c10`, reached on
 therefore unlikely to hit it; the helper and the object layout must be identified first.
 Details appended to `analysis/krw-leads/CVE-2026-112576-cow.md`.
 
+### Helper identified (2026-11-14)
+
+`0xfffffe000acbabd8` is a 32-byte compressor-pager predicate:
+
+```c
+int cow_pager_probe(void *obj, uint64_t off) {
+    uint32_t f = *(uint32_t *)((char *)obj + 0x74);
+    if (!(f & (1u << 12))) return 2;
+    if (!(f & (1u << 15))) return 2;
+    void *pager = *(void **)((char *)obj + 0x50);
+    if (!pager) return 2;
+    return compressor_pager_lookup(pager, off + *(uint64_t *)((char *)obj + 0x60));
+}
+```
+
+The tail target `0xfffffe000ac772a4` is in **`vm_compressor_pager.c`**. So the panic reduces
+exactly to: `word[obj+0x74]` bit 9 set **and** the compressor-pager probe does not resolve to
+`3` — an internally inconsistent object/pager state. Byte `0x75` bit 1 is word bit 9 (same
+word). `obj` is `[x21+0x48]`, where `x21` is the fault function's first argument.
+
+This closes the open static question. Verdict: **keep as a filing/bounty candidate, do not
+spend further device runs on it** — no trigger can be designed from message content or from
+ordinary mapping operations. Full derivation: `analysis/krw-leads/CVE-2026-112576-cow.md`.
+
 ## PF_ROUTE characterised: read-only from the sandbox (2026-11-14)
 
 `--routesock` ran on the 13 Pro and settled the interface:
@@ -273,12 +297,14 @@ third entry starts with bytes `13 00 00 00`. Recorded, not claimed.
 
 ## Immediate next step
 
-1. **Identify `0xfffffe000acbabd8`** (the CVE-2026-112576 CoW guard helper) and
-   the setter of `[obj+0x75]` bit 1. Pure static analysis, explicitly queued in
-   HANDOFF; do this before any further CoW device work.
-2. **`PF_ROUTE` is now closed as exploit surface** — read-only, writes `EPERM`.
+1. **CoW guard is now identified** (2026-11-14): `0xfffffe000acbabd8` is a compressor-pager
+   predicate and the panic needs an internally inconsistent object state — keep CVE-2026-112576
+   as a filing, not an exploit path. See `analysis/krw-leads/CVE-2026-112576-cow.md`.
+2. **`PF_ROUTE` is closed as exploit surface** — read-only, writes `EPERM`.
    Do not build more route probes except as an oracle.
 3. **The mbuf length-arithmetic lead stays closed** as app-reachable work
    (raw sockets are denied); keep it as a bounty candidate.
-4. **Use the exact-diff tooling** (`tools/opencode-temp/kc_fstarts.py`,
+4. **Re-examine leads above the type-isolation wall** (VM/VFS page-replacement,
+   IOSurface-backed external objects) rather than grooming the socket slot further.
+5. **Use the exact-diff tooling** (`tools/opencode-temp/kc_fstarts.py`,
    `kc_norm_diff.py`, `kc_align_region.py`) for all future binary comparison.
