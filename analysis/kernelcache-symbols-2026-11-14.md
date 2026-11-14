@@ -71,6 +71,32 @@ Around it sit further VERIFY blocks pushing a source-file pointer plus line numb
 verification region — precisely the code the 27.2 fix modified — and gives a reliable base
 for walking to the allocation site. Tools: `tools/opencode-temp/kc_soclose_xref.py`.
 
+## Call graph around the socket teardown anchor
+
+Disassembling the region containing the soclose assertion block yields these distinct call
+targets inside `0xfffffe000b16b000`–`0xfffffe000b16b4d0`:
+
+```
+0xfffffe000abd33bc   (also called from 0xb16b458)
+0xfffffe000abd3fa0
+0xfffffe000ac3bb3c
+0xfffffe000b19400c
+0xfffffe000b10ce08
+0xfffffe000b424a74   panic / assert helper (takes the VERIFY format string)
+0xfffffe000b0c8364
+0xfffffe000b16768c
+0xfffffe000b436aac
+```
+
+The function actually starts before `0xb16b000` (the first word there is a mid-body
+`ccmp`), and a new function begins at `0xfffffe000b16b4cc`. The `0xabd3xxx` pair is hit
+repeatedly across the kernel, so it is a common primitive rather than socket-specific code.
+
+Identifying these targets needs a symbol source for this exact build: neither a local symbol
+table nor a published XNU tag exists for xnu-13432.2.10. The practical way forward is to
+anchor each target on its own string references (assert/panic strings localise the callee),
+or to diff against the 27.2 kernelcache where the fix changed code layout.
+
 ## Segments (from the Mach-O header)
 
 | Segment | vmaddr | vmsize | fileoff |
