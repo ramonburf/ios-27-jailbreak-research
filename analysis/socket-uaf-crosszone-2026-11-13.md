@@ -136,6 +136,18 @@ structurally out of reach via socket exhaustion alone. Any further attempt along
 would first need a way to allocate many more socket-sized objects than the fd limit permits,
 which means a different object type entirely.
 
+## Send-buffer starvation (`--socklowbuf`) — tested, no effect
+
+The vulnerable functions are `sblock` / `sbunlock`, which are reached when a send buffer
+fills. A mode was added that sets `SO_SNDBUF` to 512 bytes on the victim before the race,
+forcing those paths.
+
+Both devices behaved exactly like the plain precision variant: one stale write each
+(49,296 bytes delivered, at iteration 3376 on the 17 Pro and 503 on the 13 Pro), no panic
+and no anomaly. Starving the buffer also made hits *rarer* (the short buffer makes the
+early `sendmsg` calls fail with EAGAIN), so this is not a useful lever — the race still
+resolves into a socket-to-socket delivery.
+
 ## Variant I (UDP type confusion) — tested, no effect
 
 `--sockudp` ran the full 40,000 iterations on both devices in ~180 s without being killed by

