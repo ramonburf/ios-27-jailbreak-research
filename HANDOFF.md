@@ -95,6 +95,15 @@ Two implementation details mattered and must be preserved:
 2. The detector must be positive. A datagram arriving at the oracle can only come from the
    reclaimed socket, because nothing in the harness ever sends on a datagram socket.
 
+## New static lead: `uipc_mbuf2.c` length arithmetic (2026-11-14)
+
+A boundary-free comparison against 27.2 found four sites where the mbuf-chain length
+validation changed from 32-bit `add`/`cmp` to 64-bit, including the validator that carries the
+`"%s: mbuf %p len (%d) < off+len (%d+%d)"` panic message (whose format specifiers also
+changed `%d`→`%u`). Proven: the arithmetic changed. Suspected, unproven: that the 32-bit form
+is reachable and exploitable as an integer-truncation-to-OOB. No caller has been audited.
+Full evidence and method: `analysis/kernelcache-mbuf-len-truncation-2026-11-14.md`.
+
 ### Unsolved static question (needed before F/G/H can work)
 
 The exact kernel allocation size of `struct socket` on iOS 27.0.1 — and any associated
